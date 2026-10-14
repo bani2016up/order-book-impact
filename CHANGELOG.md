@@ -23,8 +23,6 @@ the owner-provided attachment; `docs/DATASET_CONTRACT.md` remains normative.
 - This adds no change to Rust calculations or the core Python API.
 - Intended commit: `feat(research): add validated feature loading and gap-safe lags`.
 
-## Original implementation checklist
-
 ## Research workspace — runnable models and environment
 
 - Added repository-local baseline, extension and notebook directories, JSON model
@@ -51,6 +49,21 @@ the owner-provided attachment; `docs/DATASET_CONTRACT.md` remains normative.
 - No new full coverage measurement was made; previous engine evidence is historical.
 - Intended commit: `feat(research): add reproducible baseline and shared setup`.
 - Remaining: commit the team-facing README and current usage/testing navigation.
+
+## Research workspace — team documentation
+
+- Rewrote README as an English team entry point: installation/build, data placement,
+  one-time feature computation, installed imports, starter baseline and explicit model,
+  configuration, notebook, test and output locations for Fedya and Timur.
+- Updated API/testing navigation for the research extra and canonical sample path.
+  The README distinguishes historical engine acceptance from the new research layer;
+  it does not recycle old coverage percentages as a new measurement.
+- The separate Russian instructions requested for coworkers' AI agents are delivered
+  only in the chat response. They are not written to a file or committed.
+- Checks: reviewed README commands against actual setup, feature generation and model
+  execution; reviewed local links; diff whitespace passed. No source behavior changed
+  in this documentation step and no push was performed.
+- Intended commit: `docs: explain the shared research workflow and model locations`.
 
 ## Original implementation checklist
 

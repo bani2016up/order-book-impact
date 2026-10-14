@@ -1,62 +1,235 @@
-# order-book-impact-pipeline
+# Order-book impact: pipeline and research workspace
 
-Rust data-processing pipeline with a Python library interface through PyO3. The project supports methodological replication of Cont, Kukanov, and Stoikov's *The Price Impact of Order Book Events* using Lev's cleaned five-level LOBSTER sample.
+One repository for the Rust feature engine and the team's Python research.
+Rust computes OFI, price changes, trade imbalance, depth and volume. Researchers
+consume saved features to reproduce the paper baseline or develop new models.
 
-## Current status
+**Fedya's models go in `research/baseline/`. Timur's models go in
+`research/extensions/`. Their tests go in `tests/research/`.**
 
-Implementation and local acceptance are complete: pure Rust core, compiled PyO3
-Python API/CLI, streaming Parquet/gzip CSV adapters, known-direction and original
-pre-execution Quote Test, bounded partition workers and atomic output.
+## Structure and ownership
 
-All five bucket widths match the verified delivered/rebuilt sample references.
-Final checks passed 79 Python/compiled tests, Rust suites, explicit real ingestion
-and an isolated release-wheel install. Measured coverage: Rust core 99.5465%
-(with eight documented missed guards/OS paths), native binding 100%, Python
-100% lines/branches. Linux/macOS/Windows CI is configured but unrun remotely.
-
-Read [the final handoff](docs/handoff.md), [usage](docs/usage.md),
-[architecture](docs/architecture.md), [output columns and units](docs/output_contract.md),
-[tests/coverage](docs/testing.md), and [the change log](CHANGELOG.md). The owner
-requested keeping the earlier task/work-log documents deleted. All work is on
-local `main`; nothing has been pushed or published.
-
-## Usage
-
-```python
-from pathlib import Path
-from ofi_pipeline import PipelineConfig, run_pipeline
-
-report = run_pipeline(
-    Path("/path/to/order_book_sample"),
-    Path("/new/features"),
-    PipelineConfig(bucket_seconds=10, levels=5, threads=2, chunk_rows=65536),
-)
-print(report.features_path, report.feature_rows)
+```text
+crates/ofi-core/                Rust ingestion, validation, features and output
+crates/ofi-python/              PyO3 native extension
+python/ofi_pipeline/            Installed Python API and CLI
+  research.py                  Installed shared loader and gap-safe lag helper
+research/
+  baseline/run.py              Fedya: runnable starter OLS comparison
+  extensions/                  Timur: new model modules and entry points
+  notebooks/                   Exploratory notebooks
+configs/baseline.json          Reproducible model settings
+scripts/
+  setup.py                     Create/reuse .venv; install/build the environment
+  prepare_features.py          Compute reusable features once in Rust
+  wheel_check.py               Verify a built wheel outside the checkout
+  coverage.py                  Measure implementation-layer coverage
+tests/research/                Feature-loader, lag and model checks
+tests/python/, integration/    API and actual compiled-extension checks
+tests/real_sample/             Explicit delivered-data acceptance
+docs/                          Contracts and recorded engine evidence
+benchmarks/                    Engine performance tools
+data/order_book_sample/        Local supplied dataset, ignored by Git
+outputs/features/<name>/       Rust feature datasets and QC
+outputs/baseline/<run>/        Baseline metrics, coefficients and figures
+outputs/extensions/<run>/      Extension models, metrics and figures
+dist/, target/                 Wheels/build artifacts, ignored by Git
 ```
 
-Install a compatible prebuilt wheel with pip, or build from source with Python
->=3.10, Rust >=1.90 and maturin 1.9.6. The installed `ofi-pipeline` CLI calls the
-same Rust core. Coworkers using a compatible wheel need no Rust compiler or
-Python data libraries for production computation. See [installation](docs/usage.md).
+Danya maintains the Rust engine and pipeline API. Fedya and Timur work in Python
+with the same feature contract and environment. Shared reusable loading/adjacency
+helpers belong in `ofi_pipeline.research`; do not duplicate event-level feature
+computation in notebooks. Generated artifacts, real data and environments stay
+out of Git. Standard build/cache directories remain local and ignored.
 
-## Sample and boundaries
+Work from the checkout containing the reviewed research-layer commits. Current
+changes are local; the initial GitHub README alone does not contain this work.
+Do not push until the owner authorizes it.
 
-Actual file inspection verified AAPL/MSFT on 2012-06-21, 09:30–16:00
-America/New_York: 887810 clean events, 68404 executions and 897387 original
-quality rows. Independent 10-second computation matches 4390 accepted intervals
-out of 4680 (290 exclusions). All delivery hashes and five-level schemas were
-checked; [reconciliation](docs/reconciliation.json) includes all five widths.
+## Quick start
 
-The sample is single-venue NASDAQ. OFI and price change are contemporaneous;
-invalid gaps/intervals and unknown signing remain explicit. No forecasting or
-profitability result is claimed. Real data and archives are ignored; select the
-local `order_book_sample` directory or `OFI_SAMPLE_DIR`, and keep generated
-outputs outside Git.
+Run commands from the repository root. Source builds need Python >=3.10 and
+Rust >=1.90. Setup creates/reuses `.venv`, installs research/dev/test dependencies,
+builds Rust/PyO3 in release mode with the lockfile and checks the imports.
+
+### 1. Install
+
+macOS/Linux:
+
+```sh
+python3 scripts/setup.py
+source .venv/bin/activate
+```
+
+Windows PowerShell:
+
+```powershell
+py scripts/setup.py
+.venv\Scripts\Activate.ps1
+```
+
+With a current compatible wheel, no Rust compiler is needed:
+
+```sh
+python3 scripts/setup.py --wheel /path/to/current-compatible.whl
+source .venv/bin/activate
+```
+
+Use `py` and Windows activation on Windows. Wheels are OS/CPU-specific; the
+macOS ARM64 wheel is not a Windows/Linux wheel. A current wheel must contain
+the `research` extra and shared helper. Model entry points/notebooks come from
+this repository; the shared helper comes from the installed package.
+
+### 2. Locate the data
+
+Unpack Lev's complete bundle under `data/order_book_sample/`:
+
+```text
+data/order_book_sample/data/events_clean.parquet
+data/order_book_sample/data/trades_clean.parquet
+data/order_book_sample/reports/event_quality.parquet
+data/order_book_sample/raw/                    for optional Quote Test
+```
+
+Keep hashes and the rest of the bundle together. Another absolute/local path is
+also supported through `--sample-dir` or `run_pipeline(sample_dir=...)`. The core
+API/CLI additionally supports `OFI_SAMPLE_DIR`. Real data is not shipped in Git
+or the wheel. Do not silently substitute a different dataset when it is missing.
+
+### 3. Compute features once
+
+```sh
+python scripts/prepare_features.py \
+  --sample-dir data/order_book_sample \
+  --output-dir outputs/features/10s
+```
+
+Defaults are 10-second intervals and five levels. Other widths are 1, 5, 30 and
+60 seconds. Give each configuration its own new output directory. Outputs are
+`features.parquet`, `bucket_quality.parquet`, `manifest.json` and
+`quality_report.json`. Model runs reuse these files.
+
+The installed CLI invokes the same Rust engine:
+
+```sh
+ofi-pipeline --sample-dir data/order_book_sample \
+  --output-dir outputs/features/another-10s-run --bucket-seconds 10 --levels 5
+```
+
+Existing outputs are protected. For another run, choose another directory or use
+the core API's explicitly documented owned-output replacement behavior.
+
+### 4. Load from Python
+
+```python
+from ofi_pipeline.research import load_features, lag_feature
+
+features = load_features("outputs/features/10s", required_columns=["ofi_l5"])
+print(features[["symbol", "timestamp", "ofi_l1", "mid_price_change_ticks"]].head())
+features = lag_feature(features, "ofi_l1", bucket_seconds=10, periods=1)
+```
+
+The loader accepts an output directory or Parquet filename, validates accepted
+keys/UTC boundaries/numerical columns, sorts by symbol/date/time and preserves
+unknown TI. Pass `symbols=["AAPL"]` to select one symbol. Lags stay missing across
+gaps or sessions. Use absolute paths inside notebooks with a different working
+directory; the helper itself imports from anywhere after installation.
+
+To invoke Rust directly through the Python API:
+
+```python
+from ofi_pipeline import PipelineConfig, run_pipeline
+from ofi_pipeline.research import load_features
+
+report = run_pipeline(
+    sample_dir="data/order_book_sample",
+    output_dir="outputs/features/library-run",
+    config=PipelineConfig(bucket_seconds=10, levels=5, threads=2, chunk_rows=65536),
+)
+features = load_features(report.features_path)
+```
+
+### 5. Run Fedya's starter baseline
+
+```sh
+python -m research.baseline.run \
+  --features outputs/features/10s \
+  --config configs/baseline.json \
+  --output-dir outputs/baseline/run01
+```
+
+It fits OFI-only, TI-only and OFI+TI OLS per symbol and 30-minute window with an
+intercept and White HC0 covariance. Models share complete-case observations.
+Dropped rows and skipped windows (insufficient data, constant target or deficient
+rank) remain explicit.
+
+Outputs: `metrics.csv`, `coefficients.csv`, and `run.json` with the config and input
+hash. `in_sample_r2` describes contemporaneous explanatory fit, not OOS accuracy.
+This is a working starter, not a finished replication of every paper table.
+
+## Where to put models
+
+| Work | Code and configuration | Tests and generated output |
+| --- | --- | --- |
+| Fedya: baseline, nonlinear/depth regressions, paper tables | `research/baseline/<model>.py`, `configs/<model>.json` | `tests/research/test_<model>.py`, `outputs/baseline/<run>/` |
+| Timur: Ridge/PCA, deep OFI, temporal/model extensions | `research/extensions/<model>.py`, `configs/<model>.json` | `tests/research/test_<model>.py`, `outputs/extensions/<run>/` |
+| Either: exploration | `research/notebooks/<name>.ipynb` | Save large figures/artifacts under the relevant `outputs/` folder |
+| Either: shared loading/temporal utilities | `python/ofi_pipeline/research.py` | Focused helper tests in `tests/research/` |
+
+Give a new module a `main()` so it runs as `python -m research.extensions.<model>`
+or `python -m research.baseline.<model>` from the root. Accept explicit feature,
+config and output paths. Reuse the loader; save the input identity, target, units,
+split, parameters and metrics with every run. Keep reusable functions outside
+notebook cells. New output directories protect other people's experiments.
+
+Add extra model dependencies to the `research` extra in `pyproject.toml`.
+Rerun setup after dependency or compiled-code changes. Ordinary model edits need
+no Rust rebuild; a notebook kernel may need restarting after imported code edits.
+
+## Research semantics
+
+- Price change is available in USD and ticks; OFI/TI/volume/depth are shares.
+- UTC intervals are `(interval_start, timestamp]`. Excluded buckets are recorded
+  in the quality table and must not be replaced by zero observations.
+- Current OFI and target describe the **same** interval. Forecasting needs a
+  separately constructed, temporally aligned future target.
+- Verify adjacency before creating lags; never shift sparse accepted rows blindly.
+- Quote Test may leave TI unknown; the loader retains the missing value.
+- Deep OFI follows level rank, not a fixed price. Label it as an extension.
+- OOS work needs time-based splits and train-only scaling/PCA/tuning. Current
+  descriptive whole-day filtering is not train-only preprocessing.
+- Two NASDAQ stocks from one day support development and preliminary fits,
+  not the paper's month-scale NBBO robustness or guaranteed improvement.
+
+## Checks and builds
+
+```sh
+python -m pytest -q tests/research
+python -m pytest -q tests/python tests/integration
+cargo test --workspace --locked
+maturin build --release --locked --out dist
+```
+
+Use focused tests for your change, then broader tests when cross-layer behavior
+changes. CI includes research checks and a platform wheel matrix, but hosted jobs
+have not run while commits remain local. Share wheels through an owner-authorized
+distribution step; do not commit binaries to Git.
+
+## Detailed documentation
+
+- [API usage/configuration](docs/usage.md)
+- [Architecture](docs/architecture.md)
+- [Output columns/units](docs/output_contract.md)
+- [Verified input schemas](docs/verified_schema.md)
+- [Dataset contract](docs/DATASET_CONTRACT.md)
+- [Engine tests](docs/testing.md) and [recorded coverage](docs/coverage.md)
+- [Original engine handoff](docs/handoff.md): historical evidence before the
+  research layer, not fresh coverage of new helper code or a new wheel hash
+- [Change log](CHANGELOG.md) and [agent instructions](AGENTS.md)
 
 ## References
 
-- [Paper, March 2011 version](https://arxiv.org/pdf/1011.6402v3)
-- [LOBSTER output structure](https://php.lobsterdata.com/info/DataStructure.php)
-- [LOBSTER sample files](https://php.lobsterdata.com/info/DataSamples.php)
-- [PyO3 guide](https://pyo3.rs/)
-- [maturin mixed-project layout](https://www.maturin.rs/project_layout.html)
+- [Paper](https://arxiv.org/pdf/1011.6402v3)
+- [LOBSTER format](https://php.lobsterdata.com/info/DataStructure.php)
+- [PyO3](https://pyo3.rs/) and [maturin](https://www.maturin.rs/)
+- [statsmodels OLS](https://www.statsmodels.org/stable/generated/statsmodels.regression.linear_model.OLS.html)

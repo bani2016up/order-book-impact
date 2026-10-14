@@ -1,8 +1,10 @@
 # Reproducible checks
 
-Run from the repository with a Python 3.10+ environment. Install the `test` and
-`dev` extras or their pinned tools. Production computation has no Python data
-library dependencies. Build a fresh extension whenever native contracts change.
+Run from the repository with a Python 3.10+ environment. `python3 scripts/setup.py`
+installs the `test`, `dev` and `research` extras and builds the native package.
+Production event computation has no Python data-library dependencies; the optional
+research layer uses pandas/statsmodels. Build a fresh extension whenever native
+contracts change. Run `python -m pytest -q tests/research` for research changes.
 
 ```sh
 PYO3_PYTHON="$PWD/.venv/bin/python" cargo test --workspace --locked
@@ -10,7 +12,7 @@ cargo fmt --all -- --check
 cargo clippy --workspace --all-targets --locked -- -D warnings
 VIRTUAL_ENV="$PWD/.venv" .venv/bin/maturin develop --locked
 .venv/bin/python -m pytest -q tests/python tests/integration
-.venv/bin/ruff check python tests benchmarks scripts
+.venv/bin/ruff check python research tests benchmarks scripts
 .venv/bin/mypy
 ```
 

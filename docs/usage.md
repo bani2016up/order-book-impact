@@ -1,5 +1,11 @@
 # Python API and installation
 
+For the team workspace and one-command setup, start with [README](../README.md).
+The canonical bundle is `data/order_book_sample/`; external paths remain supported.
+Shared model data helpers are installed as `ofi_pipeline.research` with the optional
+`research` dependency extra. Model entry points live in `research/baseline/` and
+`research/extensions/` in the source checkout.
+
 Supported: Python >=3.10, Rust >=1.90 for source builds. The extension uses the
 stable Python ABI. A compatible prebuilt wheel needs no Rust installation.
 Production dependencies are compiled into the native library; Python does not
