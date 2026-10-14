@@ -121,6 +121,16 @@ impl OrderGuard {
         if key.symbol.is_empty() || key.event_id < 0 {
             return Err(Error::new(ErrorCode::Order, format!("invalid key {key:?}")));
         }
+        let new_partition = self
+            .last
+            .as_ref()
+            .is_none_or(|(prior, _)| prior.symbol != key.symbol || prior.date != key.date);
+        if contiguous && new_partition && key.event_id != 0 {
+            return Err(Error::new(
+                ErrorCode::Quality,
+                format!("original quality evidence must start at event_id 0 for {key:?}"),
+            ));
+        }
         if let Some((prior, time)) = &self.last {
             let same = prior.symbol == key.symbol && prior.date == key.date;
             if key <= prior

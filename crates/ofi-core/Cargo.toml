@@ -11,3 +11,11 @@ serde_json.workspace = true
 thiserror.workspace = true
 chrono = { version = "=0.4.42", default-features = false, features = ["std"] }
 chrono-tz = "=0.10.4"
+arrow-array = "=60.0.0"
+arrow-schema = "=60.0.0"
+parquet = { version = "=60.0.0", default-features = false, features = ["arrow", "snap", "zstd"] }
+csv = "=1.4.0"
+flate2 = "=1.1.5"
+
+[dev-dependencies]
+tempfile = "=3.23.0"

@@ -10,7 +10,7 @@ the owner-provided attachment; `docs/DATASET_CONTRACT.md` remains normative.
 - [x] M0: inspect repository, delivery integrity, physical schemas, preparation code.
 - [x] M1: pure Rust workspace, compiled PyO3 extension, typed Python package.
 - [x] M2: checked domain types, sessions, decimal time, configuration and ordering.
-- [ ] M3: streaming Parquet/gzip CSV and original quality alignment.
+- [x] M3: streaming Parquet/gzip CSV and original quality alignment.
 - [ ] M4: gap-aware rank OFI, persistent state and L1 update classification.
 - [ ] M5: independent executions, known-direction signing and conservation.
 - [ ] M6: right-closed grids, original boundaries, depth and exclusions.
@@ -100,3 +100,28 @@ commit hashes are authoritative in Git history, not self-referential log entries
 - Real sample schemas/hashes are verified; feature parity remains unrun.
 - Intended commit: `feat(core): add checked domain and exact session configuration`.
 - Remaining: M3–M11; input adapters and feature computation are next.
+
+## M3 — native streaming sample ingestion
+
+- Added `adapter.rs`, Rust adapter fixtures/tests and explicit external-sample
+  ingestion test. Pinned Arrow/Parquet 60.0.0, CSV 1.4.0, flate2 1.1.5; committed
+  exact transitive resolution in Cargo.lock. Parquet uses bounded record batches
+  even for the sample's single large row groups; CSV records stream through gzip.
+- Lev-v1 physical names/types are explicit. Invalid UTC units/timezones, local-ns
+  disagreement, null required values, missing depth, malformed files, invalid
+  books/trades and inconsistent supplied signs fail with typed errors. Preserves
+  ties and IDs; quality must cover contiguous original IDs starting at zero.
+  Original quality has no date, so derive its New York date from UTC timestamp.
+- Focused checks passed: `cargo test -p ofi-core --test adapters --offline` (3),
+  `cargo test -p ofi-core --offline` (8 units + 3 adapter tests),
+  `cargo clippy -p ofi-core --all-targets --offline -- -D warnings`, `cargo fmt --all`.
+  Initial Clippy findings (nested if/unused mut) were fixed before commit.
+- Real native ingestion check passed:
+  `OFI_SAMPLE_DIR="$PWD/order_book_sample" cargo test -p ofi-core --test sample_ingestion --offline -- --ignored`
+  validated every event/trade/original-quality row, ordering and time/price types,
+  with 887,810 accepted events, 68,404 trades, 897,387 original rows, 9,577 rejected
+  quotes; 17.58 seconds debug/test runtime. This is ingestion, not feature parity.
+- Disk now has ~41 GiB free. No dataset files staged, copied or altered.
+- Intended commit: `feat(io): stream validated Lev Parquet and gzip CSV inputs`.
+- Remaining: merge/alignment must prove accepted/rejected correspondence before
+  computing; M4–M11 including real feature parity are pending.
