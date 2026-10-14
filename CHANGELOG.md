@@ -1268,3 +1268,106 @@ Baseline to final (B → F); time variability is median absolute deviation; proc
   Compiled Quote Test/parallel/pipeline command above with --basetemp
   outputs/features/payload-restored-checks: 36 passed in 2.70s. This administrative
   commit includes only CHANGELOG; the retained production source is unchanged.
+
+## Rust optimization P8 — release consumed Arrow batches before replacement (2026-10-14, candidate)
+
+- Minimal lifecycle hypothesis after b8ff8f6: clear the private consumed
+  RecordBatch inside the existing exhausted/missing-batch loop before invoking
+  the next Parquet decode. Offset resets only after successful replacement,
+  exactly as before. Public reader methods return owned rows; private IndexedRow
+  references never escape. Parse errors consume the same row and update the same
+  counters; decoder failures/EOF and retries invoke the same reader path. All
+  null/type/value/order/error checks remain in their existing order. No public
+  API, configuration, row/queue/worker bound, Python, helper or harness changes.
+- Source inspection of pinned Parquet 60.0.0 establishes that next_inner reads
+  records before consuming the new batch. Primitive consume_batch moves decoded
+  record data into Arrow buffers; consume_record_data takes its stored values,
+  leaving None so the next read lazily allocates a buffer. Holding an exhausted
+  batch through that allocation extends the old returned buffers' lifetime.
+- For the unchanged high-load c65536 schema, estimated logical decoded payloads
+  are about 15.71 MiB/events, 2.57 MiB/quality and 6.20 MiB/full trade batch,
+  before capacity rounding, validity, metadata or allocator overhead. The producer
+  decodes serially, so the direct overlap change removes one consumed batch at
+  a time. Extra input columns/strings and allocator behavior prevent a universal
+  RSS bound. This does not attribute the preceding 609.48 MiB warm observation
+  to batch overlap and does not claim an RSS or execution improvement.
+- Added one authored ownership/error regression at chunk sizes 1/2/3: a null
+  rejection reason consumes its source row without advancing ordering state;
+  retry across batch rollover preserves row numbering and subsequent contiguous
+  order; repeated EOF stays empty; returned quality keys/reasons survive reader
+  drop. Existing adapters cover every depth, reordered columns and row groups.
+  Initial test compile missed a test-only Arc import; corrected before checks.
+- `cargo test -p ofi-core adapter::tests --locked --offline`: one passed.
+  `cargo test -p ofi-core --test adapters --locked --offline`: six passed.
+  `cargo test -p ofi-core --locked --offline`: 35 units, six adapters and two
+  pipeline tests passed; external sample explicitly ignored in this focused run.
+  `cargo clippy -p ofi-core --all-targets --locked --offline -- -D warnings`,
+  owned-file `rustfmt --edition 2024 --check` and `git diff --check` passed.
+- Explicit repository-venv VIRTUAL_ENV/PYO3_PYTHON release rebuild via
+  `.venv/bin/maturin develop --release --locked --offline` passed. Native SHA-256:
+  `6bbf6b875c1055498fea113d987f881bbc23531ef315fabc18e5147d64290d7c`.
+  `.venv/bin/python -m pytest -q tests/integration/test_quote_test.py
+  tests/integration/test_parallel.py tests/integration/test_pipeline.py --basetemp
+  outputs/features/batch-release-checks`: 36 passed through the rebuilt extension.
+- Source/native now ready for root's independent review and guarded measurements;
+  no benchmark, retention decision or implementation commit has been performed.
+
+## Rust optimization P8 — early batch release rejected after measurement (2026-10-14)
+
+- Root and independent compatibility review cleared the minimal lifecycle change.
+  Frozen regular suite batch-highload-20261014 compared against io-highload-20261014
+  through the unchanged helper: one warmup plus five measured calls per case.
+  All 30 complete outputs passed exact tables/schema/order/float/null, full QC/
+  manifest, chunk/thread invariance and Quote Test conservation. Current-task
+  ratios use highload-before-20261014 rather than the helper's older P0 base.
+
+| Regular case | Candidate median s (min–max; MAD) | Peak MiB median (min–max) | Incremental / current-task speedup |
+| --- | --- | --- | ---: |
+| real-t1-c4096 | 1.152658 (1.132478–1.233397; 0.017468) | 108.33 (105.17–112.17) | 1.064903x / 2.062338x |
+| real-t2-c65536 | 1.099141 (1.081517–1.116978; 0.009411) | 256.62 (221.58–375.45) | 1.040705x / 2.117689x |
+| real-t4-c1 | 29.261111 (28.795016–29.505021; 0.067922) | 53.75 (51.23–56.25) | 0.975062x / 1.014599x |
+| quote-t2-c4096 | 1.630584 (1.533558–1.718185; 0.065774) | 103.56 (99.12–112.94) | 1.036069x / 1.874554x |
+| fixture-t2-c4096 | 0.051760 (0.045128–0.053387; 0.001627) | 60.72 (56.98–61.84) | 0.952041x / 1.395886x |
+
+- Regular family-balanced incremental speedup was only 1.004051x; current-task
+  speedup was 1.625865x versus retained I/O's 1.619x. Tiny-chunk and authored
+  medians regressed. Regular t2/tiny/authored RSS medians rose about 4.4%/3.8%/3.5%.
+- Frozen 1M warm batch-1m-20261014 and verified low-residency
+  batch-cold-1m-20261014 pilots each completed eight verified calls using the
+  same original derived references with parent SHA provenance. Source/native/
+  helper guards remained unchanged, and all 24 parent plus 24 child cold input
+  observations had zero resident pages. No candidate full-size suite was run.
+
+| 1M pilot | Candidate median s (min–max; MAD) | Peak MiB median (min–max) | Incremental / current-task speedup |
+| --- | --- | --- | ---: |
+| warm t1/c4096 | 1.460986 (1.320809–1.500898; 0.039912) | 123.20 (111.50–131.89) | 1.008869x / 1.818121x |
+| warm t4/c65536 | 1.185183 (1.129985–1.335091; 0.055198) | 284.58 (235.86–359.55) | 0.963433x / 2.152348x |
+| cold t1/c4096 | 1.256936 (1.229422–1.272975; 0.016040) | 131.83 (129.41–135.53) | 1.041649x / 2.130016x |
+| cold t4/c65536 | 1.279644 (1.271008–1.411310; 0.008636) | 233.84 (216.41–280.45) | 0.939634x / 2.012010x |
+
+- Against recent retained full warm optimized-20261014 1M aggregates, candidate
+  speedups were 0.992918x/0.931957x, equal-case geometric 0.961955x; RSS ratios
+  were 0.936016/0.929851 with overlapping ranges. Against preceding I/O pilots,
+  warm RSS medians fell about 5.0%/2.8%; cold t1 rose 1.3% and cold t4 fell 9.5%.
+  Cold t4 time rose about 6.4%, and every candidate repeat was slower than the
+  retained I/O pilot's 1.135537–1.209507s range. RSS remained mixed. No explanation
+  of the preceding 609.48 MiB peak, isolated allocator cause or process-memory
+  improvement is claimed. Root rejected P8 under execution-time-first priority.
+- Saved the exact adapter.rs diff plus authored regression under ignored
+  outputs/features/performance-experiments/early-batch-release.patch (3882 bytes).
+  Reverse-apply check passed before restoring only adapter.rs to verified retained
+  HEAD b8ff8f6; forward-apply check passed afterward. All measured evidence remains
+  ignored beneath benchmarks/results/optimization/batch-highload-20261014 and
+  high-load/batch-1m-20261014 plus batch-cold-1m-20261014. No rejected implementation
+  commit, further speculative candidate, reservation/payload change, helper edit,
+  push or history rewrite was performed.
+- Restoration release rebuild with explicit repository-venv VIRTUAL_ENV and
+  PYO3_PYTHON passed; native SHA-256 returned to
+  `a4bbe9c69622920b9e6f589ea73ff66f0ac8f497cb5993f54789eeba15507d35`.
+  Independent snapshot comparison confirms all 39 source-file hashes and native
+  identity match completed full warm optimized-20261014. Restored
+  `cargo test -p ofi-core --locked --offline`: 34 units, six adapters and two
+  pipeline tests passed (external sample explicitly ignored in this focused run).
+  The compiled Quote Test/parallel/pipeline command above with --basetemp
+  outputs/features/batch-restored-checks passed 36 tests in 2.44s. This local
+  administrative commit includes only CHANGELOG; retained production is unchanged.
