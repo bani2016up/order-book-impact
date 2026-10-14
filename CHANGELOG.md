@@ -1064,3 +1064,90 @@ Baseline to final (B → F); time variability is median absolute deviation; proc
   apply. Full final high-load and acceptance work remain required.
 - Decision: retain copy reductions for the independently measured incremental
   speed benefit and exact parity. Raw reader changes are deferred; no push.
+
+## Rust optimization P6 — raw buffers and exhausted-reader lifetime (2026-10-14, candidate)
+
+- Combined I/O candidate after `3810fad`: RawReader reuses its two private CSV
+  StringRecords and reserves exactly the already validated 1..5 book depth,
+  replacing repeated record allocation and vector growth. Existing public owned
+  current/prior-book return values and the preexisting `previous.take()` remain
+  unchanged; invalid books still become None. A separate coordinated pipeline
+  change explicitly drops exhausted event/trade/quality readers after trailing-row
+  and nonempty-current validation, before final chunk handoff/ordered assembly.
+  The combined measurements attribute observed changes jointly to raw buffers and
+  reader lifetime; neither contribution is claimed isolated.
+- Operational decoder batches/chunks/queues/workers/partition/output limits and
+  read/validation/error order remain unchanged. Two reusable record capacities
+  retain their maximum seen row text, independent of row count; parsed books are
+  still owned separately and hold at most five ranks. Raw files/ZIP spool and
+  temporary-disk/hash/publication behavior are unchanged.
+- Added two raw regressions spanning every depth: valid-invalid-valid books,
+  variable field-text widths, independent returned/prior/caller books, alignment
+  failure consumes row without publishing post-state, conversion failure consumes
+  records without incrementing original ID, and CSV's fixed field-count errors
+  preserve previous state. Focused `cargo test -p ofi-core raw::tests --locked
+  --offline`: five passed. `cargo test -p ofi-core --locked --offline`: 34 units,
+  six adapters and two pipeline tests passed (external sample ignored in this
+  focused command). `cargo fmt --all -- --check` and `git diff --check` passed.
+- Clippy initially flagged the existing modulo predicate when its local record
+  became borrowed; equivalent `is_multiple_of(4)` resolves the warning, with
+  final `cargo clippy -p ofi-core --all-targets --locked --offline -- -D warnings`
+  and core tests passing. Final explicit-venv/PYO3 release rebuild via
+  `.venv/bin/maturin develop --release --locked --offline` passed. Native SHA-256:
+  `a4bbe9c69622920b9e6f589ea73ff66f0ac8f497cb5993f54789eeba15507d35`.
+- Raw implementation and CHANGELOG belong to the raw subtask; the separately
+  authored four-line pipeline reader-drop change is retained pending its own
+  commit. Performance and final retention remain pending serial measurements.
+- Compiled focused Quote Test/parallel/publication/error integrations:
+  `.venv/bin/python -m pytest -q tests/integration/test_quote_test.py
+  tests/integration/test_parallel.py tests/integration/test_pipeline.py --basetemp
+  outputs/features/io-reuse-checks`: 36 passed in 2.71s through the final rebuilt
+  extension, including the coordinated exhausted-reader drops.
+- Serialized combined I/O regular suite `io-highload-20261014` via unchanged
+  `/tmp/ofi_regular_stage.py` against `copy-highload-20261014`: one warmup + five
+  measured repeats per case, all 30 outputs exactly equivalent to retained baseline
+  (schemas/order/floats/nulls, full quality, manifest, stable QC). Source/native
+  stability, chunk/thread invariance and Quote Test conservation passed.
+
+| Case | Copy → I/O median s (I/O min–max; MAD) | Copy → I/O peak MiB (I/O min–max) | Incremental speedup |
+| --- | --- | --- | ---: |
+| real-t1-c4096 | 1.245414 → 1.227469 (1.210033–1.353651; 0.017436) | 111.33 → 114.73 (107.36–119.14) | 1.015x |
+| real-t2-c65536 | 1.118947 → 1.143882 (1.094324–1.151189; 0.007308) | 265.27 → 245.88 (209.91–406.91) | 0.978x |
+| real-t4-c1 | 29.063102 → 28.531394 (28.359381–28.926279; 0.172013) | 51.83 → 51.80 (48.47–53.80) | 1.019x |
+| quote-t2-c4096 | 2.805033 → 1.689398 (1.594320–1.884494; 0.053021) | 110.59 → 113.91 (109.88–117.09) | 1.660x |
+| fixture-t2-c4096 | 0.051557 → 0.049278 (0.048535–0.052941; 0.000390) | 64.73 → 58.66 (55.91–63.59) | 1.046x |
+
+- Combined incremental family-weighted geometric speedup 1.204x (real-direction
+  1.004x, Quote Test 1.660x, authored 1.046x); versus current-task baseline 1.619x.
+  Large-chunk real median is 2.2% slower with overlapping ranges. Large RSS maximum
+  rose to 406.91 MiB; Quote Test RSS median rose about 3.0%. All observations remain
+  retained. Raw buffers and early reader drops were not measured in isolation.
+- Preliminary 1M-only combined warm pilot `io-1m-20261014`: eight verified calls,
+  one warmup + three measured repeats per case. Unchanged pilot-reference and
+  source/native/input/harness/helper/decoded guards passed; every required parent
+  and child zero-residency gate passed in the low-residency pilot.
+  t1/c4096: 1.473943s (1.377436–1.654505;
+  MAD 0.096508), RSS 129.72 MiB (125.33–135.92),
+  original-baseline speedup 1.802x, RSS ratio 1.0639.
+  t4/c65536: 1.141844s (1.129478–1.203063;
+  MAD 0.012367), RSS 292.91 MiB (255.30–358.48),
+  original-baseline speedup 2.234x, RSS ratio 1.0863.
+- Preliminary 1M-only combined verified low-residency pilot `io-cold-1m-20261014`: eight verified calls,
+  one warmup + three measured repeats per case. Unchanged pilot-reference and
+  source/native/input/harness/helper/decoded guards passed; every required parent
+  and child zero-residency gate passed in the low-residency pilot.
+  t1/c4096: 1.309286s (1.278711–1.330652;
+  MAD 0.021367), RSS 130.14 MiB (129.58–135.61),
+  original-baseline speedup 2.045x, RSS ratio 0.9769.
+  t4/c65536: 1.202397s (1.135537–1.209507;
+  MAD 0.007110), RSS 258.41 MiB (240.19–320.80),
+  original-baseline speedup 2.141x, RSS ratio 1.1004.
+- Known-direction 1M warm medians are about 1% slower than copy pilots with
+  overlapping ranges; cold t1 improves about 1.4%, cold t4 is approximately flat.
+  RSS remains noisy and mixed; no general memory reduction is claimed. These
+  known-direction pilots do not exercise raw CSV buffers. Final full-size suites
+  and acceptance remain required. P4 cache/device-cache limitations apply.
+- Decision: retain the combined I/O hypothesis for the Quote Test speed benefit
+  and exact parity. This raw subtask commits only raw.rs and CHANGELOG; the
+  separately authored pipeline reader drops remain pending their own commit
+  with the same joint measurement attribution. Nothing is pushed.

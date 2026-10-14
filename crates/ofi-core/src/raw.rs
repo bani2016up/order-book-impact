@@ -46,6 +46,8 @@ pub struct RawRow {
 pub struct RawReader {
     messages: csv::Reader<BufReader<File>>,
     books: csv::Reader<BufReader<File>>,
+    message_record: csv::StringRecord,
+    book_record: csv::StringRecord,
     input: RawInput,
     next_id: i64,
     midnight: i64,
@@ -110,6 +112,8 @@ impl RawReader {
         Ok(Self {
             messages: reader(message)?,
             books: reader(orderbook)?,
+            message_record: csv::StringRecord::new(),
+            book_record: csv::StringRecord::new(),
             input: input.clone(),
             next_id: 0,
             midnight,
@@ -118,9 +122,16 @@ impl RawReader {
         })
     }
     fn next(&mut self) -> Result<Option<RawRow>> {
-        let (mut m, mut b) = (csv::StringRecord::new(), csv::StringRecord::new());
-        let has_m = self.messages.read_record(&mut m).map_err(malformed)?;
-        let has_b = self.books.read_record(&mut b).map_err(malformed)?;
+        let has_m = self
+            .messages
+            .read_record(&mut self.message_record)
+            .map_err(malformed)?;
+        let has_b = self
+            .books
+            .read_record(&mut self.book_record)
+            .map_err(malformed)?;
+        let m = &self.message_record;
+        let b = &self.book_record;
         if has_m != has_b {
             return Err(Error::new(
                 ErrorCode::Quality,
@@ -133,7 +144,7 @@ impl RawReader {
         if !has_m {
             return Ok(None);
         }
-        if m.len() != 6 || b.is_empty() || b.len() % 4 != 0 || b.len() > 20 {
+        if m.len() != 6 || b.is_empty() || !b.len().is_multiple_of(4) || b.len() > 20 {
             return Err(Error::new(
                 ErrorCode::Schema,
                 "raw messages require six fields; book requires 1..5 four-column levels",
@@ -144,13 +155,14 @@ impl RawReader {
             i128::from(self.midnight) + i128::from(ns),
             "raw UTC timestamp overflow",
         )?;
-        let mut book = Vec::new();
-        for i in 0..b.len() / 4 {
+        let depth = b.len() / 4;
+        let mut book = Vec::with_capacity(depth);
+        for i in 0..depth {
             book.push(Level {
-                ask: integer(&b, i * 4)?,
-                ask_size: integer(&b, i * 4 + 1)?,
-                bid: integer(&b, i * 4 + 2)?,
-                bid_size: integer(&b, i * 4 + 3)?,
+                ask: integer(b, i * 4)?,
+                ask_size: integer(b, i * 4 + 1)?,
+                bid: integer(b, i * 4 + 2)?,
+                bid_size: integer(b, i * 4 + 3)?,
             });
         }
         let book = Book(book);
@@ -163,10 +175,10 @@ impl RawReader {
             },
             timestamp,
             book,
-            event_type: integer(&m, 1)?,
-            size: integer(&m, 3)?,
-            price: integer(&m, 4)?,
-            direction: integer(&m, 5)?,
+            event_type: integer(m, 1)?,
+            size: integer(m, 3)?,
+            price: integer(m, 4)?,
+            direction: integer(m, 5)?,
             rounded,
         };
         self.next_id = self
@@ -331,6 +343,118 @@ mod tests {
         assert!(row.book.is_none());
         let mut r = RawReader::open(&input, dir.path()).unwrap();
         assert!(r.finish().is_err());
+    }
+    #[test]
+    fn reused_raw_records_keep_invalid_gaps_and_owned_books_at_every_depth() {
+        let directory = tempfile::tempdir().unwrap();
+        let input = input(directory.path());
+        for depth in 1..=5 {
+            fs::write(input.message.as_ref().unwrap(),
+                "34200,1,1,1,10000,1\n34200.000000001,4,12345678901234567890,10,10100,-1\n34200.000000002,5,0,999,10050,1\n34200.000000003,1,2,1,10000,1\n").unwrap();
+            let mut books = String::new();
+            for id in 0..4 {
+                let mut fields = Vec::new();
+                for rank in 0..depth {
+                    fields.extend([
+                        if id == 1 {
+                            "0".into()
+                        } else {
+                            (10100 + rank * 100).to_string()
+                        },
+                        "120".into(),
+                        (10000 - rank * 100).to_string(),
+                        (100 + id).to_string(),
+                    ]);
+                }
+                books.push_str(&fields.join(","));
+                books.push('\n');
+            }
+            fs::write(input.orderbook.as_ref().unwrap(), books).unwrap();
+            let mut reader = RawReader::open(&input, directory.path()).unwrap();
+            let (mut first, previous) = reader.observe(&q(0, 0)).unwrap();
+            assert!(previous.is_none());
+            assert_eq!(first.book.as_ref().unwrap().0.len(), depth);
+            first.book.as_mut().unwrap().0[0].bid_size = 9999;
+            let (invalid, mut previous) = reader.observe(&q(1, 1)).unwrap();
+            assert!(invalid.book.is_none());
+            assert_eq!(previous.as_ref().unwrap().0[0].bid_size, 100);
+            previous.as_mut().unwrap().0[0].bid_size = 8888;
+            let (mut third, previous) = reader.observe(&q(2, 2)).unwrap();
+            assert!(previous.is_none());
+            assert_eq!(third.size, 999);
+            assert_eq!(third.book.as_ref().unwrap().0[0].bid_size, 102);
+            third.book.as_mut().unwrap().0[0].bid_size = 7777;
+            let (fourth, previous) = reader.observe(&q(3, 3)).unwrap();
+            assert_eq!(previous.as_ref().unwrap().0[0].bid_size, 102);
+            assert_eq!(fourth.book.as_ref().unwrap().0[0].bid_size, 103);
+            assert_eq!(first.book.unwrap().0[0].bid_size, 9999);
+            assert_eq!(third.book.unwrap().0[0].bid_size, 7777);
+            reader.finish().unwrap();
+        }
+    }
+
+    #[test]
+    fn raw_record_reuse_preserves_alignment_and_parse_failure_consumption() {
+        let directory = tempfile::tempdir().unwrap();
+        let input = input(directory.path());
+        fs::write(
+            input.message.as_ref().unwrap(),
+            "34200,1,1,1,10000,1\n34200.000000001,1,1,1,10000,1\n34200.000000002,1,1,1,10000,1\n",
+        )
+        .unwrap();
+        fs::write(
+            input.orderbook.as_ref().unwrap(),
+            "10100,120,10000,100\n10100,120,10000,130\n10100,120,10000,160\n",
+        )
+        .unwrap();
+        let mut reader = RawReader::open(&input, directory.path()).unwrap();
+        reader.observe(&q(0, 0)).unwrap();
+        assert_eq!(
+            reader.observe(&q(1, 9)).err().unwrap().code,
+            ErrorCode::Quality
+        );
+        let (row, prior) = reader.observe(&q(2, 2)).unwrap();
+        assert_eq!(row.book.unwrap().0[0].bid_size, 160);
+        // Alignment failure consumes its row without publishing its post-book.
+        assert_eq!(prior.unwrap().0[0].bid_size, 100);
+        reader.finish().unwrap();
+
+        fs::write(input.message.as_ref().unwrap(),
+            "34200,1,1,1,10000,1\n34200.000000001,1,1,bad_size,10000,1\n34200.000000002,1,1,1,10000,1\n").unwrap();
+        let mut reader = RawReader::open(&input, directory.path()).unwrap();
+        reader.observe(&q(0, 0)).unwrap();
+        assert_eq!(
+            reader.observe(&q(1, 1)).err().unwrap().code,
+            ErrorCode::Malformed
+        );
+        // Field-conversion failure consumes both records but does not increment ID.
+        let (row, prior) = reader.observe(&q(1, 2)).unwrap();
+        assert_eq!(row.book.unwrap().0[0].bid_size, 160);
+        assert_eq!(prior.unwrap().0[0].bid_size, 100);
+        reader.finish().unwrap();
+
+        for (messages, books) in [
+            (
+                "34200,1,1,1,10000,1\n34200.000000001,1,1,1,10000\n",
+                "10100,120,10000,100\n10100,120,10000,130\n",
+            ),
+            (
+                "34200,1,1,1,10000,1\n34200.000000001,1,1,1,10000,1\n",
+                "10100,120,10000,100\n10100,120,10000,130,10200,120,9900,100\n",
+            ),
+        ] {
+            fs::write(input.message.as_ref().unwrap(), messages).unwrap();
+            fs::write(input.orderbook.as_ref().unwrap(), books).unwrap();
+            let mut reader = RawReader::open(&input, directory.path()).unwrap();
+            reader.observe(&q(0, 0)).unwrap();
+            // CSV's existing fixed field-count enforcement remains in force.
+            assert_eq!(
+                reader.observe(&q(1, 1)).err().unwrap().code,
+                ErrorCode::Malformed
+            );
+            assert_eq!(reader.previous.as_ref().unwrap().0[0].bid_size, 100);
+            assert_eq!(reader.next_id, 1);
+        }
     }
     #[test]
     fn raw_utc_addition_overflow_is_reported() {
