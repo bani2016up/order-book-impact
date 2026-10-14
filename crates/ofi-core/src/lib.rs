@@ -19,5 +19,6 @@ pub mod error;
 pub mod ofi;
 pub mod output;
 pub mod pipeline;
+pub mod raw;
 pub mod time;
 pub mod trades;

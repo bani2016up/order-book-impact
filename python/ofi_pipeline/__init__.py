@@ -3,6 +3,7 @@
 from ._native import version
 from .api import (
     InputPaths,
+    RawInput,
     PartitionReport,
     PipelineConfig,
     RunReport,
@@ -25,6 +26,7 @@ __all__ = [
     "version",
     "PipelineConfig",
     "InputPaths",
+    "RawInput",
     "PartitionReport",
     "RunReport",
     "SigningCoverage",

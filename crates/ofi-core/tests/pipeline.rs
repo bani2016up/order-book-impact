@@ -33,6 +33,7 @@ fn fixture(dir: &Path) -> Inputs {
         events: dir.join("e.csv"),
         trades: dir.join("t.csv"),
         quality: dir.join("q.csv"),
+        raw: vec![],
     };
     fs::write(&inputs.events, events).unwrap();
     fs::write(&inputs.quality, quality).unwrap();

@@ -15,7 +15,7 @@ the owner-provided attachment; `docs/DATASET_CONTRACT.md` remains normative.
 - [x] M5: independent executions, known-direction signing and conservation.
 - [x] M6: right-closed grids, original boundaries, depth and exclusions.
 - [x] M7: atomic output, provenance/QC, typed errors, Python CLI.
-- [ ] M8: paired raw adapter and pre-execution Quote Test.
+- [x] M8: paired raw adapter and pre-execution Quote Test.
 - [ ] M9: full real sample integrity/parity and independently rebuilt other widths.
 - [ ] M10: bounded partition concurrency, chunk/thread invariance and benchmarks.
 - [ ] M11: isolated wheel, coverage, CI, complete English handoff documentation.
@@ -236,3 +236,34 @@ commit hashes are authoritative in Git history, not self-referential log entries
 - Intended commit: `feat(api): expose compiled file-set pipeline and typed Python CLI`.
 - Remaining: M8–M11, including raw Quote Test, actual concurrency, release benchmark,
   full coverage/clean wheel/CI. Rebuilt extension uses current sources.
+
+## M8 — original paired raw Quote Test
+
+- Added `raw.rs`, ZIP 6.0.0 with minimal deflate support, explicit `RawInput`
+  sources and sample vendor-archive discovery. Updated Rust pipeline, Python
+  input API/exports, usage and compiled raw-pair/ZIP tests.
+- Message/book pairing stays by row index. Valid original pre-quotes survive
+  post-quote rejection; invalid/missing pre-quotes and inside-spread executions
+  remain unknown. Raw/quality IDs/timestamps, accepted post-books and execution
+  fields must agree. Same-time events and buffers preserve the preceding quote.
+- ZIP payloads spool once to private temporary disk files with constant-size
+  copying, then stream CSV pairs; no arbitrary archive pathname is extracted.
+  Raw buffers keep one previous book. Spools are removed before publication.
+  This extra disk pass/cost is explicit in the manifest and documentation.
+- Checks passed: `cargo test -p ofi-core raw:: --offline` (2),
+  `cargo clippy --workspace --all-targets --offline -- -D warnings`,
+  `.venv/bin/ruff check python tests`, `.venv/bin/mypy`, `cargo fmt --all`,
+  `VIRTUAL_ENV="$PWD/.venv" .venv/bin/maturin develop --offline`,
+  `.venv/bin/python -m pytest -q tests/integration/test_quote_test.py tests/integration/test_pipeline.py`
+  (12 passed; chunks 1/2/3/100, pre/post distinction, hidden unknowns, ZIP discovery,
+  missing originals and known-direction regression). Initial fixture lint errors
+  were corrected before checks passed.
+- Actual sample Quote Test run passed via `run_pipeline` with threads=1,
+  chunk_rows=4096: 32.299725625 seconds debug runtime; accepted rows remain
+  AAPL 2,060/MSFT 2,330. AAPL classified 1,847,216 / unclassified 1,002,924
+  shares (23,665/11,325 executions); MSFT classified 9,887,669 / unclassified
+  936,752 shares (29,798/3,616). Total execution volume is conserved, including
+  rejected post-quotes. Quote Test TI is separately labeled, not parity TI.
+- Intended commit: `feat(core): sign executions against original paired pre-quotes`.
+- Remaining: M9 repeatable acceptance and precision provenance, M10 bounded
+  concurrency/release measurements, M11 coverage/clean wheels/CI/handoff.

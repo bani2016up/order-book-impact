@@ -50,12 +50,24 @@ class PipelineConfig:
 
 
 @dataclass(frozen=True)
+class RawInput:
+    """Original row-paired CSVs or one vendor ZIP for a symbol/session."""
+
+    symbol: str
+    date: str
+    archive: "PathLike | None" = None
+    message: "PathLike | None" = None
+    orderbook: "PathLike | None" = None
+
+
+@dataclass(frozen=True)
 class InputPaths:
     """Explicit Lev-v1 inputs, each a Parquet or headered CSV/gzip CSV file."""
 
     events: "PathLike"
     trades: "PathLike"
     quality: "PathLike"
+    raw: tuple[RawInput, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -149,10 +161,34 @@ def run_pipeline(
             parquet = root / "data" / f"{stem}.parquet"
             return parquet if parquet.exists() else root / "data" / f"{stem}.csv.gz"
 
+        raw_inputs = []
+        if config.trade_signing == "quote_test":
+            import re
+
+            for archive in sorted((root / "raw").glob("LOBSTER_SampleFile_*_5.zip")):
+                match = re.fullmatch(r"LOBSTER_SampleFile_(.+)_(\d{4}-\d{2}-\d{2})_5", archive.stem)
+                if match:
+                    raw_inputs.append(RawInput(match[1], match[2], archive=archive))
         inputs = InputPaths(
-            table("events_clean"), table("trades_clean"), root / "reports" / "event_quality.parquet"
+            table("events_clean"),
+            table("trades_clean"),
+            root / "reports" / "event_quality.parquet",
+            tuple(raw_inputs),
         )
-    paths = {name: _path(getattr(inputs, name)) for name in ("events", "trades", "quality")}
+    paths: dict[str, Any] = {
+        name: _path(getattr(inputs, name)) for name in ("events", "trades", "quality")
+    }
+    paths["raw"] = [
+        {
+            "symbol": source.symbol,
+            "date": source.date,
+            **{
+                field: _path(getattr(source, field)) if getattr(source, field) is not None else None
+                for field in ("archive", "message", "orderbook")
+            },
+        }
+        for source in inputs.raw
+    ]
     payload = _unwrap(
         _native.run_pipeline(
             json.dumps(paths), _path(output_dir), json.dumps(asdict(config), allow_nan=False)

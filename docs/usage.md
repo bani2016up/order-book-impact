@@ -49,6 +49,15 @@ with reasons and null computed features. Verify actual temporal adjacency and
 session before creating lags from sparse accepted rows. Deep OFI is a rank-based
 research extension. The data is single-venue NASDAQ, not consolidated NBBO.
 
-At this implementation checkpoint, known-direction signing is operational;
-Quote Test raw matching and bounded partition concurrency remain under development.
-Threads >1 produce an explicit sequential-run warning until concurrency is added.
+`trade_signing="quote_test"` uses original pre-execution quotes. Sample-directory
+mode discovers vendor ZIP names; explicit mode accepts
+`InputPaths(..., raw=(RawInput(symbol="AAPL", date="2012-06-21", archive=...),))`
+or a `RawInput` with `message` and `orderbook` CSV paths. Pairing is by original
+row index. Inside-spread trades and missing/invalid pre-quotes remain unclassified;
+QC exposes their counts/volume. Quote Test TI is not the known-direction oracle.
+ZIP contents spool once to owned temporary disk files, then stream by paired rows;
+RAM stays bounded, while temporary disk usage scales with archive payload size.
+Spools are removed before publication. No filtering is recalibrated.
+
+Bounded partition concurrency remains under development. Threads >1 produce an
+explicit sequential-run warning until concurrency is added.
