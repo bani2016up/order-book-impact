@@ -5,8 +5,6 @@ owner's explicit request. The pre-existing deletions of that file and
 `docs/IMPLEMENTATION_TASK.md` are preserved. The implementation specification is
 the owner-provided attachment; `docs/DATASET_CONTRACT.md` remains normative.
 
-## Checklist
-
 ## Research workspace — shared data helpers
 
 - The owner authorized a same-repository research layer and a team-oriented README.
@@ -24,6 +22,35 @@ the owner-provided attachment; `docs/DATASET_CONTRACT.md` remains normative.
   its missing bundled third-party stubs; production API checks remain enabled.
 - This adds no change to Rust calculations or the core Python API.
 - Intended commit: `feat(research): add validated feature loading and gap-safe lags`.
+
+## Original implementation checklist
+
+## Research workspace — runnable models and environment
+
+- Added repository-local baseline, extension and notebook directories, JSON model
+  configuration, a starter per-symbol/half-hour OFI/TI/joint OLS comparison with HC0
+  covariance, common complete-case samples and explicit skipped-window reasons.
+  Model runs record coefficients, metrics, source SHA256, configuration and versions.
+- Added `scripts/setup.py` for source/native setup or current compatible wheel
+  installation and `scripts/prepare_features.py` for one-time reusable feature output.
+- Moved the unchanged ignored sample directory to `data/order_book_sample/`.
+  Created new ignored feature/model outputs in the intended structured directories;
+  old acceptance/benchmark outputs and historical evidence remain preserved.
+- Extended CI/coverage selections for research tests and isolated wheel smoke checks
+  for installed feature-loading/lag helpers. Hosted CI remains unrun; no push occurs.
+- Passed: actual setup/native release compilation/import; 91 Python/integration/research
+  tests; 17 focused research tests after model-metadata changes; Ruff over all Python,
+  research, tests, scripts and benchmarks; strict package mypy; diff whitespace checks.
+- Actual real-data workflow produced 4390 feature rows from the relocated bundle.
+  The default baseline fitted 78 model/window combinations (26 windows x 3 models),
+  with zero skipped fits. This is an in-sample starter, not OOS evidence or every
+  paper table's full replication.
+- Rebuilt the local release wheel and verified it in a fresh environment outside the
+  repository: compiled native I/O, Python API/CLI, installed research loader and
+  gap-safe lag helper passed. The wheel and all real/generated datasets remain ignored.
+- No new full coverage measurement was made; previous engine evidence is historical.
+- Intended commit: `feat(research): add reproducible baseline and shared setup`.
+- Remaining: commit the team-facing README and current usage/testing navigation.
 
 ## Original implementation checklist
 

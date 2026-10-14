@@ -108,6 +108,7 @@ run(
         "-q",
         "tests/python",
         "tests/integration",
+        "tests/research",
         "--cov=ofi_pipeline",
         "--cov-branch",
         "--cov-report=term-missing",

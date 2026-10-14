@@ -1,0 +1,10 @@
+{
+  "target": "mid_price_change_ticks",
+  "window_minutes": 30,
+  "min_observations": 20,
+  "models": {
+    "ofi_l1": ["ofi_l1"],
+    "trade_imbalance": ["trade_imbalance"],
+    "ofi_and_ti": ["ofi_l1", "trade_imbalance"]
+  }
+}

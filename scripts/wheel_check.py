@@ -26,7 +26,7 @@ with tempfile.TemporaryDirectory(prefix="ofi-wheel-check-") as directory:
     env.pop("PYTHONHOME", None)
     env["VIRTUAL_ENV"] = str(environment)
     subprocess.run(
-        [str(executable), "-m", "pip", "install", "--no-cache-dir", str(wheel), "pyarrow==18.1.0"],
+        [str(executable), "-m", "pip", "install", "--no-cache-dir", f"{wheel}[research]"],
         check=True,
         cwd=root,
         env=env,
@@ -60,6 +60,11 @@ t=pq.read_table(r.features_path)
 assert r.feature_rows==2 and t["ofi_l1"].to_pylist()==[30,0]
 assert t["volume"].to_pylist()==[7,0] and t["trade_imbalance"].to_pylist()==[7,0]
 assert t["avg_depth"].to_pylist()==[125.0,125.0]
+from ofi_pipeline.research import load_features, lag_feature
+features=load_features(r.features_path)
+assert features["ofi_l1"].to_list()==[30,0]
+lagged=lag_feature(features,"ofi_l1",bucket_seconds=10)
+assert lagged["ofi_l1_lag1"].isna().iloc[0] and lagged["ofi_l1_lag1"].iloc[1]==30
 assert pq.read_table(r.bucket_quality_path)["accepted"].to_pylist()==[False,True,True]
 assert json.loads(r.manifest_path.read_text())["producer"]=="ofi-pipeline"
 assert any(_native.__file__.endswith(s) for s in importlib.machinery.EXTENSION_SUFFIXES)

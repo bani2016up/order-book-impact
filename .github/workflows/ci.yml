@@ -28,9 +28,9 @@ jobs:
       - run: cargo test --workspace --locked
       - run: maturin build --release --locked --out dist
       - name: Install current built wheel for the full compiled suite
-        run: python -c "import glob,subprocess,sys; subprocess.check_call([sys.executable,'-m','pip','install','--force-reinstall',glob.glob('dist/*.whl')[0]])"
-      - run: python -m pytest -q tests/python tests/integration
-      - run: ruff check python tests benchmarks scripts
+        run: python -c "import glob,subprocess,sys; subprocess.check_call([sys.executable,'-m','pip','install','--force-reinstall',glob.glob('dist/*.whl')[0]+'[research]'])"
+      - run: python -m pytest -q tests/python tests/integration tests/research
+      - run: ruff check python research tests benchmarks scripts
       - run: mypy
       - name: Fresh wheel environment outside checkout
         run: python scripts/wheel_check.py "dist/*.whl"
@@ -54,6 +54,7 @@ jobs:
         run: |
           python -m venv .venv
           .venv/bin/python -m pip install maturin==1.9.6 pytest==8.4.2 pytest-cov==6.3.0 pyarrow==18.1.0
+          .venv/bin/python -m pip install '.[research]'
       - name: Measure core, actual native library and Python separately
         run: .venv/bin/python scripts/coverage.py
       - uses: actions/upload-artifact@v4

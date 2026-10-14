@@ -9,7 +9,12 @@ from ofi_pipeline.research import lag_feature, load_features
 
 def frame():
     timestamps = pd.to_datetime(
-        ["2012-06-21T13:30:20Z", "2012-06-21T13:30:30Z", "2012-06-21T13:30:50Z", "2012-06-21T13:31:00Z"],
+        [
+            "2012-06-21T13:30:20Z",
+            "2012-06-21T13:30:30Z",
+            "2012-06-21T13:30:50Z",
+            "2012-06-21T13:31:00Z",
+        ],
         utc=True,
     )
     return pd.DataFrame(
@@ -39,7 +44,9 @@ def test_loader_orders_rows_preserves_unknown_ti_and_accepts_directory(tmp_path)
             load_features(tmp_path, **kwargs)
 
 
-@pytest.mark.parametrize("issue", ["keys", "rejected", "unknown_acceptance", "timezone", "infinite", "missing"])
+@pytest.mark.parametrize(
+    "issue", ["keys", "rejected", "unknown_acceptance", "timezone", "infinite", "missing"]
+)
 def test_loader_rejects_invalid_feature_contract(tmp_path, issue):
     data = frame()
     if issue == "keys":
@@ -76,7 +83,11 @@ def test_lag_does_not_cross_missing_intervals_or_sessions():
 
 
 def test_lag_validates_width_and_configuration():
-    for kwargs in [{"bucket_seconds": 5}, {"bucket_seconds": 0}, {"bucket_seconds": 10, "periods": 0}]:
+    for kwargs in [
+        {"bucket_seconds": 5},
+        {"bucket_seconds": 0},
+        {"bucket_seconds": 10, "periods": 0},
+    ]:
         with pytest.raises(ValueError):
             lag_feature(frame(), "ofi_l1", **kwargs)
 

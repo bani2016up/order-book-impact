@@ -51,8 +51,11 @@ def _ordered(frame: pd.DataFrame) -> pd.DataFrame:
         "avg_depth",
         "volume",
         "trade_imbalance",
-        *(column for column in frame.columns if column.startswith("ofi_l")
-          and column.removeprefix("ofi_l").isdigit()),
+        *(
+            column
+            for column in frame.columns
+            if column.startswith("ofi_l") and column.removeprefix("ofi_l").isdigit()
+        ),
     ]
     for column in numeric:
         values = frame[column]
