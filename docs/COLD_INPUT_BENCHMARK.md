@@ -120,3 +120,62 @@ Focused checks:
 .venv/bin/python -m pytest -q tests/benchmarks/test_cold_input.py
 .venv/bin/ruff check scripts/benchmark_cold.py tests/benchmarks/test_cold_input.py
 ```
+
+
+## Completed baseline — 2026-10-14
+
+Full ignored evidence: `benchmarks/results/high-load/cold-input-baseline-20261014/`.
+The exact baseline command above completed from 15:12:22 to 15:23:31 UTC
+(669.3 seconds including preparation/verification). Six cases contain one
+excluded warmup plus three measured fresh children each: 24 verified calls,
+18 measured calls. All 72 independent child file observations and all 72 parent
+post-preparation observations recorded zero resident pages. Every decoded output
+fingerprint, conservation check and native manifest source hash matched the
+normal reference. Fixture bytes were reverified after each size; engine and
+normal benchmark source hashes (including ignored recursive Python files),
+native binary hash and helper hash stayed identical throughout.
+
+| Original rows | Configuration | Wall median s (min–max; MAD) | Peak process MiB median (min–max) |
+| ---: | --- | --- | --- |
+| 1,000,000 | t1-c4096 | 2.677294 (2.632271–2.728508; 0.045022) | 133.219 (124.172–144.547) |
+| 1,000,000 | t4-c65536 | 2.574657 (2.542365–2.640948; 0.032292) | 234.828 (224.969–242.703) |
+| 10,000,000 | t1-c4096 | 26.680096 (26.444109–27.785564; 0.235987) | 113.188 (111.781–119.531) |
+| 10,000,000 | t4-c65536 | 25.990904 (25.017099–26.290288; 0.299383) | 251.594 (248.062–364.938) |
+| 20,000,000 | t1-c4096 | 52.696098 (52.541836–53.016113; 0.154263) | 109.797 (108.688–126.641) |
+| 20,000,000 | t4-c65536 | 51.591414 (50.983572–51.668233; 0.076818) | 249.938 (233.891–336.250) |
+
+Input residency in every child, by size:
+
+| Original rows | Events resident/pages | Trades resident/pages | Quality resident/pages |
+| ---: | ---: | ---: | ---: |
+| 1,000,000 | 0/2,070 | 0/57 | 0/1,227 |
+| 10,000,000 | 0/20,439 | 0/549 | 0/12,003 |
+| 20,000,000 | 0/40,724 | 0/1,091 | 0/23,851 |
+
+The measured worker peaks remain within configured limits (one worker for t1,
+two observed for t4 across four partitions). RSS ranges include sizable t4
+outliers; this baseline does not establish a memory reduction. Cold-wrapper
+imports and preflight state contribute to whole-process high-water RSS, so
+normal-versus-cold RSS differences cannot be attributed solely to cache state.
+Physical-device cache and the observation-to-call race remain unverified;
+source hashing warms inputs inside the timed public call. These limitations
+apply equally to every later paired cold-protocol candidate.
+
+Frozen helper SHA-256:
+`9bf1590d6c6839eae1248d6a4981d36a7c3de869480a165a74a15db458ae31ee`.
+Native SHA-256:
+`6cf58dacbb60d5408e0d125321c973aa2cb298fc8b7a9fce7b2a0e52ddb63691`.
+Complete baseline summary SHA-256:
+`597a04f7d7c69cf832a6a636a54ea3bd132be30ec964d84ded24b6ea187a8f55`.
+Instrumentation commit: `a910217`.
+
+Focused checks passed: eight cold-protocol tests, Ruff and diff whitespace checks.
+An independent post-suite audit checked completion/counts, every zero-residency
+observation, identical fixture/source/binary/helper identities, all six aggregate
+fingerprints, and a real cold self-comparison through the existing normal harness
+guards. The separate regular five-case baseline was completed and independently
+verified by the supervising root before granting this exclusive measurement
+slot. No concurrent builds, CPU-heavy checks or benchmarks ran during this suite.
+No production optimization or real-sample reconciliation was performed in this
+instrumentation subtask; final acceptance and full per-row QC/manifest auditing
+remain part of the supervised optimization task.
