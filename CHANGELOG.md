@@ -1,5 +1,23 @@
 # Implementation work log
 
+## Implementation diagrams — plan and overview milestone
+
+- The owner requested documentation of the actual implementation: architecture,
+  data flow, C4, PyO3 communication, Rust crates/modules and ofi-core internals.
+- Plan: commit the overview/data-flow/C4 gallery first; then commit the detailed
+  bridge/core/research views and documentation navigation. Production interfaces,
+  code and repository layout remain unchanged except for docs/diagrams/.
+- Added six editable Excalidraw scenes and portable SVG previews: architecture,
+  data flow and C4 levels 1–4. Reviewed the current engine at commit 41962ab,
+  public Python API, native binding, model entry point and filesystem contracts.
+- Added an English gallery with code anchors, C4 scope/notation, element counts
+  and edit instructions, plus a standard-library preview renderer/check command.
+- Focused evidence: scenes parsed as JSON with unique IDs and Excalifont text;
+  SVGs parsed as XML and rasterized with rsvg-convert; all six previews inspected.
+  Renderer preview-freshness, Ruff, Markdown local links and diff-whitespace
+  checks passed. No runtime code changed; engine acceptance was not rerun.
+- Next: the four detailed views and README/architecture navigation.
+
 Work on local `main`; do not push. This log replaces `docs/WORK_LOG.md` at the
 owner's explicit request. The pre-existing deletions of that file and
 `docs/IMPLEMENTATION_TASK.md` are preserved. The implementation specification is

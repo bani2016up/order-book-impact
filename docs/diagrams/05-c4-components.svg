@@ -1,0 +1,146 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1430" height="1398" viewBox="5 5 1430 1398" role="img">
+<title>C4 · Level 3 · Feature generation components</title>
+<desc>Local order-book impact toolkit implementation diagram. Editable Excalidraw source is provided alongside this preview.</desc>
+<rect x="5" y="5" width="1430" height="1398" fill="#ffffff"/>
+<text fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="32" xml:space="preserve">
+<tspan x="60" y="62">C4 · Level 3 · Feature generation components</tspan>
+</text>
+<text fill="#64748b" font-family="Arial, Helvetica, sans-serif" font-size="18" xml:space="preserve">
+<tspan x="60" y="98">Scope: one feature-generation process • in-process Python ↔ PyO3 ↔ Rust</tspan>
+</text>
+<rect x="30" y="140" width="1380" height="1100" rx="0" stroke="#94a3b8" stroke-width="1" fill="none" stroke-dasharray="8 6"/>
+<text fill="#64748b" font-family="Arial, Helvetica, sans-serif" font-size="18" xml:space="preserve">
+<tspan x="46" y="168">Feature generation runner [Container: Python process with native extension]</tspan>
+</text>
+<rect x="60" y="195" width="360" height="175" rx="12" stroke="#334155" stroke-width="1.6" fill="#dbeafe"/>
+<text fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="20" xml:space="preserve">
+<tspan x="78" y="230">CLI / preparation entry point</tspan>
+</text>
+<text fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="18" xml:space="preserve">
+<tspan x="78" y="267">[Python component]</tspan>
+<tspan x="78" y="290.4">cli.py / prepare_features.py</tspan>
+<tspan x="78" y="313.8">Arguments → public API</tspan>
+</text>
+<rect x="540" y="195" width="360" height="175" rx="12" stroke="#334155" stroke-width="1.6" fill="#dbeafe"/>
+<text fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="20" xml:space="preserve">
+<tspan x="558" y="230">Public API + error mapping</tspan>
+</text>
+<text fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="18" xml:space="preserve">
+<tspan x="558" y="267">[Python component]</tspan>
+<tspan x="558" y="290.4">api.py / errors.py</tspan>
+<tspan x="558" y="313.8">Typed config, paths and reports</tspan>
+</text>
+<rect x="1020" y="195" width="360" height="175" rx="12" stroke="#334155" stroke-width="1.6" fill="#dbeafe"/>
+<text fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="20" xml:space="preserve">
+<tspan x="1038" y="230">Native binding</tspan>
+</text>
+<text fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="18" xml:space="preserve">
+<tspan x="1038" y="267">[Rust / PyO3 component]</tspan>
+<tspan x="1038" y="290.4">crates/ofi-python/src/lib.rs</tspan>
+<tspan x="1038" y="313.8">JSON envelope; Python::detach</tspan>
+</text>
+<polyline points="420,282 540,282" stroke="#334155" stroke-width="1.6" fill="none"/>
+<polyline points="529.19,287.22 540,282 529.19,276.78" fill="none" stroke="#334155" stroke-width="1.6"/>
+<text fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="16" xml:space="preserve">
+<tspan x="451" y="261">calls</tspan>
+</text>
+<polyline points="900,282 1020,282" stroke="#334155" stroke-width="1.6" fill="none"/>
+<polyline points="1009.19,287.22 1020,282 1009.19,276.78" fill="none" stroke="#334155" stroke-width="1.6"/>
+<text fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="16" xml:space="preserve">
+<tspan x="925" y="244">JSON</tspan>
+<tspan x="925" y="264.8">strings</tspan>
+</text>
+<rect x="60" y="530" width="360" height="205" rx="12" stroke="#334155" stroke-width="1.6" fill="#dcfce7"/>
+<text fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="20" xml:space="preserve">
+<tspan x="78" y="565">Table adapters</tspan>
+</text>
+<text fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="18" xml:space="preserve">
+<tspan x="78" y="602">[Rust component]</tspan>
+<tspan x="78" y="625.4">adapter.rs + domain.rs + time.rs</tspan>
+<tspan x="78" y="648.8">Streaming, schema/order/unit checks</tspan>
+</text>
+<rect x="540" y="530" width="360" height="205" rx="12" stroke="#334155" stroke-width="1.6" fill="#dcfce7"/>
+<text fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="20" xml:space="preserve">
+<tspan x="558" y="565">File-set orchestrator</tspan>
+</text>
+<text fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="18" xml:space="preserve">
+<tspan x="558" y="602">[Rust component]</tspan>
+<tspan x="558" y="625.4">pipeline.rs + config.rs</tspan>
+<tspan x="558" y="648.8">Hashes, ID merge, worker scheduling</tspan>
+</text>
+<rect x="1020" y="530" width="360" height="205" rx="12" stroke="#334155" stroke-width="1.6" fill="#dcfce7"/>
+<text fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="20" xml:space="preserve">
+<tspan x="1038" y="565">Partition computation</tspan>
+</text>
+<text fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="18" xml:space="preserve">
+<tspan x="1038" y="602">[Rust component]</tspan>
+<tspan x="1038" y="625.4">worker.rs + ofi.rs + buckets.rs</tspan>
+<tspan x="1038" y="648.8">raw.rs + trades.rs for signing</tspan>
+</text>
+<polyline points="1200,370 1200,445 720,445 720,530" stroke="#334155" stroke-width="1.6" fill="none"/>
+<polyline points="714.78,519.19 720,530 725.22,519.19" fill="none" stroke="#334155" stroke-width="1.6"/>
+<text fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="16" xml:space="preserve">
+<tspan x="745" y="431">pipeline::run(Inputs, PathBuf, Config)</tspan>
+</text>
+<polyline points="540,632 420,632" stroke="#334155" stroke-width="1.6" fill="none"/>
+<polyline points="430.81,626.78 420,632 430.81,637.22" fill="none" stroke="#334155" stroke-width="1.6"/>
+<text fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="16" xml:space="preserve">
+<tspan x="448" y="592">reads</tspan>
+<tspan x="448" y="612.8">rows</tspan>
+</text>
+<polyline points="900,632 1020,632" stroke="#334155" stroke-width="1.6" fill="none"/>
+<polyline points="1009.19,637.22 1020,632 1009.19,626.78" fill="none" stroke="#334155" stroke-width="1.6"/>
+<text fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="16" xml:space="preserve">
+<tspan x="916" y="592">bounded</tspan>
+<tspan x="916" y="612.8">chunks</tspan>
+</text>
+<rect x="1020" y="945" width="360" height="205" rx="12" stroke="#334155" stroke-width="1.6" fill="#dcfce7"/>
+<text fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="20" xml:space="preserve">
+<tspan x="1038" y="980">Partition Parquet writers</tspan>
+</text>
+<text fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="18" xml:space="preserve">
+<tspan x="1038" y="1017">[Rust component]</tspan>
+<tspan x="1038" y="1040.4">output.rs::Writer</tspan>
+<tspan x="1038" y="1063.8">Accepted features + full grid</tspan>
+</text>
+<rect x="540" y="945" width="360" height="205" rx="12" stroke="#334155" stroke-width="1.6" fill="#dcfce7"/>
+<text fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="20" xml:space="preserve">
+<tspan x="558" y="980">Ordered final assembly</tspan>
+</text>
+<text fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="18" xml:space="preserve">
+<tspan x="558" y="1017">[Rust component]</tspan>
+<tspan x="558" y="1040.4">Worker::finish / append_partition</tspan>
+<tspan x="558" y="1063.8">Join + merge partition files in order</tspan>
+</text>
+<rect x="60" y="945" width="360" height="205" rx="12" stroke="#334155" stroke-width="1.6" fill="#dcfce7"/>
+<text fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="20" xml:space="preserve">
+<tspan x="78" y="980">Dataset publication</tspan>
+</text>
+<text fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="18" xml:space="preserve">
+<tspan x="78" y="1017">[Rust component]</tspan>
+<tspan x="78" y="1040.4">output.rs::Transaction</tspan>
+<tspan x="78" y="1063.8">Staged directory → destination</tspan>
+</text>
+<polyline points="1200,735 1200,945" stroke="#334155" stroke-width="1.6" fill="none"/>
+<polyline points="1194.78,934.19 1200,945 1205.22,934.19" fill="none" stroke="#334155" stroke-width="1.6"/>
+<text fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="16" xml:space="preserve">
+<tspan x="1220" y="831">BucketRow</tspan>
+</text>
+<polyline points="1020,1047 900,1047" stroke="#334155" stroke-width="1.6" fill="none"/>
+<polyline points="910.81,1041.78 900,1047 910.81,1052.22" fill="none" stroke="#334155" stroke-width="1.6"/>
+<text fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="16" xml:space="preserve">
+<tspan x="918" y="1008">Parquet</tspan>
+<tspan x="918" y="1028.8">batches</tspan>
+</text>
+<polyline points="540,1047 420,1047" stroke="#334155" stroke-width="1.6" fill="none"/>
+<polyline points="430.81,1041.78 420,1047 430.81,1052.22" fill="none" stroke="#334155" stroke-width="1.6"/>
+<text fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="16" xml:space="preserve">
+<tspan x="436" y="1008">closed</tspan>
+<tspan x="436" y="1028.8">files + QC</tspan>
+</text>
+<rect x="60" y="1300" width="1320" height="78" rx="12" stroke="#cbd5e1" stroke-width="1.6" fill="#f8fafc"/>
+<text fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="18" xml:space="preserve">
+<tspan x="78" y="1333">Engine components live in ofi-core; the binding lives in ofi-python. error.rs supplies typed engine failures.</tspan>
+<tspan x="78" y="1356.4">JSON RunReport / error returns through the binding and API. The research loader runs after feature publication.</tspan>
+</text>
+</svg>

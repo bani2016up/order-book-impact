@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1370" height="1178" viewBox="35 5 1370 1178" role="img">
+<title>C4 · Level 1 · System context</title>
+<desc>Local order-book impact toolkit implementation diagram. Editable Excalidraw source is provided alongside this preview.</desc>
+<rect x="35" y="5" width="1370" height="1178" fill="#ffffff"/>
+<text fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="32" xml:space="preserve">
+<tspan x="60" y="62">C4 · Level 1 · System context</tspan>
+</text>
+<text fill="#64748b" font-family="Arial, Helvetica, sans-serif" font-size="18" xml:space="preserve">
+<tspan x="60" y="98">Scope: the local order-book impact toolkit and its research environment</tspan>
+</text>
+<rect x="60" y="185" width="360" height="190" rx="12" stroke="#334155" stroke-width="1.6" fill="#f1f5f9"/>
+<text fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="20" xml:space="preserve">
+<tspan x="78" y="220">Researchers [Person]</tspan>
+</text>
+<text fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="18" xml:space="preserve">
+<tspan x="78" y="257">Fedya / Timur</tspan>
+<tspan x="78" y="280.4">Reproduce models; develop extensions</tspan>
+<tspan x="78" y="303.8">Inspect features and data quality</tspan>
+</text>
+<rect x="1020" y="185" width="360" height="190" rx="12" stroke="#334155" stroke-width="1.6" fill="#f1f5f9"/>
+<text fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="20" xml:space="preserve">
+<tspan x="1038" y="220">Maintainer [Person]</tspan>
+</text>
+<text fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="18" xml:space="preserve">
+<tspan x="1038" y="257">Danya</tspan>
+<tspan x="1038" y="280.4">Maintain core and public API</tspan>
+<tspan x="1038" y="303.8">Validate correctness / performance</tspan>
+</text>
+<rect x="540" y="490" width="360" height="205" rx="12" stroke="#334155" stroke-width="1.6" fill="#dbeafe"/>
+<text fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="20" xml:space="preserve">
+<tspan x="558" y="525">Order-book impact toolkit</tspan>
+</text>
+<text fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="18" xml:space="preserve">
+<tspan x="558" y="562">[Software system]</tspan>
+<tspan x="558" y="585.4">Generate features from supplied data</tspan>
+<tspan x="558" y="608.8">Run repository Python research</tspan>
+</text>
+<polyline points="240,375 240,590 540,590" stroke="#334155" stroke-width="1.6" fill="none"/>
+<polyline points="529.19,595.22 540,590 529.19,584.78" fill="none" stroke="#334155" stroke-width="1.6"/>
+<text fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="16" xml:space="preserve">
+<tspan x="265" y="568">Runs CLI / API / model scripts</tspan>
+</text>
+<polyline points="1200,375 1200,590 900,590" stroke="#334155" stroke-width="1.6" fill="none"/>
+<polyline points="910.81,584.78 900,590 910.81,595.22" fill="none" stroke="#334155" stroke-width="1.6"/>
+<text fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="16" xml:space="preserve">
+<tspan x="930" y="568">Develops and verifies</tspan>
+</text>
+<rect x="60" y="835" width="360" height="190" rx="12" stroke="#334155" stroke-width="1.6" fill="#f1f5f9"/>
+<text fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="20" xml:space="preserve">
+<tspan x="78" y="870">Dataset preparation</tspan>
+</text>
+<text fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="18" xml:space="preserve">
+<tspan x="78" y="907">[External upstream process]</tspan>
+<tspan x="78" y="930.4">Lev supplies cleaned tables,</tspan>
+<tspan x="78" y="953.8">original quality and raw archives</tspan>
+</text>
+<rect x="1020" y="835" width="360" height="190" rx="12" stroke="#334155" stroke-width="1.6" fill="#fef3c7"/>
+<text fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="20" xml:space="preserve">
+<tspan x="1038" y="870">Local research artifacts</tspan>
+</text>
+<text fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="18" xml:space="preserve">
+<tspan x="1038" y="907">[Filesystem artifacts]</tspan>
+<tspan x="1038" y="930.4">Feature datasets, QC, provenance</tspan>
+<tspan x="1038" y="953.8">Model metrics and coefficients</tspan>
+</text>
+<polyline points="420,930 720,930 720,695" stroke="#334155" stroke-width="1.6" fill="none"/>
+<polyline points="725.22,705.81 720,695 714.78,705.81" fill="none" stroke="#334155" stroke-width="1.6"/>
+<text fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="16" xml:space="preserve">
+<tspan x="510" y="911">Supplied files</tspan>
+</text>
+<polyline points="900,650 1200,650 1200,835" stroke="#334155" stroke-width="1.6" fill="none"/>
+<polyline points="1194.78,824.19 1200,835 1205.22,824.19" fill="none" stroke="#334155" stroke-width="1.6"/>
+<text fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="16" xml:space="preserve">
+<tspan x="945" y="711">Writes feature / model results</tspan>
+</text>
+<rect x="60" y="1080" width="1320" height="78" rx="12" stroke="#cbd5e1" stroke-width="1.6" fill="#f8fafc"/>
+<text fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="18" xml:space="preserve">
+<tspan x="78" y="1113">Execution is local and batch-oriented. Dataset preparation is upstream of this repository&#x27;s Rust feature engine.</tspan>
+<tspan x="78" y="1136.4">The toolkit&#x27;s feature contract is shared by baseline and extension research.</tspan>
+</text>
+</svg>
