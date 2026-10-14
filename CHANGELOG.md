@@ -1,5 +1,57 @@
 # Implementation work log
 
+## High-load benchmark — M3 measured baseline and completion
+
+- Executed the complete default suite on the owner's Mac: exact 1M/10M/20M
+  original quality rows, four authored symbol/session partitions, five ranks,
+  10-second buckets and known-direction signing. Source commit ecdaa97.
+  Command: `.venv/bin/python -m benchmarks.high_load --root
+  benchmarks/results/high-load/baseline-20261014 --offline`.
+- Release build/install preceded generation/timing. The serial suite completed
+  24 fresh native-backed children: one warmup plus three measured repetitions
+  for each of six size/config cases. All 24 passed conservation/source/schema/
+  full-grid/key checks and exact decoded-output equality across repeats/settings.
+  Engine/harness source and loaded extension hashes stayed unchanged; both
+  source snapshots recorded a clean tracked tree. No concurrent compilation or
+  heavy project tests were run during the large measurements.
+
+| Original rows | Threads / chunk | Median seconds (min–max) | Median peak MiB (min–max) |
+| ---: | --- | --- | --- |
+| 1M | 1 / 4096 | 2.656 (2.617–2.901) | 121.92 (113.64–126.36) |
+| 1M | 4 / 65536 | 2.551 (2.538–2.551) | 269.62 (250.09–292.12) |
+| 10M | 1 / 4096 | 26.396 (26.260–26.615) | 117.48 (109.09–120.05) |
+| 10M | 4 / 65536 | 25.988 (25.626–26.056) | 242.86 (226.06–270.27) |
+| 20M | 1 / 4096 | 53.153 (52.907–53.774) | 109.34 (105.53–110.66) |
+| 20M | 4 / 65536 | 51.378 (50.766–52.438) | 258.88 (241.28–292.86) |
+
+- Observed throughput: 376k–392k original rows/s. Time scales approximately
+  with size in this series; peak RSS does not grow proportionally to total rows.
+  Maximum measured peak: 292.86 MiB. This is synthetic warm-cache-leaning evidence,
+  not a universal memory bound or real-market performance claim. Both thread
+  and chunk settings differ between cases; isolated thread scaling is unmeasured.
+- The 20M fixture contains 19,999,804 accepted states, 800,000 executions and
+  196 supplied rejected originals. Large data, exact identities, per-run command/
+  measurement/verification/RSS JSONL and build/generation logs remain ignored
+  under data/high_load/, outputs/features/high-load/ and benchmarks/results/.
+- Added docs/high_load/ with an English measured report, reviewed scaling/RSS
+  plots and a compact reusable comparison reference. Linked it from README
+  and the protocol. Compact-reference verification against full evidence passed
+  all six cases at exactly 1x, with identical decoded fingerprints.
+- Final focused audit passed: all 24 children/snapshots/counts, stable source/
+  binary identity, 20 Markdown local links, SVG parsing, visually reviewed PNG
+  plots, Ruff across project Python and staged diff whitespace. The full compiled
+  106-test selection passed before the large suite; only evidence/docs changed
+  afterward, so it was not rerun. No new coverage percentage is claimed.
+- Small fixture Quote Test and many/single-session tooling are implemented and
+  tested/documented; large Quote Test/ZIP and alternative-partition measurements
+  were not run in this baseline. macOS/Linux RSS support is explicit; Windows
+  package support is preserved. Hosted CI checks were configured, not run here.
+- Completed benchmark implementation and baseline evidence only. Rust/core/API,
+  package dependencies, legacy benchmark workloads and real sample inputs remain
+  unchanged. Local milestones: 1d227ce (fixtures), ecdaa97 (runner/protocol);
+  this evidence update is committed separately. No optimization agent was started,
+  and no push, PR, release upload or deployment was performed.
+
 ## High-load benchmark — authorized plan
 
 - Implement benchmark tooling only; keep the Rust engine, public Python API,

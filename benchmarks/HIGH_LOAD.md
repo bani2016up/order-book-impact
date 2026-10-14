@@ -1,5 +1,8 @@
 # High-load benchmark protocol
 
+The [recorded 1M/10M/20M baseline](../docs/high_load/README.md) contains measured
+results, plotted snapshots and a compact comparison reference kept in Git.
+
 This harness measures the **existing compiled Rust pipeline**, reached through
 the public Python/PyO3 API. It does not optimize the engine or change its
 interfaces. Workloads are explicitly authored synthetic data, not duplicated

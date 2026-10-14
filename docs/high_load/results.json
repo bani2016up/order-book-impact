@@ -1,0 +1,623 @@
+{
+  "schema_version": 1,
+  "status": "complete",
+  "started_utc": "2026-10-14T14:14:54.076874+00:00",
+  "finished_utc": "2026-10-14T14:26:44.977479+00:00",
+  "kind": "authored-synthetic-high-load-baseline",
+  "full_evidence": "benchmarks/results/high-load/baseline-20261014/summary.json",
+  "protocol": {
+    "sizes": [
+      1000000,
+      10000000,
+      20000000
+    ],
+    "partitions": 4,
+    "cases": [
+      "t1-c4096",
+      "t4-c65536"
+    ],
+    "signings": [
+      "lobster_direction"
+    ],
+    "repetitions": 3,
+    "warmups": 1,
+    "bucket_seconds": 10,
+    "sample_interval_seconds": 0.5,
+    "cache": "Uncontrolled OS cache; fixture generation/identity checks warm inputs; one serial warmup per case by default; not cold-cache measurements"
+  },
+  "build": {
+    "profile": "release",
+    "command": [
+      ".venv/bin/python",
+      "-m",
+      "maturin",
+      "develop",
+      "--release",
+      "--locked",
+      "--offline"
+    ]
+  },
+  "source_before": {
+    "git_commit": "ecdaa97f0e8b4894cf7de8c4c24675978ebfcf90",
+    "git_status": [],
+    "source_hashes": {
+      "Cargo.lock": "9bb24d3bc84fec21fdd17c757578033b954e3d33c700d5c25d3c4278bfde0a86",
+      "Cargo.toml": "a4d02a2b87c6d7368261a90819741c2e73528f130b709034a4ccef6cc6c9deb9",
+      "benchmarks/__init__.py": "bc702347dda06c6cd64efe12b5a90091125ccd51bf7cbaba9932bb1d4c7fde87",
+      "benchmarks/high_load.py": "627bb3d88121bd695ff0f216f9dc48b816df9930d32061deec6161d60f38d960",
+      "benchmarks/high_load_fixture.py": "5b22881ff0eaedf440b9344cbe7a9ac48916970272192d9af7f8b3b7cd1fdcc0",
+      "benchmarks/high_load_plot.py": "b01ee62ba54f39f96456495424c4ead87ee3d4cbbde9a1ff45c566dad1572a1f",
+      "benchmarks/high_load_rss.py": "9222035919448fd099f15d613e0afc34eac6d378e98d49ca34d4116d9cdc68b8",
+      "benchmarks/high_load_worker.py": "5a7ea2ada5df361ab12d997ecce9580a26e2fc35137c05e0760eea163f78789e",
+      "benchmarks/make_fixture.py": "0570b9a07b96b7ce3c88f827a0432fea0659cfe14258f7ab397c0a093d950f4e",
+      "benchmarks/results/optimization_measure.py": "b75ec3b1de9ec247342f5952b1cb987e34bb92ce2862dde59bd829d274978ea3",
+      "benchmarks/results/optimization_summary.py": "a0cacb1006e97f9cf925eec1cb7342d576d1262fbe5d859d76b77c7405a23795",
+      "benchmarks/results/optimization_verify.py": "021dbddf26c373618b078fe3b7121e2324c7c852455d879ee905729f4137ac09",
+      "benchmarks/run.py": "011aa42ce09e822c4463614f55b580748778829dedbd0801e8f804ff75de112d",
+      "crates/ofi-core/Cargo.toml": "f8d3e6ce37200ed5169b8d8d4a036e70ffb338977a0e085916e33e36d4cb45bf",
+      "crates/ofi-core/src/adapter.rs": "16fb236f79b4167998e1098975390dc93f439789bf096c2a124c980e0c2aeb62",
+      "crates/ofi-core/src/buckets.rs": "55d4f275558e91fa4f197820d8b584c0e4c8f4a4a19b4c67b99a58408fcf5248",
+      "crates/ofi-core/src/config.rs": "5e1ea3f89d5f2398495d4dcb725bdd77507b64045ecf0d5077552b6695c6d20c",
+      "crates/ofi-core/src/domain.rs": "9121588bc42f340270a3d05487b8577b09e1a4a82a68c8e560266e4a5bce279f",
+      "crates/ofi-core/src/error.rs": "d94c39bc6c4ffb41955b348fbef8951f456ea48c5b76f7297e41336a39e75d44",
+      "crates/ofi-core/src/lib.rs": "b0bd4c584d625b5f74ec25ea89be339884f2f2a528fa2f412d4e4943dc68245f",
+      "crates/ofi-core/src/ofi.rs": "a864f15deb5f7506d566d618ec4999bab58e03eb3613f3009b72ef999d25e732",
+      "crates/ofi-core/src/output.rs": "0f09c09242cd349f11fc5c1074105a43a6e6e708c66a80898536cd8e3f95c626",
+      "crates/ofi-core/src/pipeline.rs": "f3a9df3e7eadc1aa6cc769b8e6c563afed2266cb586e286fcbf2d84f7852fce1",
+      "crates/ofi-core/src/raw.rs": "aa9376e343b09783f910fbb4e267341b57b2c8d3a71afc3160e4878f4b09ccd8",
+      "crates/ofi-core/src/time.rs": "9c3cf67166091d24734a742dcae98f3aad0ba31c00952379397beaf3d426546a",
+      "crates/ofi-core/src/trades.rs": "c09ec552021a1510fd0f3751a1f8e4b46d59d52ef0755b7ee88220d3064b0e9f",
+      "crates/ofi-core/src/worker.rs": "522cfcffe96ba63989bbd89c74c247be59bdc2dfb66af1c2e1400c45c68b0b54",
+      "crates/ofi-core/tests/adapters.rs": "efa742cd70e3bd212bfede45c8e537c17ec37c842e668c68f637a556487d2d18",
+      "crates/ofi-core/tests/pipeline.rs": "ea46694ed4f85d6585309383d1ab7f97942642ab75fc7c2853c9f574b1e91ebd",
+      "crates/ofi-core/tests/sample_ingestion.rs": "1a9500658ec9d218f101c5d77c261c9eabc17a141562e9ec75cd33eaa18f6294",
+      "crates/ofi-python/Cargo.toml": "c0d8676805575ba448a53e57e5f304e129aaa41ad0a515ec1030b0e05a8608ec",
+      "crates/ofi-python/src/lib.rs": "1d4c14681c37391f54e2e9ad2dedb337e122353405baa88fb60c634dc80e1de7",
+      "pyproject.toml": "67f6d1672f4603998c181b7aba3a46c991d0069d089b8afd28384e3585a3372b",
+      "python/ofi_pipeline/__init__.py": "40173c8d560a5baa3e2868ce44b34c04d0e159c74aead866709216104aeae334",
+      "python/ofi_pipeline/__main__.py": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+      "python/ofi_pipeline/api.py": "923ea7104f148652240528c9164a87c53158917e2c747a849c95c4c335853c00",
+      "python/ofi_pipeline/cli.py": "28a5c51171c282b25913266b845dbfc72c0f1fc1557fe538f3a6aa8a8fdab855",
+      "python/ofi_pipeline/errors.py": "e4322914f4b213ef999bc2d01ae95e53603130caf4cdbc14b7220eb2f69b39a2",
+      "python/ofi_pipeline/research.py": "b25da669e5095e1a673b5acdb039dd8f5b93281ec444b0e484c635b36be6709d"
+    },
+    "native_path": "python/ofi_pipeline/_native.abi3.so",
+    "native_sha256": "6cf58dacbb60d5408e0d125321c973aa2cb298fc8b7a9fce7b2a0e52ddb63691",
+    "native_version": "0.1.0",
+    "platform": "macOS-26.5.1-arm64-arm-64bit",
+    "machine": "arm64",
+    "host_id": "9035fe6517812967bfbb5181b75b960ef44afd2e9dcc2a2addafa7f58772092e",
+    "python": "3.12.0",
+    "cpu_count": 10,
+    "host_load_average": [
+      8.4931640625,
+      6.95458984375,
+      6.625
+    ]
+  },
+  "source_after_verified": {
+    "source_hashes_equal": true,
+    "native_sha256_equal": true
+  },
+  "fixtures": {
+    "1000000": {
+      "kind": "authored-synthetic-high-load-fixture",
+      "generator_version": 1,
+      "spec": {
+        "total_rows": 1000000,
+        "partitions": 4,
+        "batch_rows": 65536,
+        "seed": 20261014,
+        "trade_every": 25,
+        "reject_every": 100003,
+        "session_seconds": 23400,
+        "with_raw": false
+      },
+      "inputs": {
+        "events": {
+          "path": "data/events_clean.parquet",
+          "size_bytes": 33899419,
+          "sha256": "61c9201e4cd19399c5bc8b901a77ab2dc518a3f5b1946f7e9778edb56c94425d",
+          "rows": 999992
+        },
+        "trades": {
+          "path": "data/trades_clean.parquet",
+          "size_bytes": 920929,
+          "sha256": "9cca62655a1553cea31854bcb5758546b480450133303f7070250484691cf6f7",
+          "rows": 40000
+        },
+        "quality": {
+          "path": "reports/event_quality.parquet",
+          "size_bytes": 20090352,
+          "sha256": "f685b39412dd798275f8f2e8ca5252b419bee4566af08cdceec11e0f27a34393",
+          "rows": 1000000
+        }
+      },
+      "raw_sources": [],
+      "expected_partitions": [
+        {
+          "symbol": "LOAD_0000",
+          "date": "2012-06-21",
+          "original_rows": 250000,
+          "clean_events": 249998,
+          "rejected_events": 2,
+          "trade_count": 10000,
+          "volume": 313912,
+          "known_trade_imbalance": 670,
+          "quote_classified_count": 7500,
+          "quote_classified_volume": 236469,
+          "quote_classified_imbalance": 78113
+        },
+        {
+          "symbol": "LOAD_0001",
+          "date": "2012-06-21",
+          "original_rows": 250000,
+          "clean_events": 249998,
+          "rejected_events": 2,
+          "trade_count": 10000,
+          "volume": 316433,
+          "known_trade_imbalance": -385,
+          "quote_classified_count": 7500,
+          "quote_classified_volume": 238088,
+          "quote_classified_imbalance": 77960
+        },
+        {
+          "symbol": "LOAD_0002",
+          "date": "2012-06-21",
+          "original_rows": 250000,
+          "clean_events": 249998,
+          "rejected_events": 2,
+          "trade_count": 10000,
+          "volume": 316803,
+          "known_trade_imbalance": -755,
+          "quote_classified_count": 7500,
+          "quote_classified_volume": 238256,
+          "quote_classified_imbalance": 77792
+        },
+        {
+          "symbol": "LOAD_0003",
+          "date": "2012-06-21",
+          "original_rows": 250000,
+          "clean_events": 249998,
+          "rejected_events": 2,
+          "trade_count": 10000,
+          "volume": 316441,
+          "known_trade_imbalance": -1331,
+          "quote_classified_count": 7500,
+          "quote_classified_volume": 236913,
+          "quote_classified_imbalance": 78197
+        }
+      ]
+    },
+    "10000000": {
+      "kind": "authored-synthetic-high-load-fixture",
+      "generator_version": 1,
+      "spec": {
+        "total_rows": 10000000,
+        "partitions": 4,
+        "batch_rows": 65536,
+        "seed": 20261014,
+        "trade_every": 25,
+        "reject_every": 100003,
+        "session_seconds": 23400,
+        "with_raw": false
+      },
+      "inputs": {
+        "events": {
+          "path": "data/events_clean.parquet",
+          "size_bytes": 334868004,
+          "sha256": "8e8ea762fb0fda3cb14b0537dc94e5952b6aefd4b4b43978421a4fa4e029c337",
+          "rows": 9999904
+        },
+        "trades": {
+          "path": "data/trades_clean.parquet",
+          "size_bytes": 8992821,
+          "sha256": "6b464c7a518f9280794d4d4c90cf419e6e52dc6c3208d30bce28ee00331bc8a0",
+          "rows": 400000
+        },
+        "quality": {
+          "path": "reports/event_quality.parquet",
+          "size_bytes": 196641254,
+          "sha256": "88bde7e07318f5a8caf0136bcf00d0748285afdb04ce022c74c14e69761a90b9",
+          "rows": 10000000
+        }
+      },
+      "raw_sources": [],
+      "expected_partitions": [
+        {
+          "symbol": "LOAD_0000",
+          "date": "2012-06-21",
+          "original_rows": 2500000,
+          "clean_events": 2499976,
+          "rejected_events": 24,
+          "trade_count": 100000,
+          "volume": 3147515,
+          "known_trade_imbalance": 2319,
+          "quote_classified_count": 75000,
+          "quote_classified_volume": 2360000,
+          "quote_classified_imbalance": 789834
+        },
+        {
+          "symbol": "LOAD_0001",
+          "date": "2012-06-21",
+          "original_rows": 2500000,
+          "clean_events": 2499976,
+          "rejected_events": 24,
+          "trade_count": 100000,
+          "volume": 3144026,
+          "known_trade_imbalance": 1144,
+          "quote_classified_count": 75000,
+          "quote_classified_volume": 2358581,
+          "quote_classified_imbalance": 786589
+        },
+        {
+          "symbol": "LOAD_0002",
+          "date": "2012-06-21",
+          "original_rows": 2500000,
+          "clean_events": 2499976,
+          "rejected_events": 24,
+          "trade_count": 100000,
+          "volume": 3151097,
+          "known_trade_imbalance": 2563,
+          "quote_classified_count": 75000,
+          "quote_classified_volume": 2364381,
+          "quote_classified_imbalance": 789279
+        },
+        {
+          "symbol": "LOAD_0003",
+          "date": "2012-06-21",
+          "original_rows": 2500000,
+          "clean_events": 2499976,
+          "rejected_events": 24,
+          "trade_count": 100000,
+          "volume": 3153450,
+          "known_trade_imbalance": 7336,
+          "quote_classified_count": 75000,
+          "quote_classified_volume": 2366821,
+          "quote_classified_imbalance": 793965
+        }
+      ]
+    },
+    "20000000": {
+      "kind": "authored-synthetic-high-load-fixture",
+      "generator_version": 1,
+      "spec": {
+        "total_rows": 20000000,
+        "partitions": 4,
+        "batch_rows": 65536,
+        "seed": 20261014,
+        "trade_every": 25,
+        "reject_every": 100003,
+        "session_seconds": 23400,
+        "with_raw": false
+      },
+      "inputs": {
+        "events": {
+          "path": "data/events_clean.parquet",
+          "size_bytes": 667207997,
+          "sha256": "ad816c41ba22c4e6d676be2b3f600cb8a916ae85fecb812de3a283327963990b",
+          "rows": 19999804
+        },
+        "trades": {
+          "path": "data/trades_clean.parquet",
+          "size_bytes": 17860807,
+          "sha256": "a32bc6f557d80285a8d1edbef60275899fac1f60d7c311825a02a94f755b1bc3",
+          "rows": 800000
+        },
+        "quality": {
+          "path": "reports/event_quality.parquet",
+          "size_bytes": 390760407,
+          "sha256": "90e41e8c46ad0fa6190bec8eef1d00155bbe8d11f78d3d9f64c8f9a574c812c2",
+          "rows": 20000000
+        }
+      },
+      "raw_sources": [],
+      "expected_partitions": [
+        {
+          "symbol": "LOAD_0000",
+          "date": "2012-06-21",
+          "original_rows": 5000000,
+          "clean_events": 4999951,
+          "rejected_events": 49,
+          "trade_count": 200000,
+          "volume": 6296687,
+          "known_trade_imbalance": 2061,
+          "quote_classified_count": 150000,
+          "quote_classified_volume": 4722220,
+          "quote_classified_imbalance": 1576528
+        },
+        {
+          "symbol": "LOAD_0001",
+          "date": "2012-06-21",
+          "original_rows": 5000000,
+          "clean_events": 4999951,
+          "rejected_events": 49,
+          "trade_count": 200000,
+          "volume": 6297849,
+          "known_trade_imbalance": -4045,
+          "quote_classified_count": 150000,
+          "quote_classified_volume": 4721993,
+          "quote_classified_imbalance": 1571811
+        },
+        {
+          "symbol": "LOAD_0002",
+          "date": "2012-06-21",
+          "original_rows": 5000000,
+          "clean_events": 4999951,
+          "rejected_events": 49,
+          "trade_count": 200000,
+          "volume": 6308600,
+          "known_trade_imbalance": 6280,
+          "quote_classified_count": 150000,
+          "quote_classified_volume": 4733137,
+          "quote_classified_imbalance": 1581743
+        },
+        {
+          "symbol": "LOAD_0003",
+          "date": "2012-06-21",
+          "original_rows": 5000000,
+          "clean_events": 4999951,
+          "rejected_events": 49,
+          "trade_count": 200000,
+          "volume": 6300925,
+          "known_trade_imbalance": 10203,
+          "quote_classified_count": 150000,
+          "quote_classified_volume": 4729827,
+          "quote_classified_imbalance": 1581301
+        }
+      ]
+    }
+  },
+  "aggregates": [
+    {
+      "case_id": "n1000000-lobster_direction-t1-c4096",
+      "original_rows": 1000000,
+      "repetitions": 3,
+      "signing": "lobster_direction",
+      "threads": 1,
+      "chunk_rows": 4096,
+      "wall_seconds_median": 2.6562490420183167,
+      "wall_seconds_min": 2.617255709017627,
+      "wall_seconds_max": 2.901492207980482,
+      "wall_seconds_mad": 0.038993333000689745,
+      "rows_per_second": 376470.7240101865,
+      "peak_rss_mib_median": 121.921875,
+      "peak_rss_mib_min": 113.640625,
+      "peak_rss_mib_max": 126.359375,
+      "peak_workers": 1,
+      "verification": {
+        "features.parquet": {
+          "decoded_sha256": "c0722437d9b78cf5a4fa61d7f0515d7366b1409452ac1543197cc489ff5a06c2",
+          "rows": 9348,
+          "totals": {
+            "event_count": 998716,
+            "volume": 1262202,
+            "trade_count": 39952,
+            "accepted": 9348
+          }
+        },
+        "bucket_quality.parquet": {
+          "decoded_sha256": "f2bfe6c46953a7a82c75d76226ea3a86030fa76d95ee7c4063779ec74a7b567c",
+          "rows": 9360,
+          "totals": {
+            "event_count": 1000000,
+            "volume": 1263589,
+            "trade_count": 40000,
+            "accepted": 9348
+          }
+        }
+      }
+    },
+    {
+      "case_id": "n1000000-lobster_direction-t4-c65536",
+      "original_rows": 1000000,
+      "repetitions": 3,
+      "signing": "lobster_direction",
+      "threads": 4,
+      "chunk_rows": 65536,
+      "wall_seconds_median": 2.5509251250186935,
+      "wall_seconds_min": 2.5376213749987073,
+      "wall_seconds_max": 2.5513684589823242,
+      "wall_seconds_mad": 0.000443333963630721,
+      "rows_per_second": 392014.6421360258,
+      "peak_rss_mib_median": 269.625,
+      "peak_rss_mib_min": 250.09375,
+      "peak_rss_mib_max": 292.125,
+      "peak_workers": 2,
+      "verification": {
+        "features.parquet": {
+          "decoded_sha256": "c0722437d9b78cf5a4fa61d7f0515d7366b1409452ac1543197cc489ff5a06c2",
+          "rows": 9348,
+          "totals": {
+            "event_count": 998716,
+            "volume": 1262202,
+            "trade_count": 39952,
+            "accepted": 9348
+          }
+        },
+        "bucket_quality.parquet": {
+          "decoded_sha256": "f2bfe6c46953a7a82c75d76226ea3a86030fa76d95ee7c4063779ec74a7b567c",
+          "rows": 9360,
+          "totals": {
+            "event_count": 1000000,
+            "volume": 1263589,
+            "trade_count": 40000,
+            "accepted": 9348
+          }
+        }
+      }
+    },
+    {
+      "case_id": "n10000000-lobster_direction-t1-c4096",
+      "original_rows": 10000000,
+      "repetitions": 3,
+      "signing": "lobster_direction",
+      "threads": 1,
+      "chunk_rows": 4096,
+      "wall_seconds_median": 26.39601466601016,
+      "wall_seconds_min": 26.260071791999508,
+      "wall_seconds_max": 26.615132583974628,
+      "wall_seconds_mad": 0.1359428740106523,
+      "rows_per_second": 378845.0690958618,
+      "peak_rss_mib_median": 117.484375,
+      "peak_rss_mib_min": 109.09375,
+      "peak_rss_mib_max": 120.046875,
+      "peak_workers": 1,
+      "verification": {
+        "features.parquet": {
+          "decoded_sha256": "b28e37e092bdc4d43eb6932095e0130ef3a6832adc6c8ac8e01616f0ffa0801e",
+          "rows": 9260,
+          "totals": {
+            "event_count": 9893160,
+            "volume": 12459189,
+            "trade_count": 395720,
+            "accepted": 9260
+          }
+        },
+        "bucket_quality.parquet": {
+          "decoded_sha256": "5b69d7ed3ca3f5f775b78444fb2c6bf4fb8a0108865d39813e89e5cbf79c0024",
+          "rows": 9360,
+          "totals": {
+            "event_count": 10000000,
+            "volume": 12596088,
+            "trade_count": 400000,
+            "accepted": 9260
+          }
+        }
+      }
+    },
+    {
+      "case_id": "n10000000-lobster_direction-t4-c65536",
+      "original_rows": 10000000,
+      "repetitions": 3,
+      "signing": "lobster_direction",
+      "threads": 4,
+      "chunk_rows": 65536,
+      "wall_seconds_median": 25.988424000010127,
+      "wall_seconds_min": 25.625999624986434,
+      "wall_seconds_max": 26.055584082991118,
+      "wall_seconds_mad": 0.06716008298099041,
+      "rows_per_second": 384786.7034952217,
+      "peak_rss_mib_median": 242.859375,
+      "peak_rss_mib_min": 226.0625,
+      "peak_rss_mib_max": 270.265625,
+      "peak_workers": 2,
+      "verification": {
+        "features.parquet": {
+          "decoded_sha256": "b28e37e092bdc4d43eb6932095e0130ef3a6832adc6c8ac8e01616f0ffa0801e",
+          "rows": 9260,
+          "totals": {
+            "event_count": 9893160,
+            "volume": 12459189,
+            "trade_count": 395720,
+            "accepted": 9260
+          }
+        },
+        "bucket_quality.parquet": {
+          "decoded_sha256": "5b69d7ed3ca3f5f775b78444fb2c6bf4fb8a0108865d39813e89e5cbf79c0024",
+          "rows": 9360,
+          "totals": {
+            "event_count": 10000000,
+            "volume": 12596088,
+            "trade_count": 400000,
+            "accepted": 9260
+          }
+        }
+      }
+    },
+    {
+      "case_id": "n20000000-lobster_direction-t1-c4096",
+      "original_rows": 20000000,
+      "repetitions": 3,
+      "signing": "lobster_direction",
+      "threads": 1,
+      "chunk_rows": 4096,
+      "wall_seconds_median": 53.152608124975814,
+      "wall_seconds_min": 52.906668332987465,
+      "wall_seconds_max": 53.77380512500531,
+      "wall_seconds_mad": 0.2459397919883486,
+      "rows_per_second": 376275.04473486455,
+      "peak_rss_mib_median": 109.34375,
+      "peak_rss_mib_min": 105.53125,
+      "peak_rss_mib_max": 110.65625,
+      "peak_workers": 1,
+      "verification": {
+        "features.parquet": {
+          "decoded_sha256": "9922bf97f8354abb2dc6dfe3fbafb3b369884451a304a325d99aeff60c7dc51b",
+          "rows": 9160,
+          "totals": {
+            "event_count": 19572648,
+            "volume": 24658763,
+            "trade_count": 782840,
+            "accepted": 9160
+          }
+        },
+        "bucket_quality.parquet": {
+          "decoded_sha256": "f803a8121bd215bc1b8317cab9d2a23f07d0d14f1570e70b080042fe97f50b62",
+          "rows": 9360,
+          "totals": {
+            "event_count": 20000000,
+            "volume": 25204061,
+            "trade_count": 800000,
+            "accepted": 9160
+          }
+        }
+      }
+    },
+    {
+      "case_id": "n20000000-lobster_direction-t4-c65536",
+      "original_rows": 20000000,
+      "repetitions": 3,
+      "signing": "lobster_direction",
+      "threads": 4,
+      "chunk_rows": 65536,
+      "wall_seconds_median": 51.378437165985815,
+      "wall_seconds_min": 50.7659045420005,
+      "wall_seconds_max": 52.43823704199167,
+      "wall_seconds_mad": 0.6125326239853166,
+      "rows_per_second": 389268.3604872405,
+      "peak_rss_mib_median": 258.875,
+      "peak_rss_mib_min": 241.28125,
+      "peak_rss_mib_max": 292.859375,
+      "peak_workers": 2,
+      "verification": {
+        "features.parquet": {
+          "decoded_sha256": "9922bf97f8354abb2dc6dfe3fbafb3b369884451a304a325d99aeff60c7dc51b",
+          "rows": 9160,
+          "totals": {
+            "event_count": 19572648,
+            "volume": 24658763,
+            "trade_count": 782840,
+            "accepted": 9160
+          }
+        },
+        "bucket_quality.parquet": {
+          "decoded_sha256": "f803a8121bd215bc1b8317cab9d2a23f07d0d14f1570e70b080042fe97f50b62",
+          "rows": 9360,
+          "totals": {
+            "event_count": 20000000,
+            "volume": 25204061,
+            "trade_count": 800000,
+            "accepted": 9160
+          }
+        }
+      }
+    }
+  ],
+  "run_counts": {
+    "warmups": 6,
+    "measured": 18,
+    "all_verified": 24
+  },
+  "validation": {
+    "focused_benchmark_tests": 10,
+    "full_python_native_research_real_benchmark_tests": 106
+  },
+  "limitations": [
+    "Synthetic varied states, not calibrated or duplicated market data.",
+    "Uncontrolled OS cache; warm-cache leaning; three repeats per case.",
+    "Default large measurements cover known-direction signing; Quote Test is tested on small fixtures only.",
+    "RSS instrumentation currently supports macOS/Linux; no new hosted CI execution is claimed.",
+    "Changing both threads and chunks compares operating points, not isolated thread scaling."
+  ]
+}

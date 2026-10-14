@@ -218,6 +218,8 @@ distribution step; do not commit binaries to Git.
 
 ## Detailed documentation
 
+- [High-load benchmark and measured baseline](docs/high_load/README.md): reproducible
+  1M/10M/20M scenarios, RSS snapshots and a comparison reference for Rust optimization.
 - [Implementation diagram gallery](docs/diagrams/README.md): architecture, data flow,
   C4 levels 1–4, PyO3 sequence, Rust crates, core workers and research extension points.
 - [API usage/configuration](docs/usage.md)
