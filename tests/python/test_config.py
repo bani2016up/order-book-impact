@@ -15,14 +15,28 @@ def test_default_and_serialization():
     assert PipelineConfig(levels=1, bucket_seconds=1, trade_signing="quote_test")
 
 
-@pytest.mark.parametrize("fields", [
-    {"bucket_seconds": 2}, {"bucket_seconds": True}, {"levels": 0}, {"levels": 1.0},
-    {"chunk_rows": 0}, {"threads": 65}, {"session_timezone": "UTC"},
-    {"session_date": "bad"}, {"session_open": "16:00:00"}, {"session_close": "15:59:59"},
-    {"adapter_version": "unknown"}, {"quality_policy": "refilter"},
-    {"tick_size": 0}, {"tick_size": float("nan")}, {"tick_size": object()},
-    {"trade_signing": "lee_ready"}, {"overwrite": 1},
-])
+@pytest.mark.parametrize(
+    "fields",
+    [
+        {"bucket_seconds": 2},
+        {"bucket_seconds": True},
+        {"levels": 0},
+        {"levels": 1.0},
+        {"chunk_rows": 0},
+        {"threads": 65},
+        {"session_timezone": "UTC"},
+        {"session_date": "bad"},
+        {"session_open": "16:00:00"},
+        {"session_close": "15:59:59"},
+        {"adapter_version": "unknown"},
+        {"quality_policy": "refilter"},
+        {"tick_size": 0},
+        {"tick_size": float("nan")},
+        {"tick_size": object()},
+        {"trade_signing": "lee_ready"},
+        {"overwrite": 1},
+    ],
+)
 def test_invalid_configuration(fields):
     with pytest.raises(ConfigurationError):
         PipelineConfig(**fields)

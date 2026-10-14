@@ -1,4 +1,5 @@
 """Smoke the actual extension; a Python replacement cannot satisfy this test."""
+
 import importlib.machinery
 
 from ofi_pipeline import _native, version

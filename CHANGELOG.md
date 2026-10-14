@@ -14,7 +14,7 @@ the owner-provided attachment; `docs/DATASET_CONTRACT.md` remains normative.
 - [x] M4: gap-aware rank OFI, persistent state and L1 update classification.
 - [x] M5: independent executions, known-direction signing and conservation.
 - [x] M6: right-closed grids, original boundaries, depth and exclusions.
-- [ ] M7: atomic output, provenance/QC, typed errors, Python CLI.
+- [x] M7: atomic output, provenance/QC, typed errors, Python CLI.
 - [ ] M8: paired raw adapter and pre-execution Quote Test.
 - [ ] M9: full real sample integrity/parity and independently rebuilt other widths.
 - [ ] M10: bounded partition concurrency, chunk/thread invariance and benchmarks.
@@ -213,3 +213,26 @@ commit hashes are authoritative in Git history, not self-referential log entries
 - Intended commit: `feat(core): publish streamed Parquet features and provenance atomically`.
 - Remaining: finish/stage Python API/CLI separately; Quote Test and bounded
   concurrency currently fail/warn explicitly; coverage/packaging/CI pending.
+
+## M7b — typed native API, CLI and compiled fixture integration
+
+- Added native file-set operation with owned inputs/config inside Python::detach;
+  Python `InputPaths`, typed `RunReport`/partition/signing metadata, path/environment
+  normalization and installed CLI. Updated exports/stubs, packaging entry point,
+  README/usage, authored fixture provenance and compiled integration/error tests.
+- Rust owns reading, merge, arithmetic and output. Python creates no per-tick
+  objects in production. Poison reference files verify no production oracle reads.
+  Inputs support strings/pathlib and explicit Parquet or headered gzip CSV files.
+- Checks passed: `VIRTUAL_ENV="$PWD/.venv" .venv/bin/maturin develop --offline`,
+  `.venv/bin/python -m pytest -q tests/python tests/integration` (43 passed),
+  `.venv/bin/ruff check python tests`, `.venv/bin/mypy`,
+  `cargo clippy --workspace --all-targets --offline -- -D warnings`,
+  `.venv/bin/ofi-pipeline --help` and `python -m ofi_pipeline --help` from a
+  temporary cwd in the CLI test. No pure-Python fallback is accepted.
+- Fixture comparisons cover chunks 1/2/3/100 versus 65536, tied IDs/time,
+  gaps, interval boundaries, all five ranks, exact TI/volume/depth expectations,
+  gzip CSV equivalence, empty intervals and failed-run/overwrite/collision behavior.
+- Real 10-second evidence recorded in M7a; repeatable reconciliation is next.
+- Intended commit: `feat(api): expose compiled file-set pipeline and typed Python CLI`.
+- Remaining: M8–M11, including raw Quote Test, actual concurrency, release benchmark,
+  full coverage/clean wheel/CI. Rebuilt extension uses current sources.

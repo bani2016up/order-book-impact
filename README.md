@@ -4,16 +4,16 @@ Rust data-processing pipeline with a Python library interface through PyO3. The 
 
 ## Current status
 
-Specification only. The Rust engine, Python package, build configuration, and tests have not been implemented yet. Examples in the specification describe the target API; they are not runnable today.
+The pure Rust engine, compiled Python API/CLI, streaming Parquet/gzip CSV
+adapters and atomic output are implemented. Known-direction 10-second output
+has been independently checked against the delivered sample. Quote Test,
+parallelism, coverage and distribution acceptance are still in progress.
 
-## Start here
-
-1. Read [AGENTS.md](AGENTS.md) for language, Git, and validation rules.
-2. Read [the implementation task](docs/IMPLEMENTATION_TASK.md) for architecture, milestones, and acceptance criteria.
-3. Read [the dataset contract](docs/DATASET_CONTRACT.md) before implementing any calculation.
-4. Maintain [the work log](docs/WORK_LOG.md) as small tasks are completed and committed.
-
-All code, documentation, comments, commit messages, and implementation-agent communication must be in English. Work on local `main`, make small tested commits, and **do not push**. The owner will review and publish the commits.
+Read [usage](docs/usage.md), [the dataset contract](docs/DATASET_CONTRACT.md),
+[verified physical schemas](docs/verified_schema.md), and
+[the implementation work log](CHANGELOG.md). The owner requested keeping the
+previous implementation-task/work-log documents deleted. Work on local `main`,
+make tested local commits, and **do not push**.
 
 ## Sample and boundaries
 
