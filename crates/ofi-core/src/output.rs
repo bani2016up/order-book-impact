@@ -332,6 +332,25 @@ impl Writer {
         }
         Ok(())
     }
+    pub fn append_partition(&mut self, directory: &Path) -> Result<()> {
+        use parquet::arrow::arrow_reader::ParquetRecordBatchReaderBuilder;
+        self.flush()?;
+        for (name, writer) in [
+            ("features.parquet", &mut self.features),
+            ("bucket_quality.parquet", &mut self.quality),
+        ] {
+            let reader =
+                ParquetRecordBatchReaderBuilder::try_new(File::open(directory.join(name))?)
+                    .map_err(io)?
+                    .with_batch_size(self.batch_rows)
+                    .build()
+                    .map_err(io)?;
+            for batch in reader {
+                writer.write(&batch.map_err(io)?).map_err(io)?;
+            }
+        }
+        Ok(())
+    }
     pub fn finish(mut self) -> Result<()> {
         self.flush()?;
         self.features.close().map_err(io)?;

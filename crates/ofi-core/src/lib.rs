@@ -22,3 +22,5 @@ pub mod pipeline;
 pub mod raw;
 pub mod time;
 pub mod trades;
+
+mod worker;

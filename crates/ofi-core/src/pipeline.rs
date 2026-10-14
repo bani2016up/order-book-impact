@@ -2,16 +2,23 @@
 use crate::{
     VERSION,
     adapter::{Kind, TableReader},
-    buckets::{BucketEngine, BucketRow},
     config::{Config, TradeSigning},
     error::{Error, ErrorCode, Result},
     output::{Transaction, Writer, write_json},
-    raw::{RawInput, RawReader, quote_test},
-    trades::{TradeSequence, TradeTotals},
+    raw::RawInput,
+    trades::TradeTotals,
+    worker::{InputRow, Worker, WorkerStats},
 };
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-use std::{collections::BTreeMap, fs::File, io::Read, path::PathBuf, time::Instant};
+use std::{
+    collections::{BTreeMap, VecDeque},
+    fs::File,
+    io::Read,
+    path::PathBuf,
+    sync::Arc,
+    time::Instant,
+};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -51,6 +58,7 @@ pub struct RunReport {
     pub algorithm_version: String,
     pub schema_version: String,
     pub elapsed_seconds: f64,
+    pub peak_partition_workers: usize,
     pub warnings: Vec<String>,
 }
 fn hash(path: &std::path::Path) -> Result<serde_json::Value> {
@@ -102,30 +110,32 @@ pub fn run(inputs: Inputs, output: PathBuf, config: Config) -> Result<RunReport>
     )?;
     let mut next_event = events.next_event()?;
     let mut next_trade = trades.next_trade()?;
-    let mut sequence = TradeSequence::default();
     let mut writer = Writer::new(transaction.stage.path(), config.levels, config.chunk_rows)?;
-    let mut raw: Option<RawReader> = None;
-    let mut partitions = Vec::<PartitionReport>::new();
-    let mut engine: Option<BucketEngine> = None;
-    let mut report = PartitionReport::default();
-    fn emit(row: BucketRow, report: &mut PartitionReport, writer: &mut Writer) -> Result<()> {
-        report.total_buckets += 1;
-        if row.accepted {
-            report.feature_rows += 1;
-        } else {
-            report.rejected_buckets += 1;
-            for reason in row.rejection_reasons.split('|') {
-                *report.rejection_reasons.entry(reason.into()).or_default() += 1;
-            }
-        }
-        writer.write(row)
-    }
+    let stats = Arc::new(WorkerStats::default());
+    let mut partitions = Vec::new();
+    let mut waiting = VecDeque::<Worker>::new();
+    let mut current: Option<Worker> = None;
+    let mut partition: Option<(String, String)> = None;
+    let mut chunk = Vec::with_capacity(config.chunk_rows);
     while let Some(q) = quality.next_quality()? {
-        if report.symbol != q.key.symbol || report.date != q.key.date {
-            if let Some(mut r) = raw.take() {
-                r.finish()?;
+        let key = (q.key.symbol.clone(), q.key.date.clone());
+        if partition.as_ref() != Some(&key) {
+            if let Some(mut worker) = current.take() {
+                if !chunk.is_empty() {
+                    worker.send(std::mem::take(&mut chunk))?;
+                }
+                worker.close();
+                waiting.push_back(worker);
             }
-            if config.trade_signing == TradeSigning::QuoteTest {
+            if waiting.len() >= config.threads {
+                partitions.push(
+                    waiting
+                        .pop_front()
+                        .expect("bounded pending workers")
+                        .finish(&mut writer)?,
+                );
+            }
+            let raw = if config.trade_signing == TradeSigning::QuoteTest {
                 let candidates: Vec<_> = inputs
                     .raw
                     .iter()
@@ -140,27 +150,19 @@ pub fn run(inputs: Inputs, output: PathBuf, config: Config) -> Result<RunReport>
                         ),
                     ));
                 }
-                raw = Some(RawReader::open(candidates[0], transaction.stage.path())?);
-            }
-            if let Some(mut old) = engine.take() {
-                old.finish(&mut |row| emit(row, &mut report, &mut writer))?;
-                partitions.push(report);
-            }
-            report = PartitionReport {
-                symbol: q.key.symbol.clone(),
-                date: q.key.date.clone(),
-                ..PartitionReport::default()
+                Some(candidates[0].clone())
+            } else {
+                None
             };
-            engine = Some(BucketEngine::new(&q.key.symbol, &q.key.date, &config)?);
-        }
-        report.original_rows += 1;
-        report.clean_events += u64::from(q.accepted);
-        report.rejected_events += u64::from(!q.accepted);
-        if !q.accepted {
-            *report
-                .source_rejection_reasons
-                .entry(q.reason.clone())
-                .or_default() += 1;
+            current = Some(Worker::spawn(
+                key.0.clone(),
+                key.1.clone(),
+                config.clone(),
+                raw,
+                transaction.stage.path(),
+                stats.clone(),
+            )?);
+            partition = Some(key);
         }
         if next_event.as_ref().is_some_and(|e| e.key < q.key)
             || next_trade.as_ref().is_some_and(|t| t.key < q.key)
@@ -173,57 +175,30 @@ pub fn run(inputs: Inputs, output: PathBuf, config: Config) -> Result<RunReport>
                 ),
             ));
         }
-        let matched_event = next_event.as_ref().filter(|e| e.key == q.key);
-        let matched_trade = next_trade.as_ref().filter(|t| t.key == q.key);
-        let raw_row = if let Some(raw) = raw.as_mut() {
-            Some(raw.observe(&q)?)
-        } else {
-            None
-        };
-        if let Some(event) = matched_event {
-            report.rounded_event_timestamps += u64::from(event.timestamp_rounded == Some(true));
-            report.missing_precision_flag_rows += u64::from(event.timestamp_rounded.is_none());
-        }
-        if let Some((row, _)) = &raw_row {
-            report.rounded_raw_timestamps += u64::from(row.rounded);
-        }
-        if let (Some(event), Some((row, _))) = (matched_event, &raw_row) {
-            let book = row.book.as_ref().ok_or_else(|| {
-                Error::new(
-                    ErrorCode::Quality,
-                    "accepted clean book has invalid raw post-state",
-                )
-            })?;
-            if book.0.len() < config.levels || book.0[..config.levels] != event.book.0 {
-                return Err(Error::new(
-                    ErrorCode::Quality,
-                    format!("clean/raw post-state mismatch at {:?}", q.key),
-                ));
-            }
-        }
-        let sign = if let Some(t) = matched_trade {
-            let known = sequence.observe(t)?;
-            let sign = if let Some((row, pre)) = &raw_row {
-                quote_test(t, row, pre.as_ref())?
-            } else {
-                Some(known)
-            };
-            report.signing.add(t, sign)?;
-            sign
-        } else {
-            None
-        };
-        engine.as_mut().expect("partition initialized").observe(
-            &q,
-            matched_event,
-            matched_trade.map(|t| (t, sign)),
-            &mut |row| emit(row, &mut report, &mut writer),
-        )?;
-        if matched_event.is_some() {
+        let event = if next_event.as_ref().is_some_and(|e| e.key == q.key) {
+            let event = next_event.take();
             next_event = events.next_event()?;
-        }
-        if matched_trade.is_some() {
+            event
+        } else {
+            None
+        };
+        let trade = if next_trade.as_ref().is_some_and(|t| t.key == q.key) {
+            let trade = next_trade.take();
             next_trade = trades.next_trade()?;
+            trade
+        } else {
+            None
+        };
+        chunk.push(InputRow {
+            quality: q,
+            event,
+            trade,
+        });
+        if chunk.len() >= config.chunk_rows {
+            current
+                .as_mut()
+                .expect("partition initialized")
+                .send(std::mem::take(&mut chunk))?;
         }
     }
     if next_event.is_some() || next_trade.is_some() {
@@ -232,24 +207,18 @@ pub fn run(inputs: Inputs, output: PathBuf, config: Config) -> Result<RunReport>
             "event/trade rows remain after original quality evidence ended",
         ));
     }
-    if let Some(mut engine) = engine {
-        engine.finish(&mut |row| emit(row, &mut report, &mut writer))?;
-        partitions.push(report);
-    } else {
-        return Err(Error::new(
-            ErrorCode::Quality,
-            "original quality evidence is empty",
-        ));
+    let mut current = current
+        .ok_or_else(|| Error::new(ErrorCode::Quality, "original quality evidence is empty"))?;
+    if !chunk.is_empty() {
+        current.send(chunk)?;
     }
-    if let Some(mut raw) = raw {
-        raw.finish()?;
+    current.close();
+    waiting.push_back(current);
+    while let Some(worker) = waiting.pop_front() {
+        partitions.push(worker.finish(&mut writer)?);
     }
     writer.finish()?;
-    let mut warnings = if config.threads > 1 {
-        vec!["This initial runner is sequential; bounded independent-partition concurrency is pending.".into()]
-    } else {
-        vec![]
-    };
+    let mut warnings = Vec::new();
     if partitions.iter().any(|p| p.missing_precision_flag_rows > 0) {
         warnings.push("Some clean events lack delivered timestamp rounding flags; integer UTC nanoseconds remain validated.".into());
     }
@@ -259,7 +228,7 @@ pub fn run(inputs: Inputs, output: PathBuf, config: Config) -> Result<RunReport>
             raw_hashes.push(hash(path)?);
         }
     }
-    let manifest = serde_json::json!({"producer":"ofi-pipeline","algorithm_version":VERSION,"schema_version":"ofi-v1","adapter_version":config.adapter_version,"dataset_identity":sources,"raw_sources":raw_hashes,"config":config,"units":{"prices":"USD","price_changes":"USD and ticks","volume_depth_ofi_ti":"shares","timestamp":"UTC nanoseconds"},"semantics":{"buckets":"(start, end], anchored at New York session open; first incomplete excluded","boundary":"last original row at/before boundary, including rejected rows and tied event order","ofi":"rank-based L1..L5 extension; unknown initialization excluded","depth":"mean over L1 updates; right-boundary fallback","trade_signing":config.trade_signing,"lags":"sparse accepted intervals require actual temporal-adjacency checks"},"input_passes":"clean inputs: one streaming SHA-256 pass plus one ordered computation pass; Quote Test ZIPs: bounded-memory extraction to temporary disk then one paired-row pass, plus source hashing; no reference-feature reads"});
+    let manifest = serde_json::json!({"producer":"ofi-pipeline","algorithm_version":VERSION,"schema_version":"ofi-v1","adapter_version":config.adapter_version,"dataset_identity":sources,"raw_sources":raw_hashes,"config":config,"units":{"prices":"USD","price_changes":"USD and ticks","volume_depth_ofi_ti":"shares","timestamp":"UTC nanoseconds"},"semantics":{"buckets":"(start, end], anchored at New York session open; first incomplete excluded","boundary":"last original row at/before boundary, including rejected rows and tied event order","ofi":"rank-based L1..L5 extension; unknown initialization excluded","depth":"mean over L1 updates; right-boundary fallback","trade_signing":config.trade_signing,"lags":"sparse accepted intervals require actual temporal-adjacency checks"},"concurrency":"ordered producer; at most configured independent session workers; one queued chunk per worker; partition outputs merged in key order", "input_passes":"temporary partition Parquet output is read once for ordered final assembly; clean inputs: one streaming SHA-256 pass plus one ordered computation pass; Quote Test ZIPs: bounded-memory extraction to temporary disk then one paired-row pass, plus source hashing; no reference-feature reads"});
     write_json(&transaction.stage.path().join("manifest.json"), &manifest)?;
     let output_dir = transaction.destination.clone();
     let report = RunReport {
@@ -273,6 +242,7 @@ pub fn run(inputs: Inputs, output: PathBuf, config: Config) -> Result<RunReport>
         algorithm_version: VERSION.into(),
         schema_version: "ofi-v1".into(),
         elapsed_seconds: started.elapsed().as_secs_f64(),
+        peak_partition_workers: stats.peak(),
         warnings,
     };
     write_json(

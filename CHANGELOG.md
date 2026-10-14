@@ -315,3 +315,29 @@ commit hashes are authoritative in Git history, not self-referential log entries
 - Remaining: M10 bounded concurrency/release measurements; M11 coverage, clean
   wheel installation, CI and final requirement audit. Real-sample acceptance is
   now passed, not pending.
+
+## M10a — bounded independent-partition concurrency
+
+- Added private Rust `worker.rs`, bounded synchronous queues and deterministic
+  output assembly. Producer validates/merges inputs in order; each independent
+  symbol/session is owned by one persistent worker. At most configured workers
+  coexist; at most one chunk queues per worker. Failed workers propagate typed
+  errors, close channels and are joined before temporary output is removed.
+- Intermediate partition Parquet files are streamed once into final outputs in
+  key order and removed before publication. This explicit extra output pass is
+  documented in the manifest. No full-day input collectors or parallel chunk
+  reinitialization. Uses std threads rather than an additional global Rayon pool.
+- Added observed peak worker count to typed/native QC. Added compiled tests for
+  two symbols on two dates with threads/chunks (1,1)/(2,2)/(4,3)/(2,100): identical
+  decoded features/quality and stable semantic provenance, independent state,
+  conserved volumes, configured worker bound and no temporary output leftovers.
+- Checks passed: `cargo test -p ofi-core --offline` (21 units + 3 adapter + 2
+  pipeline), `cargo clippy --workspace --all-targets --offline -- -D warnings`,
+  `cargo fmt --all`, `.venv/bin/ruff check python tests`, `.venv/bin/mypy`,
+  `VIRTUAL_ENV="$PWD/.venv" .venv/bin/maturin develop --offline`,
+  `.venv/bin/python -m pytest -q tests/integration/test_parallel.py tests/integration/test_pipeline.py tests/integration/test_quote_test.py`
+  (14 passed). Current source rebuilt before compiled checks.
+- All-width real parity passed before this orchestration change. Release real-data
+  determinism/performance and final acceptance will validate the new runner next.
+- Intended commit: `perf(core): bound partition workers and assemble deterministic output`.
+- Remaining: M10b measured release performance; M11 coverage/distribution/CI/audit.

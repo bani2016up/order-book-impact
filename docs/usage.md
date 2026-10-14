@@ -59,5 +59,11 @@ ZIP contents spool once to owned temporary disk files, then stream by paired row
 RAM stays bounded, while temporary disk usage scales with archive payload size.
 Spools are removed before publication. No filtering is recalibrated.
 
-Bounded partition concurrency remains under development. Threads >1 produce an
-explicit sequential-run warning until concurrency is added.
+`threads` bounds independent symbol/session workers. The input producer validates
+and merges the ordered streams once; each worker receives chunks through a queue
+with capacity one and keeps its own persistent state. Partition outputs are
+staged and assembled in deterministic key order. A session is never divided
+between independently initialized workers. QC records the observed peak worker
+count. Memory scales with chunk size and the configured worker bound, not event
+count; temporary disk contains per-partition output (and raw ZIP spools for Quote
+Test). Output assembly reads those small intermediate Parquet files once.

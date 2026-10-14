@@ -111,6 +111,7 @@ class RunReport:
     algorithm_version: str
     schema_version: str
     elapsed_seconds: float
+    peak_partition_workers: int
     warnings: tuple[str, ...]
 
     @property
@@ -218,4 +219,5 @@ def run_pipeline(
         schema_version=payload["schema_version"],
         elapsed_seconds=payload["elapsed_seconds"],
         warnings=tuple(payload["warnings"]),
+        peak_partition_workers=payload["peak_partition_workers"],
     )
