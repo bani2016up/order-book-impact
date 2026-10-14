@@ -444,6 +444,14 @@ impl TableReader {
             let (key, timestamp) = r.key_time(true)?;
             let accepted = r.boolean("quote_accepted")?;
             let reason = r.text("reject_reason")?.to_owned();
+            if !matches!(
+                reason.as_str(),
+                "" | "outside_session" | "invalid_book" | "invalid_event" | "spread_above_p95"
+            ) {
+                return Err(schema(format!(
+                    "unsupported Lev-v1 reject_reason: {reason}"
+                )));
+            }
             if accepted != reason.is_empty() {
                 return Err(Error::new(
                     ErrorCode::Quality,

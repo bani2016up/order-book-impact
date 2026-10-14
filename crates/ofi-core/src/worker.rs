@@ -219,3 +219,22 @@ impl Drop for Worker {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn dependency_panic_is_typed_and_joined() {
+        let directory = tempfile::tempdir().unwrap();
+        let (tx, rx) = sync_channel(1);
+        drop(rx);
+        let handle =
+            thread::spawn(|| -> Result<PartitionReport> { panic!("simulated dependency panic") });
+        let mut worker = Worker {
+            directory,
+            sender: Some(tx),
+            handle: Some(handle),
+        };
+        assert_eq!(worker.send(vec![]).unwrap_err().code, ErrorCode::Io);
+    }
+}

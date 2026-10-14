@@ -20,6 +20,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--levels", type=int, default=5)
     parser.add_argument("--chunk-rows", type=int, default=65536)
     parser.add_argument("--threads", type=int, default=2)
+    parser.add_argument("--max-partitions", type=int, default=1024)
     parser.add_argument(
         "--trade-signing", choices=["lobster_direction", "quote_test"], default="lobster_direction"
     )
@@ -37,6 +38,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             levels=args.levels,
             chunk_rows=args.chunk_rows,
             threads=args.threads,
+            max_partitions=args.max_partitions,
             trade_signing=args.trade_signing,
             session_date=args.session_date,
             session_open=args.session_open,

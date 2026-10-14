@@ -59,3 +59,13 @@ def test_independent_symbols_and_dates_bounded_and_deterministic(bundle, tmp_pat
             baseline = values, manifest
         else:
             assert (values, manifest) == baseline
+
+    from ofi_pipeline import ConfigurationError
+    import pytest
+
+    with pytest.raises(ConfigurationError, match="max_partitions"):
+        run_pipeline(
+            bundle,
+            tmp_path / "bounded-metadata",
+            PipelineConfig(max_partitions=2, session_close="09:31:00"),
+        )

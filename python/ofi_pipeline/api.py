@@ -27,6 +27,7 @@ class PipelineConfig:
     trade_signing: Literal["lobster_direction", "quote_test"] = "lobster_direction"
     chunk_rows: int = 65536
     threads: int = 2
+    max_partitions: int = 1024
     session_timezone: str = "America/New_York"
     session_date: str | None = None
     session_open: str = "09:30:00"
@@ -37,7 +38,7 @@ class PipelineConfig:
     overwrite: bool = False
 
     def __post_init__(self) -> None:
-        for field in ("bucket_seconds", "levels", "chunk_rows", "threads"):
+        for field in ("bucket_seconds", "levels", "chunk_rows", "threads", "max_partitions"):
             if type(getattr(self, field)) is not int:
                 raise ConfigurationError(f"{field} must be an integer")
         if type(self.overwrite) is not bool:

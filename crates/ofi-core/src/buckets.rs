@@ -210,10 +210,12 @@ impl BucketEngine {
         })?;
         self.left = self.boundary.clone();
         self.start = self.end;
-        self.end = checked_i64(
-            i128::from(self.end) + i128::from(self.width),
-            "bucket boundary overflow",
-        )?;
+        if self.start < self.close {
+            self.end = checked_i64(
+                i128::from(self.end) + i128::from(self.width),
+                "bucket boundary overflow",
+            )?;
+        }
         self.ofi.fill(0);
         self.depth_sum = 0;
         self.quote_updates = 0;
@@ -224,7 +226,7 @@ impl BucketEngine {
         Ok(())
     }
     pub fn finish(&mut self, sink: &mut impl FnMut(BucketRow) -> Result<()>) -> Result<()> {
-        while self.end <= self.close {
+        while self.start < self.close && self.end <= self.close {
             self.flush(sink)?;
         }
         Ok(())
@@ -436,5 +438,56 @@ mod tests {
         let mut engine = BucketEngine::new("A", "2012-06-21", &c).unwrap();
         let mut fail = |_| Err(Error::new(ErrorCode::Io, "sink failed"));
         assert!(engine.finish(&mut fail).is_err());
+    }
+    #[test]
+    fn mismatched_depth_trade_and_extreme_session_close() {
+        let (c, open) = setup(10);
+        let first = q(0, open + NS, true);
+        let mut engine = BucketEngine::new("A", "2012-06-21", &c).unwrap();
+        let mut event = e(&first, 100, 1, false, true);
+        event.book.0.push(Level {
+            bid: 9900,
+            ask: 10200,
+            bid_size: 100,
+            ask_size: 120,
+        });
+        let mut sink = |_| Ok(());
+        assert_eq!(
+            engine
+                .observe(&first, Some(&event), None, &mut sink)
+                .unwrap_err()
+                .code,
+            ErrorCode::Schema
+        );
+        let mut engine = BucketEngine::new("A", "2012-06-21", &c).unwrap();
+        let trade = Trade {
+            key: q(1, open + NS, true).key,
+            timestamp: first.timestamp,
+            size: 1,
+            price: 10000,
+            direction: 1,
+            event_type: 4,
+            quote_accepted: true,
+        };
+        assert_eq!(
+            engine
+                .observe(
+                    &first,
+                    Some(&e(&first, 100, 1, false, true)),
+                    Some((&trade, Some(-1))),
+                    &mut sink
+                )
+                .unwrap_err()
+                .code,
+            ErrorCode::Quality
+        );
+        let c = Config {
+            bucket_seconds: 1,
+            session_open: "18:47:15".into(),
+            session_close: "18:47:16".into(),
+            ..Config::default()
+        };
+        let mut extreme = BucketEngine::new("A", "2262-04-11", &c).unwrap();
+        extreme.finish(&mut sink).unwrap();
     }
 }

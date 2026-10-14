@@ -24,6 +24,8 @@ def test_default_and_serialization():
         {"levels": 1.0},
         {"chunk_rows": 0},
         {"threads": 65},
+        {"max_partitions": 0},
+        {"max_partitions": True},
         {"session_timezone": "UTC"},
         {"session_date": "bad"},
         {"session_open": "16:00:00"},

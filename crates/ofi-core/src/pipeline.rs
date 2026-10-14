@@ -119,10 +119,18 @@ pub fn run(inputs: Inputs, output: PathBuf, config: Config) -> Result<RunReport>
     let mut waiting = VecDeque::<Worker>::new();
     let mut current: Option<Worker> = None;
     let mut partition: Option<(String, String)> = None;
+    let mut partition_count = 0;
     let mut chunk = Vec::with_capacity(config.chunk_rows);
     while let Some(q) = quality.next_quality()? {
         let key = (q.key.symbol.clone(), q.key.date.clone());
         if partition.as_ref() != Some(&key) {
+            partition_count += 1;
+            if partition_count > config.max_partitions {
+                return Err(Error::new(
+                    ErrorCode::Config,
+                    "file set exceeds configured max_partitions; split file sets or explicitly increase the metadata bound",
+                ));
+            }
             if let Some(mut worker) = current.take() {
                 if !chunk.is_empty() {
                     worker.send(std::mem::take(&mut chunk))?;
@@ -254,4 +262,17 @@ pub fn run(inputs: Inputs, output: PathBuf, config: Config) -> Result<RunReport>
     )?;
     transaction.publish()?;
     Ok(report)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn disappeared_source_hash_is_actionable() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("missing.csv");
+        let error = hash(&path).unwrap_err();
+        assert_eq!(error.code, ErrorCode::MissingFile);
+        assert!(error.message.contains("missing.csv"));
+    }
 }

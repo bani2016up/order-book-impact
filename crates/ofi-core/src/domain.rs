@@ -212,6 +212,11 @@ mod tests {
             date: "2012-06-21".into(),
             event_id: id,
         };
+        assert!(
+            OrderGuard::default()
+                .observe(&key("A", 1), 1, true)
+                .is_err()
+        );
         let mut g = OrderGuard::default();
         g.observe(&key("A", 0), 1, true).unwrap();
         g.observe(&key("A", 1), 1, true).unwrap();

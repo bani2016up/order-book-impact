@@ -21,6 +21,7 @@ pub struct Config {
     pub trade_signing: TradeSigning,
     pub chunk_rows: usize,
     pub threads: usize,
+    pub max_partitions: usize,
     pub session_timezone: String,
     pub session_date: Option<String>,
     pub session_open: String,
@@ -39,6 +40,7 @@ impl Default for Config {
             trade_signing: TradeSigning::default(),
             chunk_rows: 65536,
             threads: 2,
+            max_partitions: 1024,
             session_timezone: "America/New_York".into(),
             session_date: None,
             session_open: "09:30:00".into(),
@@ -57,10 +59,11 @@ impl Config {
             || !(1..=5).contains(&self.levels)
             || !(1..=1_048_576).contains(&self.chunk_rows)
             || !(1..=64).contains(&self.threads)
+            || !(1..=16384).contains(&self.max_partitions)
         {
             return Err(Error::new(
                 ErrorCode::Config,
-                "width must be 1/5/10/30/60, levels 1..5, chunk_rows 1..1048576, threads 1..64",
+                "width must be 1/5/10/30/60, levels 1..5, chunk_rows 1..1048576, threads 1..64, max_partitions 1..16384",
             ));
         }
         if self.session_timezone != "America/New_York"

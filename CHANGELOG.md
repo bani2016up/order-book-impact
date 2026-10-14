@@ -400,3 +400,28 @@ commit hashes are authoritative in Git history, not self-referential log entries
 - Intended commit: `fix(core): validate execution evidence and represent unknown TI explicitly`.
 - Remaining: full final-source Rust/native/Python coverage, isolated wheel, CI
   docs/handoff, real parity and refreshed performance after this contract change.
+
+## M11b — bounded metadata and final-boundary checks
+
+- Added explicit `max_partitions` (default 1024, range 1..16384) to native/Python
+  config and CLI, bounding returned metadata as well as live worker state.
+  Lev-v1 quality reasons use a fixed validated vocabulary, so rejection-count
+  maps cannot grow once per event. Unknown reasons require an explicit adapter
+  change rather than hidden regrouping or recalibration.
+- Fixed final bucket flushing near the int64 UTC-nanosecond limit: no unused
+  next boundary is computed after session close. Added an extreme-range session
+  regression, depth/trade mismatch guards, initial quality-ID validation,
+  disappeared-source hashing and contained dependency-panic tests.
+- Focused checks passed: `cargo test -p ofi-core --offline` (26 unit, 3 adapter,
+  2 pipeline tests; external ingestion explicitly ignored),
+  `.venv/bin/python -m pytest -q tests/python/test_config.py tests/integration/test_parallel.py tests/integration/test_pipeline.py`,
+  `cargo fmt --all -- --check`, `.venv/bin/mypy`.
+  Prior rebuild/check for these changes: maturin develop, Clippy and full
+  Python/compiled fixture selection passed (65 tests). An extreme test initially
+  chose a local clock beyond representable UTC; corrected its clock before pass.
+- Real files remain unchanged and outside Git. Current final-source parity,
+  coverage and wheel checks are next; earlier evidence is retained as historical.
+- Intended commit: `fix(core): bound report metadata and stop at final session boundary`.
+- Remaining: coverage gap audit, clean wheel/CI, refreshed real acceptance and
+  performance, English final handoff. External `.gitignore` edit is preserved;
+  Cargo.lock remains tracked and committed despite its added ignore rule.

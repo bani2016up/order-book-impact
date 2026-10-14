@@ -70,3 +70,11 @@ between independently initialized workers. QC records the observed peak worker
 count. Memory scales with chunk size and the configured worker bound, not event
 count; temporary disk contains per-partition output (and raw ZIP spools for Quote
 Test). Output assembly reads those small intermediate Parquet files once.
+
+`max_partitions` bounds report metadata (default 1024, maximum 16384). Split large
+file sets or raise it explicitly; live workers still obey `threads`. Lev-v1
+rejection reasons are `outside_session`, `invalid_book`, `invalid_event`, and
+`spread_above_p95`. Original quality rows must cover the configured session;
+unsupported schema/reason conventions fail explicitly. In excluded quality
+rows, `quote_update_count` counts accepted L1 updates whose supplied markers are
+available; valid feature rows have complete original L1-update counts.

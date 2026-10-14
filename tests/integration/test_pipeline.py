@@ -262,3 +262,33 @@ def test_file_set_failure_branches(bundle, tmp_path, case):
     with pytest.raises(PipelineError):
         run_pipeline(bundle, tmp_path / "bad", cfg)
     assert not (tmp_path / "bad").exists()
+
+
+def test_unknown_quality_reason_and_optional_sign_dtype(bundle, tmp_path):
+    from ofi_pipeline import SchemaError
+
+    qpath = bundle / "reports/event_quality.parquet"
+    table = pq.read_table(qpath)
+    reasons = table["reject_reason"].to_pylist()
+    reasons[5] = "unbounded-custom-reason"
+    pq.write_table(
+        table.set_column(
+            table.schema.get_field_index("reject_reason"), "reject_reason", pa.array(reasons)
+        ),
+        qpath,
+    )
+    with pytest.raises(SchemaError, match="reject_reason"):
+        run_pipeline(bundle, tmp_path / "reason", config())
+    # Failure occurs at schema open before the independently malformed quality rows are read.
+    tpath = bundle / "data/trades_clean.parquet"
+    t = pq.read_table(tpath)
+    pq.write_table(
+        t.set_column(
+            t.schema.get_field_index("aggressor_side"),
+            "aggressor_side",
+            t["aggressor_side"].cast(pa.float64()),
+        ),
+        tpath,
+    )
+    with pytest.raises(SchemaError, match="int64"):
+        run_pipeline(bundle, tmp_path / "dtype", config())
