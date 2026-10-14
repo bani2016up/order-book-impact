@@ -1,5 +1,31 @@
 # Implementation work log
 
+## Implementation diagrams — detailed views and completion
+
+- Added four detailed editable scenes and SVG previews: the Python/PyO3/Rust
+  call sequence, Cargo crates and engine modules, bounded partition workers and
+  staged output lifecycle, and the baseline/extension/notebook research layer.
+- Completed the ten-view gallery with code anchors and instructions for editing
+  scenes and regenerating previews. Linked it from README.md and architecture.md;
+  corrected architecture prose to include the existing Python research layer and
+  describe staged publication without overstating overwrite atomicity.
+- Checked implementation details against the current sources: in-process cdylib,
+  owned JSON/envelope/error transport, Python::detach, original-ID quality merge,
+  std::thread and sync_channel(1), persistent OFI state across chunks, independent
+  trade signing, right-closed buckets and ordered partition Parquet assembly.
+- Final focused checks passed: `python docs/diagrams/render.py --check` (10
+  scenes/previews), `ruff check docs/diagrams/render.py`, unique scene IDs and
+  Excalifont/font-size validation, XML parsing and rsvg-convert rasterization of
+  all 10 SVGs, and 116 local Markdown links across the gallery/README/architecture
+  document. All ten previews were visually inspected; corrected previews were
+  rechecked. Final tracked/staged whitespace checks passed.
+- This is documentation-only work: no engine/binding/API/model source, data,
+  dependencies, build settings or public interfaces changed. Engine tests and
+  benchmarks were not rerun, and no new runtime/real-data/performance result is
+  claimed. Scene/preview files contain no dataset rows or compiled binaries.
+- The overview milestone is local commit ac15ed8. The detailed milestone is
+  committed separately on local main; no push, PR or publication was performed.
+
 ## Implementation diagrams — plan and overview milestone
 
 - The owner requested documentation of the actual implementation: architecture,
@@ -14,8 +40,10 @@
   and edit instructions, plus a standard-library preview renderer/check command.
 - Focused evidence: scenes parsed as JSON with unique IDs and Excalifont text;
   SVGs parsed as XML and rasterized with rsvg-convert; all six previews inspected.
-  Renderer preview-freshness, Ruff, Markdown local links and diff-whitespace
-  checks passed. No runtime code changed; engine acceptance was not rerun.
+  Renderer preview-freshness, Ruff and Markdown local-link checks passed. The
+  tracked diff check passed; staging caught a trailing blank line in the new
+  gallery, corrected in the follow-up documentation milestone. No runtime code
+  changed; engine acceptance was not rerun.
 - Next: the four detailed views and README/architecture navigation.
 
 Work on local `main`; do not push. This log replaces `docs/WORK_LOG.md` at the

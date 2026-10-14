@@ -1,5 +1,9 @@
 # Architecture and data flow
 
+The [implementation diagram gallery](diagrams/README.md) provides an overview,
+data flow, C4 levels 1–4 and detailed PyO3, Rust module, core-worker and research
+views. Each view includes an SVG preview, editable Excalidraw source and code anchors.
+
 ```mermaid
 flowchart LR
     User[Research notebooks or installed Python CLI] --> API[Typed Python API]
@@ -11,7 +15,7 @@ flowchart LR
     Workers --> OFI[Gap-aware rank OFI and independent signing]
     OFI --> Grid[Right-closed intervals and original boundaries]
     Grid --> Temp[Private partition Parquet]
-    Temp --> Publish[Ordered assembly and atomic directory publication]
+    Temp --> Publish[Ordered assembly and staged directory publication]
     Publish --> Results[Features, all-bucket quality, provenance and QC]
 ```
 
@@ -25,7 +29,10 @@ There is no Python fallback, pandas computation or per-event FFI call.
 The core crate is independently testable. The binding crate is a cdylib and
 contains only serialization/config/error glue. An optional standalone Rust CLI
 was omitted: the installed Python CLI already exposes the same core without
-adding a second configuration parser. Research model estimation is excluded.
+adding a second configuration parser. Research model estimation runs in Python
+after feature publication: installed `ofi_pipeline.research` helpers validate
+features and temporal lags; repository-local `research/baseline/`,
+`research/extensions/` and `research/notebooks/` contain the team's models.
 
 Native readers decode bounded Arrow batches or gzip CSV records. A producer
 validates increasing original IDs and nondecreasing UTC ns, preserves ties,
@@ -58,7 +65,7 @@ A separate hash pass provides provenance. Inputs must remain unchanged during a
 run; do not concurrently mutate them. The manifest distinguishes deterministic
 algorithm/schema/source metadata from variable QC runtime statistics.
 
-Atomic directory rename publishes a completed dataset. Explicit overwrite
+Directory rename publishes a completed staged dataset. Explicit overwrite
 protects input collisions and other user files, moves owned results aside, and
 restores them on publication failure where possible. This is a filesystem batch
 operation, with a short path-absence window during overwrite, not a transaction

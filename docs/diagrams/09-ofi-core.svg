@@ -1,0 +1,144 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1370" height="1308" viewBox="35 5 1370 1308" role="img">
+<title>ofi-core · concurrency and output lifecycle</title>
+<desc>Local order-book impact toolkit implementation diagram. Editable Excalidraw source is provided alongside this preview.</desc>
+<rect x="35" y="5" width="1370" height="1308" fill="#ffffff"/>
+<text fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="32" xml:space="preserve">
+<tspan x="60" y="62">ofi-core · concurrency and output lifecycle</tspan>
+</text>
+<text fill="#64748b" font-family="Arial, Helvetica, sans-serif" font-size="18" xml:space="preserve">
+<tspan x="60" y="98">Runtime pipeline • each symbol/date partition has one persistent stateful worker</tspan>
+</text>
+<rect x="60" y="160" width="360" height="190" rx="12" stroke="#334155" stroke-width="1.6" fill="#dcfce7"/>
+<text fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="20" xml:space="preserve">
+<tspan x="78" y="195">Ordered producer</tspan>
+</text>
+<text fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="18" xml:space="preserve">
+<tspan x="78" y="232">pipeline::run()</tspan>
+<tspan x="78" y="255.4">Validate config / hash / open readers</tspan>
+<tspan x="78" y="278.8">Merge every original quality row</tspan>
+</text>
+<rect x="540" y="160" width="360" height="190" rx="12" stroke="#334155" stroke-width="1.6" fill="#dcfce7"/>
+<text fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="20" xml:space="preserve">
+<tspan x="558" y="195">Bounded chunk transport</tspan>
+</text>
+<text fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="18" xml:space="preserve">
+<tspan x="558" y="232">Vec&lt;InputRow&gt;: chunk_rows bound</tspan>
+<tspan x="558" y="255.4">sync_channel(1) per worker</tspan>
+<tspan x="558" y="278.8">Producer blocks on a full queue</tspan>
+</text>
+<rect x="1020" y="160" width="360" height="190" rx="12" stroke="#334155" stroke-width="1.6" fill="#dcfce7"/>
+<text fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="20" xml:space="preserve">
+<tspan x="1038" y="195">Partition worker</tspan>
+</text>
+<text fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="18" xml:space="preserve">
+<tspan x="1038" y="232">std::thread; one symbol + date</tspan>
+<tspan x="1038" y="255.4">Active workers ≤ config.threads</tspan>
+<tspan x="1038" y="278.8">Same worker across chunk boundaries</tspan>
+</text>
+<polyline points="420,255 540,255" stroke="#334155" stroke-width="1.6" fill="none"/>
+<polyline points="529.19,260.22 540,255 529.19,249.78" fill="none" stroke="#334155" stroke-width="1.6"/>
+<text fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="16" xml:space="preserve">
+<tspan x="452" y="231">send</tspan>
+</text>
+<polyline points="900,255 1020,255" stroke="#334155" stroke-width="1.6" fill="none"/>
+<polyline points="1009.19,260.22 1020,255 1009.19,249.78" fill="none" stroke="#334155" stroke-width="1.6"/>
+<text fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="16" xml:space="preserve">
+<tspan x="919" y="231">receive</tspan>
+</text>
+<rect x="1020" y="505" width="360" height="205" rx="12" stroke="#334155" stroke-width="1.6" fill="#dcfce7"/>
+<text fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="20" xml:space="preserve">
+<tspan x="1038" y="540">Persistent OFI / bucket state</tspan>
+</text>
+<text fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="18" xml:space="preserve">
+<tspan x="1038" y="577">OfiState clears at rejected rows</tspan>
+<tspan x="1038" y="600.4">Initialization produces unknown OFI</tspan>
+<tspan x="1038" y="623.8">BucketEngine keeps original boundaries</tspan>
+</text>
+<rect x="540" y="505" width="360" height="205" rx="12" stroke="#334155" stroke-width="1.6" fill="#dcfce7"/>
+<text fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="20" xml:space="preserve">
+<tspan x="558" y="540">Independent execution path</tspan>
+</text>
+<text fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="18" xml:space="preserve">
+<tspan x="558" y="577">TradeSequence prevents duplicates</tspan>
+<tspan x="558" y="600.4">Known direction / raw Quote Test</tspan>
+<tspan x="558" y="623.8">All trade volume; explicit unknown TI</tspan>
+</text>
+<rect x="60" y="505" width="360" height="205" rx="12" stroke="#334155" stroke-width="1.6" fill="#dcfce7"/>
+<text fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="20" xml:space="preserve">
+<tspan x="78" y="540">Right-closed bucket output</tspan>
+</text>
+<text fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="18" xml:space="preserve">
+<tspan x="78" y="577">(start, end], NYC-open anchored</tspan>
+<tspan x="78" y="600.4">One open bucket; L1 update depth</tspan>
+<tspan x="78" y="623.8">First incomplete / bad buckets flagged</tspan>
+</text>
+<polyline points="1200,350 1200,505" stroke="#334155" stroke-width="1.6" fill="none"/>
+<polyline points="1194.78,494.19 1200,505 1205.22,494.19" fill="none" stroke="#334155" stroke-width="1.6"/>
+<text fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="16" xml:space="preserve">
+<tspan x="1220" y="426">sequential rows</tspan>
+</text>
+<polyline points="1060,350 1060,420 720,420 720,505" stroke="#334155" stroke-width="1.6" fill="none"/>
+<polyline points="714.78,494.19 720,505 725.22,494.19" fill="none" stroke="#334155" stroke-width="1.6"/>
+<text fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="16" xml:space="preserve">
+<tspan x="739" y="407">execution + optional raw pre-book</tspan>
+</text>
+<polyline points="1020,607 965,607 965,777 460,777 460,665 420,665" stroke="#334155" stroke-width="1.6" fill="none"/>
+<polyline points="430.81,659.78 420,665 430.81,670.22" fill="none" stroke="#334155" stroke-width="1.6"/>
+<text fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="16" xml:space="preserve">
+<tspan x="790" y="758">OFI + boundary state</tspan>
+</text>
+<polyline points="540,607 420,607" stroke="#334155" stroke-width="1.6" fill="none"/>
+<polyline points="430.81,601.78 420,607 430.81,612.22" fill="none" stroke="#334155" stroke-width="1.6"/>
+<text fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="16" xml:space="preserve">
+<tspan x="430" y="568">trade +</tspan>
+<tspan x="430" y="588.8">Option&lt;sign&gt;</tspan>
+</text>
+<rect x="60" y="935" width="360" height="205" rx="12" stroke="#334155" stroke-width="1.6" fill="#fef3c7"/>
+<text fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="20" xml:space="preserve">
+<tspan x="78" y="970">Private partition output</tspan>
+</text>
+<text fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="18" xml:space="preserve">
+<tspan x="78" y="1007">Worker&#x27;s output.rs::Writer</tspan>
+<tspan x="78" y="1030.4">Accepted + full-grid Parquet</tspan>
+<tspan x="78" y="1053.8">ZSTD; buffers ≤ min(chunk_rows,4096)</tspan>
+</text>
+<rect x="540" y="935" width="360" height="205" rx="12" stroke="#334155" stroke-width="1.6" fill="#dcfce7"/>
+<text fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="20" xml:space="preserve">
+<tspan x="558" y="970">Ordered final assembly</tspan>
+</text>
+<text fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="18" xml:space="preserve">
+<tspan x="558" y="1007">Close sender → join worker</tspan>
+<tspan x="558" y="1030.4">Append partition Parquet in key order</tspan>
+<tspan x="558" y="1053.8">Close final writers; write manifest/QC</tspan>
+</text>
+<rect x="1020" y="935" width="360" height="205" rx="12" stroke="#334155" stroke-width="1.6" fill="#fef3c7"/>
+<text fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="20" xml:space="preserve">
+<tspan x="1038" y="970">Whole-directory publication</tspan>
+</text>
+<text fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="18" xml:space="preserve">
+<tspan x="1038" y="1007">.ofi-stage-* → destination</tspan>
+<tspan x="1038" y="1030.4">Overwrite owned results via backup</tspan>
+<tspan x="1038" y="1053.8">Restore or preserve backup on failure</tspan>
+</text>
+<polyline points="240,710 240,935" stroke="#334155" stroke-width="1.6" fill="none"/>
+<polyline points="234.78,924.19 240,935 245.22,924.19" fill="none" stroke="#334155" stroke-width="1.6"/>
+<text fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="16" xml:space="preserve">
+<tspan x="260" y="836">BucketRow sink</tspan>
+</text>
+<polyline points="420,1037 540,1037" stroke="#334155" stroke-width="1.6" fill="none"/>
+<polyline points="529.19,1042.22 540,1037 529.19,1031.78" fill="none" stroke="#334155" stroke-width="1.6"/>
+<text fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="16" xml:space="preserve">
+<tspan x="432" y="1015">read once</tspan>
+</text>
+<polyline points="900,1037 1020,1037" stroke="#334155" stroke-width="1.6" fill="none"/>
+<polyline points="1009.19,1042.22 1020,1037 1009.19,1031.78" fill="none" stroke="#334155" stroke-width="1.6"/>
+<text fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="16" xml:space="preserve">
+<tspan x="925" y="998">closed</tspan>
+<tspan x="925" y="1018.8">file set</tspan>
+</text>
+<rect x="60" y="1210" width="1320" height="78" rx="12" stroke="#cbd5e1" stroke-width="1.6" fill="#f8fafc"/>
+<text fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="18" xml:space="preserve">
+<tspan x="78" y="1243">State is never independently initialized per arbitrary chunk. Temporary disk scales with partition output and raw ZIP payloads.</tspan>
+<tspan x="78" y="1266.4">Publication is a filesystem rename workflow; overwrite has a brief absence window and is not a database transaction.</tspan>
+</text>
+</svg>

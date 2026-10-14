@@ -6,6 +6,8 @@ they are not a proposal for a different architecture.
 
 Start with the architecture overview and data flow. Use C4 to zoom from the
 system context into the local applications, components and core types.
+The detailed views then cover the PyO3 boundary, Rust modules, worker lifecycle
+and the team's research layer.
 
 Each diagram has an **SVG preview** that renders in GitHub and an editable
 **Excalidraw scene**. Click a preview for full-size viewing. To edit, drag its
@@ -22,6 +24,10 @@ Excalidraw-capable Obsidian/VS Code plugin. All diagram labels are in English.
 | C4 · Level 2 · Containers | [SVG](04-c4-containers.svg) | [Excalidraw](04-c4-containers.excalidraw) | 41 |
 | C4 · Level 3 · Feature generation components | [SVG](05-c4-components.svg) | [Excalidraw](05-c4-components.excalidraw) | 49 |
 | C4 · Level 4 · Core state and relationships | [SVG](06-c4-code.svg) | [Excalidraw](06-c4-code.excalidraw) | 51 |
+| Python ↔ PyO3 ↔ Rust | [SVG](07-pyo3-sequence.svg) | [Excalidraw](07-pyo3-sequence.excalidraw) | 41 |
+| Rust crates and module responsibilities | [SVG](08-rust-crates.svg) | [Excalidraw](08-rust-crates.excalidraw) | 47 |
+| ofi-core · concurrency and output lifecycle | [SVG](09-ofi-core.svg) | [Excalidraw](09-ofi-core.excalidraw) | 49 |
+| Research layer · where models connect | [SVG](10-research-layer.svg) | [Excalidraw](10-research-layer.excalidraw) | 47 |
 
 ## Notation and scope
 
@@ -101,6 +107,46 @@ Code-level state owned by partition workers and BucketEngine, with typed inputs,
 
 Code anchors: [crates/ofi-core/src/worker.rs](../../crates/ofi-core/src/worker.rs), [crates/ofi-core/src/buckets.rs](../../crates/ofi-core/src/buckets.rs), [crates/ofi-core/src/ofi.rs](../../crates/ofi-core/src/ofi.rs), [crates/ofi-core/src/domain.rs](../../crates/ofi-core/src/domain.rs), [crates/ofi-core/src/trades.rs](../../crates/ofi-core/src/trades.rs), [crates/ofi-core/src/raw.rs](../../crates/ofi-core/src/raw.rs).
 
+## Python ↔ PyO3 ↔ Rust
+
+Owned-string transport, interpreter detach, core work, JSON envelope and mapped Python exceptions.
+
+[Full-size SVG](07-pyo3-sequence.svg) · [Editable scene](07-pyo3-sequence.excalidraw)
+
+![Python ↔ PyO3 ↔ Rust](07-pyo3-sequence.svg)
+
+Code anchors: [python/ofi_pipeline/api.py](../../python/ofi_pipeline/api.py), [python/ofi_pipeline/errors.py](../../python/ofi_pipeline/errors.py), [python/ofi_pipeline/_native.pyi](../../python/ofi_pipeline/_native.pyi), [crates/ofi-python/src/lib.rs](../../crates/ofi-python/src/lib.rs).
+
+## Rust crates and module responsibilities
+
+Cargo crate dependency, public engine module groups, private worker and current reader optimizations.
+
+[Full-size SVG](08-rust-crates.svg) · [Editable scene](08-rust-crates.excalidraw)
+
+![Rust crates and module responsibilities](08-rust-crates.svg)
+
+Code anchors: [Cargo.toml](../../Cargo.toml), [crates/ofi-core/Cargo.toml](../../crates/ofi-core/Cargo.toml), [crates/ofi-core/src/lib.rs](../../crates/ofi-core/src/lib.rs), [crates/ofi-python/Cargo.toml](../../crates/ofi-python/Cargo.toml), [crates/ofi-python/src/lib.rs](../../crates/ofi-python/src/lib.rs), [crates/ofi-core/src/adapter.rs](../../crates/ofi-core/src/adapter.rs), [crates/ofi-core/src/time.rs](../../crates/ofi-core/src/time.rs).
+
+## ofi-core · concurrency and output lifecycle
+
+Worker backpressure, persistent partition state, bucket semantics and ordered staged publication.
+
+[Full-size SVG](09-ofi-core.svg) · [Editable scene](09-ofi-core.excalidraw)
+
+![ofi-core · concurrency and output lifecycle](09-ofi-core.svg)
+
+Code anchors: [crates/ofi-core/src/pipeline.rs](../../crates/ofi-core/src/pipeline.rs), [crates/ofi-core/src/worker.rs](../../crates/ofi-core/src/worker.rs), [crates/ofi-core/src/ofi.rs](../../crates/ofi-core/src/ofi.rs), [crates/ofi-core/src/buckets.rs](../../crates/ofi-core/src/buckets.rs), [crates/ofi-core/src/output.rs](../../crates/ofi-core/src/output.rs).
+
+## Research layer · where models connect
+
+Baseline, extensions, notebooks, shared loading/lag helpers, configurations, tests and run artifacts.
+
+[Full-size SVG](10-research-layer.svg) · [Editable scene](10-research-layer.excalidraw)
+
+![Research layer · where models connect](10-research-layer.svg)
+
+Code anchors: [python/ofi_pipeline/research.py](../../python/ofi_pipeline/research.py), [research/baseline/run.py](../../research/baseline/run.py), [research/extensions/README.md](../../research/extensions/README.md), [research/notebooks/README.md](../../research/notebooks/README.md), [configs/baseline.json](../../configs/baseline.json), [tests/research/test_data.py](../../tests/research/test_data.py), [tests/research/test_baseline.py](../../tests/research/test_baseline.py).
+
 ## Keep the gallery current
 
 Edit the `.excalidraw` sources when responsibilities, interfaces or semantics
@@ -122,4 +168,3 @@ shapes, export SVG with Excalidraw and update the preview workflow accordingly.
 Before committing, inspect the previews for clipping and crossing labels,
 verify source links, and run the check command. No dataset, compiled library or
 research result is embedded in these diagrams.
-

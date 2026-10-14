@@ -28,6 +28,7 @@ tests/research/                Feature-loader, lag and model checks
 tests/python/, integration/    API and actual compiled-extension checks
 tests/real_sample/             Explicit delivered-data acceptance
 docs/                          Contracts and recorded engine evidence
+  diagrams/                    Editable architecture, data-flow, C4 and detail views
 benchmarks/                    Engine performance tools
 data/order_book_sample/        Local supplied dataset, ignored by Git
 outputs/features/<name>/       Rust feature datasets and QC
@@ -217,6 +218,8 @@ distribution step; do not commit binaries to Git.
 
 ## Detailed documentation
 
+- [Implementation diagram gallery](docs/diagrams/README.md): architecture, data flow,
+  C4 levels 1–4, PyO3 sequence, Rust crates, core workers and research extension points.
 - [API usage/configuration](docs/usage.md)
 - [Architecture](docs/architecture.md)
 - [Output columns/units](docs/output_contract.md)

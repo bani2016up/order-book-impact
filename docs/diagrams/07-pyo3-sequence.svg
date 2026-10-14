@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1410" height="1438" viewBox="15 5 1410 1438" role="img">
+<title>Python ↔ PyO3 ↔ Rust</title>
+<desc>Local order-book impact toolkit implementation diagram. Editable Excalidraw source is provided alongside this preview.</desc>
+<rect x="15" y="5" width="1410" height="1438" fill="#ffffff"/>
+<text fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="32" xml:space="preserve">
+<tspan x="60" y="62">Python ↔ PyO3 ↔ Rust</tspan>
+</text>
+<text fill="#64748b" font-family="Arial, Helvetica, sans-serif" font-size="18" xml:space="preserve">
+<tspan x="60" y="98">Sequence diagram • same process; time runs downward; dashed arrows are returns</tspan>
+</text>
+<rect x="40" y="160" width="280" height="115" rx="12" stroke="#334155" stroke-width="1.6" fill="#f1f5f9"/>
+<text fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="20" xml:space="preserve">
+<tspan x="58" y="195">Python caller</tspan>
+</text>
+<text fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="18" xml:space="preserve">
+<tspan x="58" y="232">Notebook / model / CLI</tspan>
+</text>
+<rect x="390" y="160" width="280" height="115" rx="12" stroke="#334155" stroke-width="1.6" fill="#dbeafe"/>
+<text fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="20" xml:space="preserve">
+<tspan x="408" y="195">ofi_pipeline.api</tspan>
+</text>
+<text fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="18" xml:space="preserve">
+<tspan x="408" y="232">Config + paths + errors</tspan>
+</text>
+<rect x="740" y="160" width="280" height="115" rx="12" stroke="#334155" stroke-width="1.6" fill="#dbeafe"/>
+<text fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="20" xml:space="preserve">
+<tspan x="758" y="195">_native (ofi-python)</tspan>
+</text>
+<text fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="18" xml:space="preserve">
+<tspan x="758" y="232">PyO3 shared library</tspan>
+</text>
+<rect x="1090" y="160" width="290" height="115" rx="12" stroke="#334155" stroke-width="1.6" fill="#dcfce7"/>
+<text fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="20" xml:space="preserve">
+<tspan x="1108" y="195">ofi_core::pipeline</tspan>
+</text>
+<text fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="18" xml:space="preserve">
+<tspan x="1108" y="232">Pure Rust; native workers</tspan>
+</text>
+<polyline points="180,275 180,1270" stroke="#334155" stroke-width="1.6" fill="none" stroke-dasharray="8 6"/>
+<polyline points="530,275 530,1270" stroke="#334155" stroke-width="1.6" fill="none" stroke-dasharray="8 6"/>
+<polyline points="880,275 880,1270" stroke="#334155" stroke-width="1.6" fill="none" stroke-dasharray="8 6"/>
+<polyline points="1235,275 1235,1270" stroke="#334155" stroke-width="1.6" fill="none" stroke-dasharray="8 6"/>
+<polyline points="180,355 530,355" stroke="#334155" stroke-width="1.6" fill="none"/>
+<polyline points="519.19,360.22 530,355 519.19,349.78" fill="none" stroke="#334155" stroke-width="1.6"/>
+<text fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="16" xml:space="preserve">
+<tspan x="205" y="336">1. PipelineConfig(...)</tspan>
+</text>
+<polyline points="530,435 880,435" stroke="#334155" stroke-width="1.6" fill="none"/>
+<polyline points="869.19,440.22 880,435 869.19,429.78" fill="none" stroke="#334155" stroke-width="1.6"/>
+<text fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="16" xml:space="preserve">
+<tspan x="550" y="416">2. validate_config(config_json)</tspan>
+</text>
+<polyline points="880,515 530,515" stroke="#334155" stroke-width="1.6" fill="none" stroke-dasharray="8 6"/>
+<polyline points="540.81,509.78 530,515 540.81,520.22" fill="none" stroke="#334155" stroke-width="1.6"/>
+<text fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="16" xml:space="preserve">
+<tspan x="550" y="496">3. JSON {&quot;ok&quot;: config} / {&quot;error&quot;: ...}</tspan>
+</text>
+<polyline points="180,615 530,615" stroke="#334155" stroke-width="1.6" fill="none"/>
+<polyline points="519.19,620.22 530,615 519.19,609.78" fill="none" stroke="#334155" stroke-width="1.6"/>
+<text fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="16" xml:space="preserve">
+<tspan x="205" y="596">4. run_pipeline(sample_dir / inputs, output_dir, config)</tspan>
+</text>
+<polyline points="530,710 880,710" stroke="#334155" stroke-width="1.6" fill="none"/>
+<polyline points="869.19,715.22 880,710 869.19,704.78" fill="none" stroke="#334155" stroke-width="1.6"/>
+<text fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="16" xml:space="preserve">
+<tspan x="550" y="691">5. _native.run_pipeline(inputs_json, output_dir, config_json)</tspan>
+</text>
+<polyline points="880,805 1235,805" stroke="#334155" stroke-width="1.6" fill="none"/>
+<polyline points="1224.19,810.22 1235,805 1224.19,799.78" fill="none" stroke="#334155" stroke-width="1.6"/>
+<text fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="16" xml:space="preserve">
+<tspan x="898" y="786">6. py.detach: parse + validate → run()</tspan>
+</text>
+<rect x="1060" y="860" width="340" height="140" rx="12" stroke="#334155" stroke-width="1.6" fill="#dcfce7"/>
+<text fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="20" xml:space="preserve">
+<tspan x="1078" y="895">Native file-set operation</tspan>
+</text>
+<text fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="18" xml:space="preserve">
+<tspan x="1078" y="932">Read / merge / parallel workers</tspan>
+<tspan x="1078" y="955.4">OFI / signing / buckets / write</tspan>
+<tspan x="1078" y="978.8">Join, close files, publish dataset</tspan>
+</text>
+<polyline points="1235,1060 880,1060" stroke="#334155" stroke-width="1.6" fill="none" stroke-dasharray="8 6"/>
+<polyline points="890.81,1054.78 880,1060 890.81,1065.22" fill="none" stroke="#334155" stroke-width="1.6"/>
+<text fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="16" xml:space="preserve">
+<tspan x="910" y="1041">7. Result&lt;RunReport, Error&gt;</tspan>
+</text>
+<polyline points="880,1145 530,1145" stroke="#334155" stroke-width="1.6" fill="none" stroke-dasharray="8 6"/>
+<polyline points="540.81,1139.78 530,1145 540.81,1150.22" fill="none" stroke="#334155" stroke-width="1.6"/>
+<text fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="16" xml:space="preserve">
+<tspan x="550" y="1126">8. JSON {&quot;ok&quot;: report} / {&quot;error&quot;: {code, message}}</tspan>
+</text>
+<polyline points="530,1230 180,1230" stroke="#334155" stroke-width="1.6" fill="none" stroke-dasharray="8 6"/>
+<polyline points="190.81,1224.78 180,1230 190.81,1235.22" fill="none" stroke="#334155" stroke-width="1.6"/>
+<text fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="16" xml:space="preserve">
+<tspan x="205" y="1211">9. Typed RunReport or mapped Python exception</tspan>
+</text>
+<rect x="60" y="1340" width="1320" height="78" rx="12" stroke="#cbd5e1" stroke-width="1.6" fill="#f8fafc"/>
+<text fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="18" xml:space="preserve">
+<tspan x="78" y="1373">Owned strings cross the boundary; Rust work runs detached from the Python interpreter, with no event-level callbacks.</tspan>
+<tspan x="78" y="1396.4">The caller waits synchronously. Configuration validation may happen before the pipeline call; the native call validates again.</tspan>
+</text>
+</svg>
