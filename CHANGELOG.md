@@ -267,3 +267,25 @@ commit hashes are authoritative in Git history, not self-referential log entries
 - Intended commit: `feat(core): sign executions against original paired pre-quotes`.
 - Remaining: M9 repeatable acceptance and precision provenance, M10 bounded
   concurrency/release measurements, M11 coverage/clean wheels/CI/handoff.
+
+## M9a — exact precision provenance
+
+- Retain delivered rounding flags as `Option<bool>` in the event domain; missing
+  flags remain unknown and are counted/warned in QC. Added per-partition delivered
+  and raw rounded-timestamp counts. When original decimal text is supplied,
+  validate its deterministic rounded ns/flag against delivered values without
+  changing the delivered timestamp. Clean CSV with >9 timestamp fractional
+  digits is rejected rather than silently truncated by the RFC3339 parser.
+- Updated domain/adapter/time/pipeline, typed Python partition metadata and focused
+  precision fixture. Half-up carry from 34200.999999999500 -> 34201 seconds is
+  verified; a contradictory delivered flag fails as malformed data.
+- Checks passed: `cargo test -p ofi-core --offline` (21 unit + 3 adapter + 2
+  pipeline tests, external ingestion explicitly ignored), `cargo fmt --all`,
+  `VIRTUAL_ENV="$PWD/.venv" .venv/bin/maturin develop --offline`,
+  `.venv/bin/python -m pytest -q tests/integration/test_pipeline.py tests/integration/test_quote_test.py`
+  (13 passed), `.venv/bin/ruff check python tests`, `.venv/bin/mypy`,
+  `cargo clippy --workspace --all-targets --offline -- -D warnings`.
+- Real reconciliation suites are running against the verified bundle; no real
+  files are committed or modified. New QC distinguishes absent flags from false.
+- Intended commit: `fix(io): validate and report delivered timestamp precision evidence`.
+- Remaining: M9 acceptance report, M10 concurrency/performance, M11 distribution/coverage.

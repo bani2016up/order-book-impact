@@ -2,7 +2,7 @@
 use crate::{
     domain::{Book, Event, Key, Level, OrderGuard, Quality, Trade, price_units},
     error::{Error, ErrorCode, Result},
-    time::{date_for_timestamp, timestamp_from_text, validate_local_ns},
+    time::{date_for_timestamp, decimal_seconds_ns, timestamp_from_text, validate_local_ns},
 };
 use arrow_array::{
     Array, BooleanArray, Float64Array, Int64Array, RecordBatch, StringArray,
@@ -379,6 +379,21 @@ impl TableReader {
             if segment < 1 {
                 return Err(malformed("accepted segment_id must be positive"));
             }
+            let timestamp_rounded = if r.has("timestamp_subnanosecond_rounded") {
+                Some(r.boolean("timestamp_subnanosecond_rounded")?)
+            } else {
+                None
+            };
+            if r.has("time_seconds_text") {
+                let (ns, rounded) = decimal_seconds_ns(r.text("time_seconds_text")?)?;
+                if ns != r.integer("time_ns")?
+                    || timestamp_rounded.is_some_and(|flag| flag != rounded)
+                {
+                    return Err(malformed(
+                        "original decimal time/rounding flag disagrees with delivered nanoseconds",
+                    ));
+                }
+            }
             Ok(Event {
                 key,
                 timestamp,
@@ -386,6 +401,7 @@ impl TableReader {
                 segment,
                 prev_available: r.boolean("prev_state_available")?,
                 l1_update: r.boolean("is_quote_update")?,
+                timestamp_rounded,
             })
         })?;
         if let Some(e) = &event {

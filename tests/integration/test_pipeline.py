@@ -117,3 +117,37 @@ def test_duplicate_input_and_missing_evidence(bundle, tmp_path):
     (bundle / "reports/event_quality.parquet").unlink()
     with pytest.raises(MissingInputError):
         run_pipeline(bundle, tmp_path / "missing", config())
+
+
+def test_decimal_rounding_flags_and_precision_failures(bundle, tmp_path):
+    path = bundle / "data/events_clean.parquet"
+    table = pq.read_table(path)
+    text = table["time_seconds_text"].to_pylist()
+    # Decimal half-up gives exactly the already-delivered first timestamp.
+    text[0] = "34200.999999999500"
+    flags = [True] + [False] * (len(text) - 1)
+    table = table.set_column(
+        table.schema.get_field_index("time_seconds_text"), "time_seconds_text", pa.array(text)
+    )
+    table = table.set_column(
+        table.schema.get_field_index("timestamp_subnanosecond_rounded"),
+        "timestamp_subnanosecond_rounded",
+        pa.array(flags),
+    )
+    pq.write_table(table, path)
+    report = run_pipeline(bundle, tmp_path / "rounded", config())
+    assert report.partitions[0].rounded_event_timestamps == 1
+    assert report.partitions[0].missing_precision_flag_rows == 0
+    from ofi_pipeline import MalformedDataError
+
+    flags[0] = False
+    pq.write_table(
+        table.set_column(
+            table.schema.get_field_index("timestamp_subnanosecond_rounded"),
+            "timestamp_subnanosecond_rounded",
+            pa.array(flags),
+        ),
+        path,
+    )
+    with pytest.raises(MalformedDataError, match="rounding flag"):
+        run_pipeline(bundle, tmp_path / "wrong-flag", config())

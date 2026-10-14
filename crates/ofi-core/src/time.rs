@@ -36,6 +36,15 @@ pub fn date_for_timestamp(timestamp: i64) -> String {
 }
 
 pub fn timestamp_from_text(text: &str) -> Result<i64> {
+    if text
+        .split_once('.')
+        .is_some_and(|(_, fraction)| fraction.bytes().take_while(u8::is_ascii_digit).count() > 9)
+    {
+        return Err(Error::new(
+            ErrorCode::Schema,
+            "clean CSV timestamp has subnanosecond precision; use delivered rounded UTC nanoseconds",
+        ));
+    }
     let stamp = DateTime::parse_from_rfc3339(text).map_err(|e| {
         Error::new(
             ErrorCode::Malformed,
@@ -156,6 +165,7 @@ mod tests {
             assert!(decimal_seconds_ns(text).is_err(), "{text}");
         }
         assert!(timestamp_from_text("bad").is_err());
+        assert!(timestamp_from_text("2012-06-21T13:30:00.000000000001Z").is_err());
         assert!(timestamp_from_text("2012-06-21T09:30:00-04:00").is_err());
         assert!(timestamp_from_text("2500-01-01T00:00:00Z").is_err());
         let stamp = local_timestamp("2012-06-21", "09:30:00").unwrap();

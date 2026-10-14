@@ -77,6 +77,7 @@ pub struct Event {
     pub segment: i64,
     pub prev_available: bool,
     pub l1_update: bool,
+    pub timestamp_rounded: Option<bool>,
 }
 #[derive(Debug, Clone)]
 pub struct Quality {

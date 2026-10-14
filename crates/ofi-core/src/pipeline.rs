@@ -35,6 +35,9 @@ pub struct PartitionReport {
     pub rejection_reasons: BTreeMap<String, u64>,
     pub source_rejection_reasons: BTreeMap<String, u64>,
     pub signing: TradeTotals,
+    pub rounded_event_timestamps: u64,
+    pub missing_precision_flag_rows: u64,
+    pub rounded_raw_timestamps: u64,
 }
 #[derive(Debug, Serialize)]
 pub struct RunReport {
@@ -177,6 +180,13 @@ pub fn run(inputs: Inputs, output: PathBuf, config: Config) -> Result<RunReport>
         } else {
             None
         };
+        if let Some(event) = matched_event {
+            report.rounded_event_timestamps += u64::from(event.timestamp_rounded == Some(true));
+            report.missing_precision_flag_rows += u64::from(event.timestamp_rounded.is_none());
+        }
+        if let Some((row, _)) = &raw_row {
+            report.rounded_raw_timestamps += u64::from(row.rounded);
+        }
         if let (Some(event), Some((row, _))) = (matched_event, &raw_row) {
             let book = row.book.as_ref().ok_or_else(|| {
                 Error::new(
@@ -235,11 +245,14 @@ pub fn run(inputs: Inputs, output: PathBuf, config: Config) -> Result<RunReport>
         raw.finish()?;
     }
     writer.finish()?;
-    let warnings = if config.threads > 1 {
+    let mut warnings = if config.threads > 1 {
         vec!["This initial runner is sequential; bounded independent-partition concurrency is pending.".into()]
     } else {
         vec![]
     };
+    if partitions.iter().any(|p| p.missing_precision_flag_rows > 0) {
+        warnings.push("Some clean events lack delivered timestamp rounding flags; integer UTC nanoseconds remain validated.".into());
+    }
     let mut raw_hashes = Vec::new();
     for input in &inputs.raw {
         for path in input.paths()? {

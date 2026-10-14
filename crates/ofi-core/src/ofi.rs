@@ -269,6 +269,7 @@ mod tests {
             segment,
             prev_available: prev,
             l1_update: false,
+            timestamp_rounded: None,
         }
     }
     #[test]

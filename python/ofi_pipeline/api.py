@@ -94,6 +94,9 @@ class PartitionReport:
     rejection_reasons: dict[str, int]
     source_rejection_reasons: dict[str, int]
     signing: SigningCoverage
+    rounded_event_timestamps: int
+    missing_precision_flag_rows: int
+    rounded_raw_timestamps: int
 
 
 @dataclass(frozen=True)

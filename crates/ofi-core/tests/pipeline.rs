@@ -58,7 +58,7 @@ fn core_file_set_output_and_owned_overwrite() {
     let report = run(inputs.clone(), output.clone(), config()).unwrap();
     assert_eq!(report.partitions[0].feature_rows, 2);
     assert_eq!(report.partitions[0].signing.volume, 7);
-    assert!(report.warnings.is_empty());
+    assert!(report.warnings.iter().any(|w| w.contains("rounding flags")));
     let reader =
         ParquetRecordBatchReaderBuilder::try_new(fs::File::open(&report.features_path).unwrap())
             .unwrap();
