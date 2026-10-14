@@ -7,6 +7,26 @@ the owner-provided attachment; `docs/DATASET_CONTRACT.md` remains normative.
 
 ## Checklist
 
+## Research workspace — shared data helpers
+
+- The owner authorized a same-repository research layer and a team-oriented README.
+  Model code is explicitly allowed under `research/`; raw-event computation stays in Rust.
+- Added optional research dependencies and the installed `ofi_pipeline.research` module.
+  Feature loading validates accepted keys, UTC boundaries, finite numerical features,
+  optional requested levels and preserved unknown TI. Lag helpers require all intervening
+  intervals to be adjacent within a symbol/session and never mutate the input.
+- Updated agent instructions for model locations, ignored result directories and the
+  canonical `data/order_book_sample/` location. The separate Russian team-agent handoff
+  requested by the owner will be delivered only in chat, not saved in this repository.
+- Focused checks passed: `.venv/bin/python -m pytest -q tests/research/test_data.py`
+  (10 tests, including compiled Rust output ingestion), Ruff for changed helpers/tests,
+  and strict mypy (7 package source files). The sole pandas import annotation documents
+  its missing bundled third-party stubs; production API checks remain enabled.
+- This adds no change to Rust calculations or the core Python API.
+- Intended commit: `feat(research): add validated feature loading and gap-safe lags`.
+
+## Original implementation checklist
+
 - [x] M0: inspect repository, delivery integrity, physical schemas, preparation code.
 - [x] M1: pure Rust workspace, compiled PyO3 extension, typed Python package.
 - [x] M2: checked domain types, sessions, decimal time, configuration and ordering.

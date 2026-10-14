@@ -2,7 +2,7 @@
 
 ## Objective and scope
 
-Implement the complete owner-provided attachment specification recorded in `CHANGELOG.md`, using `docs/DATASET_CONTRACT.md` as the sample contract. The data pipeline runs in Rust; Python exposes a library and CLI interface through a compiled PyO3 extension. Python must actually invoke the Rust engine in integration tests.
+Maintain the implementation recorded in `CHANGELOG.md`, using `docs/DATASET_CONTRACT.md` as the sample contract. The data pipeline runs in Rust; Python exposes a library and CLI interface through a compiled PyO3 extension. Python must actually invoke the Rust engine in integration tests. The owner also authorized a Python research layer in this repository; follow the model locations and workflow documented in README.md.
 
 Work only in this repository. This checkout is nested inside a separate Obsidian Git checkout. Before any Git mutation, verify that `git rev-parse --show-toplevel` resolves to this repository. Never stage or commit files from the enclosing repository.
 
@@ -30,11 +30,14 @@ Use English for every implementation-agent response, plan, code identifier, code
 - Expose batched/file-level operations; do not cross the FFI boundary once per event.
 - Do not fabricate data, results, missing deep levels, real-sample verification, forecasting ability, performance claims, or perfect coverage.
 - Keep real sample data and raw vendor archives out of Git. Small authored test fixtures are allowed and must be explicitly labeled synthetic.
-- Do not add a GUI, web service, database, live-trading system, model-training pipeline, or a second Python implementation of the production engine.
+- Place paper-baseline research in `research/baseline/`, model extensions in `research/extensions/`, exploratory notebooks in `research/notebooks/`, model configuration in `configs/`, and model tests in `tests/research/`.
+- Shared feature-loading and temporal-adjacency helpers belong in the installed `ofi_pipeline.research` module. Research code may estimate models in Python; it must not replace or duplicate Rust event-level feature computation.
+- Keep all generated features, model artifacts, metrics, and figures under ignored `outputs/features/`, `outputs/baseline/`, or `outputs/extensions/` directories.
+- Do not add a GUI, web service, database, live-trading system, or a second Python implementation of the production engine.
 
 ## Missing input or ambiguity
 
-Inspect actual schemas and Lev's reference preparation code before asserting real-data parity. The owner supplied the ignored local `order_book_sample/` bundle. If that bundle is unavailable in another checkout, continue useful work using authored fixtures and flag the real-data acceptance step as unverified. Ask for the dataset path when necessary; do not substitute invented data or silently download a different sample.
+Inspect actual schemas and Lev's reference preparation code before asserting real-data parity. The owner supplied the ignored local `data/order_book_sample/` bundle. Explicit external sample paths are also supported. If the bundle is unavailable in another checkout, continue useful work using authored fixtures and flag the real-data acceptance step as unverified. Ask for the dataset path when necessary; do not substitute invented data or silently download a different sample.
 
 Document decisions and any disagreement between source code, metadata, and written description. Preserve the supplied contract unless evidence justifies a documented correction. Do not change semantics just to match an expected row count.
 
