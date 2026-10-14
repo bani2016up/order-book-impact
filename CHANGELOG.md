@@ -1151,3 +1151,20 @@ Baseline to final (B → F); time variability is median absolute deviation; proc
   and exact parity. This raw subtask commits only raw.rs and CHANGELOG; the
   separately authored pipeline reader drops remain pending their own commit
   with the same joint measurement attribution. Nothing is pushed.
+
+## Rust optimization P6 — coordinated exhausted-reader release commit (2026-10-14)
+
+- The separate memory investigator authored the four-line pipeline change:
+  release event/trade/quality readers after trailing-row and nonempty-current
+  validations, before final chunk handoff and ordered partition assembly. Error
+  branches, public signatures, configuration, queues, manifest and publication
+  remain unchanged. The implementation diff was independently reviewed.
+- Supervising-root joint validation with the raw-buffer changes passed: 34 core
+  units, six adapters, two pipeline tests and 36 compiled Quote Test/parallel/
+  pipeline integrations. All 30 regular outputs and eight calls in each 1M warm
+  and verified low-residency pilot passed the unchanged exact parity and stability
+  guards recorded above.
+- Joint incremental Quote Test speedup was 1.660x; current-task family-weighted
+  speedup was 1.619x. Reader release was not measured separately; no isolated
+  speed or RSS benefit is claimed. This local commit includes only pipeline.rs
+  and this coordinated evidence entry. No push or history rewrite was performed.

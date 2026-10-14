@@ -223,6 +223,10 @@ pub fn run(inputs: Inputs, output: PathBuf, config: Config) -> Result<RunReport>
     }
     let mut current = current
         .ok_or_else(|| Error::new(ErrorCode::Quality, "original quality evidence is empty"))?;
+    // Release exhausted input buffers before final chunk handoff and partition assembly.
+    drop(events);
+    drop(trades);
+    drop(quality);
     if !chunk.is_empty() {
         current.send(chunk)?;
     }
