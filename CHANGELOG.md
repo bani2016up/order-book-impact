@@ -603,3 +603,25 @@ commit hashes are authoritative in Git history, not self-referential log entries
 - Remaining required implementation work: none. Known limitations remain honest
   coverage/OS paths, unrun hosted platform matrix, scoped Lev-v1 data and
   documented filesystem/cache/temporary-disk behavior.
+
+## Windows CI — close test-owned Parquet readers before overwrite
+
+- Both supplied Windows/Python 3.10 and 3.12 logs successfully compiled the Rust
+  workspace and passed core unit/adapter tests. They failed at the same owned-output
+  overwrite in `crates/ofi-core/tests/pipeline.rs` with OS error 5 (access denied).
+- The test retained its Parquet reader/file handle across directory replacement
+  and backup cleanup. Explicitly drop that reader before overwrite, and scope the
+  post-overwrite reader so it is also closed before later directory operations.
+- Strengthened the existing cross-platform test: verify the rewritten Parquet is
+  readable and both staging and backup directories are removed after success.
+  No Windows test was disabled and the Windows CI matrix remains enabled.
+- Production Rust, Python API, project structure and output semantics are unchanged;
+  this avoids overlapping the separate optimization agent's implementation work.
+- Checks passed on macOS: `cargo test -p ofi-core --test pipeline --locked --offline`
+  (2 tests); `PYO3_PYTHON="$PWD/.venv/bin/python" cargo test --workspace --locked --offline`
+  (33 tests, 1 explicitly ignored external-sample test); `cargo fmt --all -- --check`;
+  all-target workspace Clippy with `-D warnings`; diff whitespace review.
+- Native Windows execution is unavailable on this host. The owner will push and
+  verify both Windows jobs; local checks do not constitute a Windows CI pass.
+- Intended local commit: `test: close Parquet readers before Windows overwrite`.
+- No push, remote run, release or package publication was performed.

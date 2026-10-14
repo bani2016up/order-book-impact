@@ -76,6 +76,8 @@ fn core_file_set_output_and_owned_overwrite() {
             .data_type(),
         &arrow_schema::DataType::Int64
     );
+    // Release the Parquet file handle before replacing/removing its directory on Windows.
+    drop(reader);
     assert_eq!(
         run(inputs.clone(), output.clone(), config())
             .unwrap_err()
@@ -86,7 +88,19 @@ fn core_file_set_output_and_owned_overwrite() {
         overwrite: true,
         ..config()
     };
-    run(inputs.clone(), output.clone(), c.clone()).unwrap();
+    let rewritten = run(inputs.clone(), output.clone(), c.clone()).unwrap();
+    {
+        let reader = ParquetRecordBatchReaderBuilder::try_new(
+            fs::File::open(&rewritten.features_path).unwrap(),
+        )
+        .unwrap();
+        assert_eq!(reader.metadata().file_metadata().num_rows(), 2);
+    }
+    assert!(!fs::read_dir(dir.path()).unwrap().any(|entry| {
+        let name = entry.unwrap().file_name();
+        let name = name.to_string_lossy();
+        name.starts_with(".ofi-stage-") || name.starts_with(".ofi-backup-")
+    }));
     fs::write(output.join("mine.txt"), "keep").unwrap();
     assert!(run(inputs.clone(), output.clone(), c.clone()).is_err());
     assert_eq!(fs::read_to_string(output.join("mine.txt")).unwrap(), "keep");
