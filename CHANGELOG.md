@@ -991,3 +991,76 @@ Baseline to final (B → F); time variability is median absolute deviation; proc
   benefit, preserving the small Quote Test regression and inconclusive RSS evidence.
   Typed batch caching remains unimplemented; the next candidate isolates private
   string/book copy reductions. No implementation commit is pushed.
+
+## Rust optimization P5 — reuse validated key/book storage (2026-10-14, candidate)
+
+- Independent candidate after retained `0516002`: compare borrowed partition
+  names/dates before allocating a new partition tuple; reuse OrderGuard and OFI
+  original-key String storage only after unchanged checks; private OFI predecessor
+  retains only Book rather than an entire Event and embedded execution; explicitly
+  reuse predecessor/boundary/left-book Vec storage via field-level `clone_from`.
+  Public derives/types/signatures, checked arithmetic and failure sequencing remain
+  unchanged. Rejected gaps still clear predecessor/boundary state. No reader/chunk,
+  queue, worker, partition or output-buffer bound increases; retained vectors remain
+  at requested depth, and a fixed number of key strings retain their maximum seen
+  capacities rather than allocating a fresh copy on every row.
+- Added three meaningful Rust regressions: changing key lengths across partitions
+  and failed order checks preserve owned previous state; caller mutations cannot
+  alter retained OFI books; standalone nonzero initial ID and segment-increment
+  effects after failed initialization remain historical behavior; emitted bucket
+  features and caller books remain independent across repeated boundary reuse.
+- Passed `cargo fmt --all -- --check`, `git diff --check`,
+  `PYO3_PYTHON="$PWD/.venv/bin/python" cargo test -p ofi-core --locked --offline`
+  (32 unit + 6 adapter + 2 pipeline; external sample ignored in this focused run),
+  `cargo clippy -p ofi-core --all-targets --locked --offline -- -D warnings`.
+  Explicit-venv/PYO3 release rebuild using
+  `.venv/bin/maturin develop --release --locked --offline` passed.
+  Loaded extension SHA-256:
+  `223ff29f11e5d15ef418afaef0052bb52e4332700da5e02431786f7d4fc27222`.
+- Performance measurement and retention pending; raw readers remain unchanged.
+- Newly compiled `.venv/bin/python -m pytest -q tests/integration/test_pipeline.py
+  --basetemp outputs/features/copy-reuse-checks`: 24 passed in 2.03s.
+- Serialized regular suite `copy-highload-20261014` via unchanged
+  `/tmp/ofi_regular_stage.py` compared incrementally to `indexed-highload-20261014`:
+  all 30 outputs exactly matched retained baseline (schemas/order/floats/nulls,
+  full quality, manifest and stable QC), with source/native guards and chunk/thread
+  invariance/Quote Test conservation passing. One warmup + five measured repeats.
+
+| Case | Indexed → copy median s (copy min–max; MAD) | Indexed → copy peak MiB (copy min–max) | Incremental speedup |
+| --- | --- | --- | ---: |
+| real-t1-c4096 | 1.518004 → 1.245414 (1.180196–1.349194; 0.020449) | 108.88 → 111.33 (108.81–114.19) | 1.219x |
+| real-t2-c65536 | 1.352256 → 1.118947 (1.094927–1.171692; 0.024020) | 250.86 → 265.27 (239.28–340.14) | 1.209x |
+| real-t4-c1 | 28.917654 → 29.063102 (28.445883–29.282159; 0.093278) | 49.50 → 51.83 (49.83–52.27) | 0.995x |
+| quote-t2-c4096 | 3.103519 → 2.805033 (2.729208–2.808900; 0.002536) | 102.33 → 110.59 (101.67–113.73) | 1.106x |
+| fixture-t2-c4096 | 0.058762 → 0.051557 (0.045941–0.087200; 0.005617) | 65.56 → 64.73 (58.73–68.92) | 1.140x |
+
+- Incremental family-weighted geometric speedup 1.127x (real-direction 1.136x,
+  Quote Test 1.106x, authored 1.140x); versus current-task baseline 1.345x.
+  Tiny chunks are 0.5% slower with overlapping ranges; normal/quote/c1 RSS medians
+  rose versus indexed. All cases and adverse observations are retained.
+- Preliminary 1M-only warm pilot `copy-1m-20261014`: eight verified calls,
+  one warmup + three measured repeats per case; same derived baseline references
+  and immutable harness/helper/identity/decoded guards as P4.
+  t1/c4096: 1.459269s (1.407163–2.003271;
+  MAD 0.052107), RSS 129.94 MiB (129.33–134.94),
+  original-baseline speedup 1.820x, RSS ratio 1.0657.
+  t4/c65536: 1.130638s (1.126948–1.237980;
+  MAD 0.003690), RSS 302.94 MiB (250.30–307.64),
+  original-baseline speedup 2.256x, RSS ratio 1.1236.
+- Preliminary 1M-only verified low-residency pilot `copy-cold-1m-20261014`: eight verified calls,
+  one warmup + three measured repeats per case; same derived baseline references
+  and immutable harness/helper/identity/decoded guards as P4.
+  t1/c4096: 1.327426s (1.256651–1.364448;
+  MAD 0.037022), RSS 128.02 MiB (117.36–134.08),
+  original-baseline speedup 2.017x, RSS ratio 0.9609.
+  t4/c65536: 1.203487s (1.157903–1.205178;
+  MAD 0.001691), RSS 266.84 MiB (243.44–285.91),
+  original-baseline speedup 2.139x, RSS ratio 1.1363.
+- Warm RSS increased versus indexed pilots (t1 +7.6%, t4 +22.1%); cold RSS
+  decreased versus indexed (t1 1.1%, t4 11.1%) but cold t4 remains 13.6% above
+  original baseline. No general memory reduction is claimed. Max-seen key String
+  capacities are intentionally retained in a fixed number of prior keys; book
+  storage remains at requested depth. Cache/machine and pilot limitations of P4
+  apply. Full final high-load and acceptance work remain required.
+- Decision: retain copy reductions for the independently measured incremental
+  speed benefit and exact parity. Raw reader changes are deferred; no push.

@@ -146,7 +146,11 @@ impl BucketEngine {
                     .checked_add(event.book.depth_twice())
                     .ok_or_else(|| Error::new(ErrorCode::Overflow, "depth sum overflow"))?;
             }
-            self.boundary = Some(event.book.clone());
+            if let Some(boundary) = &mut self.boundary {
+                boundary.0.clone_from(&event.book.0);
+            } else {
+                self.boundary = Some(event.book.clone());
+            }
         } else {
             self.boundary = None;
         }
@@ -208,7 +212,11 @@ impl BucketEngine {
             trades: self.trades.clone(),
             features,
         })?;
-        self.left = self.boundary.clone();
+        match (&mut self.left, &self.boundary) {
+            (Some(left), Some(boundary)) => left.0.clone_from(&boundary.0),
+            (_, Some(boundary)) => self.left = Some(boundary.clone()),
+            (_, None) => self.left = None,
+        }
         self.start = self.end;
         if self.start < self.close {
             self.end = checked_i64(
@@ -315,6 +323,41 @@ mod tests {
             assert_eq!(f.ofi, vec![0]);
             assert_eq!(rows.last().unwrap().timestamp, open + 120 * NS);
         }
+    }
+    #[test]
+    fn reused_boundary_books_preserve_emitted_features_and_caller_ownership() {
+        let (config, open) = setup(10);
+        let mut engine = BucketEngine::new("A", "2012-06-21", &config).unwrap();
+        let mut rows = Vec::new();
+        for (id, seconds, size) in [(0, 1, 100), (1, 11, 130), (2, 21, 160), (3, 31, 190)] {
+            let quality = q(id, open + seconds * NS, true);
+            let mut event = e(&quality, size, 1, id > 0, true);
+            engine
+                .observe(&quality, Some(&event), None, &mut |row| {
+                    rows.push(row);
+                    Ok(())
+                })
+                .unwrap();
+            // Mutating a prior caller book must not change either retained book.
+            event.book.0[0].bid_size = 999;
+        }
+        let first_valid = rows[1].features.as_ref().unwrap();
+        assert_eq!(first_valid.avg_depth, 125.0);
+        assert_eq!(first_valid.ofi, vec![30]);
+        assert_eq!(rows[2].features.as_ref().unwrap().avg_depth, 140.0);
+        let retained = first_valid.clone();
+        engine
+            .finish(&mut |row| {
+                rows.push(row);
+                Ok(())
+            })
+            .unwrap();
+        assert_eq!(
+            rows[1].features.as_ref().unwrap().avg_depth,
+            retained.avg_depth
+        );
+        assert_eq!(rows[1].features.as_ref().unwrap().ofi, retained.ofi);
+        assert_eq!(rows[3].features.as_ref().unwrap().avg_depth, 155.0);
     }
     #[test]
     fn l1_update_weighting_half_tick_and_boundary_membership() {

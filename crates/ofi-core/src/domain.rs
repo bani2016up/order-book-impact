@@ -27,6 +27,14 @@ pub struct Key {
     pub event_id: i64,
 }
 
+impl Key {
+    pub(crate) fn reuse_from(&mut self, key: &Self) {
+        self.symbol.clone_from(&key.symbol);
+        self.date.clone_from(&key.date);
+        self.event_id = key.event_id;
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct Level {
     pub bid: i64,
@@ -147,7 +155,12 @@ impl OrderGuard {
                 ));
             }
         }
-        self.last = Some((key.clone(), timestamp));
+        if let Some((prior, time)) = &mut self.last {
+            prior.reuse_from(key);
+            *time = timestamp;
+        } else {
+            self.last = Some((key.clone(), timestamp));
+        }
         Ok(())
     }
 }
@@ -228,6 +241,44 @@ mod tests {
         assert!(g.observe(&key("A", 4), 3, false).is_err());
         assert!(g.observe(&key("", 0), 1, false).is_err());
         assert!(g.observe(&key("B", -1), 1, false).is_err());
+    }
+    #[test]
+    fn reused_order_keys_remain_owned_and_failures_preserve_previous_state() {
+        let mut guard = OrderGuard::default();
+        let mut source = Key {
+            symbol: "A_long_symbol".into(),
+            date: "2012-06-21".into(),
+            event_id: 0,
+        };
+        guard.observe(&source, 10, true).unwrap();
+        let original = source.clone();
+        source.symbol = "Z".into();
+        source.date = "later".into();
+        assert_eq!(guard.last.as_ref().unwrap().0, original);
+        for (symbol, date) in [
+            ("B", "2012-06-21"),
+            ("C_much_longer_symbol", "2012-06-21"),
+            ("D", "short"),
+        ] {
+            let mut key = Key {
+                symbol: symbol.into(),
+                date: date.into(),
+                event_id: 0,
+            };
+            guard.observe(&key, 10, true).unwrap();
+            key.event_id = 1;
+            guard.observe(&key, 10, true).unwrap();
+            let saved = guard.last.clone();
+            assert!(guard.observe(&key, 10, true).is_err());
+            key.event_id = 2;
+            assert!(guard.observe(&key, 9, true).is_err());
+            key.event_id = 3;
+            assert!(guard.observe(&key, 11, true).is_err());
+            assert_eq!(guard.last, saved);
+            key.event_id = 2;
+            guard.observe(&key, 11, true).unwrap();
+            assert_eq!(guard.last.as_ref().unwrap(), &(key, 11));
+        }
     }
     #[test]
     fn execution_validation() {

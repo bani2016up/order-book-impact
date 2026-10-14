@@ -122,8 +122,11 @@ pub fn run(inputs: Inputs, output: PathBuf, config: Config) -> Result<RunReport>
     let mut partition_count = 0;
     let mut chunk = Vec::with_capacity(config.chunk_rows);
     while let Some(q) = quality.next_quality()? {
-        let key = (q.key.symbol.clone(), q.key.date.clone());
-        if partition.as_ref() != Some(&key) {
+        if partition
+            .as_ref()
+            .is_none_or(|(symbol, date)| symbol != &q.key.symbol || date != &q.key.date)
+        {
+            let key = (q.key.symbol.clone(), q.key.date.clone());
             partition_count += 1;
             if partition_count > config.max_partitions {
                 return Err(Error::new(

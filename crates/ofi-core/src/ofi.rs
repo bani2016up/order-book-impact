@@ -35,7 +35,7 @@ pub fn contribution(previous: &Book, current: &Book) -> Result<Vec<i64>> {
 
 #[derive(Default)]
 pub struct OfiState {
-    previous: Option<Event>,
+    previous: Option<Book>,
     last_original: Option<Key>,
     segment: i64,
 }
@@ -93,13 +93,13 @@ impl OfiState {
                         format!("unexpected segment change at {:?}", quality.key),
                     ));
                 }
-                if (event.book.0[0] != previous.book.0[0]) != event.l1_update {
+                if (event.book.0[0] != previous.0[0]) != event.l1_update {
                     return Err(Error::new(
                         ErrorCode::Quality,
                         format!("is_quote_update contradicts L1 change at {:?}", quality.key),
                     ));
                 }
-                Some(contribution(&previous.book, &event.book)?)
+                Some(contribution(previous, &event.book)?)
             } else {
                 self.segment = self
                     .segment
@@ -113,13 +113,21 @@ impl OfiState {
                 }
                 None
             };
-            self.previous = Some(event.clone());
+            if let Some(previous) = &mut self.previous {
+                previous.0.clone_from(&event.book.0);
+            } else {
+                self.previous = Some(event.book.clone());
+            }
             result
         } else {
             self.previous = None;
             None
         };
-        self.last_original = Some(quality.key.clone());
+        if let Some(last) = &mut self.last_original {
+            last.reuse_from(&quality.key);
+        } else {
+            self.last_original = Some(quality.key.clone());
+        }
         Ok(transition)
     }
 }
@@ -289,6 +297,52 @@ mod tests {
         );
         assert_eq!(
             s.observe(&q(4, true), Some(&event(4, 2, true))).unwrap(),
+            Some(vec![0])
+        );
+    }
+    #[test]
+    fn retained_books_are_owned_and_failed_calls_keep_historical_state_effects() {
+        let mut state = OfiState::default();
+        // Standalone OFI state historically permits a nonzero first original ID.
+        let mut first = event(7, 1, false);
+        state.observe(&q(7, true), Some(&first)).unwrap();
+        first.book.0[0].bid_size = 999;
+        let mut second = event(8, 1, true);
+        second.book.0[0].bid_size = 130;
+        second.l1_update = true;
+        assert_eq!(
+            state.observe(&q(8, true), Some(&second)).unwrap(),
+            Some(vec![30])
+        );
+        let mut third = event(9, 2, true);
+        third.book.0[0].bid_size = 150;
+        third.l1_update = true;
+        assert!(state.observe(&q(9, true), Some(&third)).is_err());
+        third.segment = 1;
+        assert_eq!(
+            state.observe(&q(9, true), Some(&third)).unwrap(),
+            Some(vec![20])
+        );
+        // Neither caller-owned input is overwritten by retained buffer reuse.
+        assert_eq!(second.book.0[0].bid_size, 130);
+        assert_eq!(first.book.0[0].bid_size, 999);
+        state.observe(&q(10, false), None).unwrap();
+        assert!(
+            state
+                .observe(&q(11, true), Some(&event(11, 5, false)))
+                .is_err()
+        );
+        // Initialization increments the segment before reporting its mismatch.
+        assert_eq!(
+            state
+                .observe(&q(11, true), Some(&event(11, 3, false)))
+                .unwrap(),
+            None
+        );
+        assert_eq!(
+            state
+                .observe(&q(12, true), Some(&event(12, 3, true)))
+                .unwrap(),
             Some(vec![0])
         );
     }
