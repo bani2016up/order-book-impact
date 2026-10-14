@@ -625,3 +625,34 @@ commit hashes are authoritative in Git history, not self-referential log entries
   verify both Windows jobs; local checks do not constitute a Windows CI pass.
 - Intended local commit: `test: close Parquet readers before Windows overwrite`.
 - No push, remote run, release or package publication was performed.
+
+## Rust optimization P0 — baseline and measured plan (2026-10-14)
+
+- Objective: improve execution speed/throughput first and memory second using only Rust implementation changes. Public interfaces, Python/research sources, numerical/quality/signing semantics, output/publication contracts, worker/chunk bounds and project layout are frozen. Work on local main; no push or publication.
+- Verified nested repository root and clean working tree at `66e3978`. Read AGENTS.md, README.md, architecture, benchmark README/runner/generator, performance evidence, core/binding code and delivered reference preparation. Existing benchmark options were discovered with `--help`; benchmark workloads/configuration are unchanged.
+- Inventory/grouping fixed before optimization: real known-direction family has t1/c4096, t2/c65536, t4/c1; real Quote Test has t2/c4096; authored 20,000-event/two-symbol family has t2/c4096. All cover hash/ingestion, OFI, aggregation, ordered Parquet assembly and publication. Known-direction covers independent execution signing; Quote Test additionally ZIP extraction, raw paired-row alignment, pre-book signing and unknown TI. The real input has rejected gaps/ties and two partitions; the fixture has alternating sizes and one execution per 100 rows. Chunk one stresses batch construction, queues and memory; t1/t2/t4 cover worker bounds; large chunks stress memory.
+- Balanced aggregate: geometric mean of normalized case speedups within each family, then geometric mean of the three family means. Every per-case result remains primary; no raw-time averaging. Five serial fresh-process measured runs per case after one unmeasured warm-up per case, rounds in fixed case order. OS cache uncontrolled and warm leaning; no cold-cache measurements. No compilation, installation, fixture generation, profiling or test jobs overlap execution timings; other host activity is uncontrolled.
+- Baseline current-source release rebuilt with `VIRTUAL_ENV="$PWD/.venv" PYO3_PYTHON="$PWD/.venv/bin/python" .venv/bin/maturin develop --release --locked --offline` (26.31s excluded). Rust/Cargo 1.98.0, LLVM 22.1.8, Python 3.12.0, macOS 26.5.1 arm64; Mac14,9 Apple M2 Pro, 10 cores (6 performance/4 efficiency), 16 GiB. Cargo.lock and build settings unchanged.
+- Commands/evidence in existing ignored paths: `.venv/bin/python benchmarks/results/optimization_measure.py baseline` drives the unchanged `benchmarks/run.py` for every case; `benchmarks/results/optimization/baseline/metadata.json` stores full config definitions, input hashes/sizes, toolchain, commit and loaded-extension SHA256. Raw runs and complete outputs are retained alongside it. Fixture is the existing generator-authored `benchmarks/results/final-authored-fixture` (10,000 rows per symbol), not duplicated real data.
+- `.venv/bin/python benchmarks/results/optimization_verify.py baseline` passed: all 30 decoded outputs have exact ordered values, schemas, floating values and nulls, exact manifests, and exact QC after excluding output paths/timing/observed worker peak. Known-direction chunk/thread invariance and Quote Test quote/quality/count/volume equality and classified/unclassified conservation passed.
+
+| Existing case | Median seconds (min–max; MAD) | Median original rows/s | Median peak process MiB (min–max) |
+| --- | --- | ---: | --- |
+| real-t1-c4096 | 4.003722 (3.963808–4.299242; 0.039914) | 224,138 | 94.78 (89.55–102.58) |
+| real-t2-c65536 | 4.259727 (3.950010–4.428237; 0.075049) | 210,668 | 242.22 (199.55–293.53) |
+| real-t4-c1 | 33.139421 (32.214164–34.321532; 0.925257) | 27,079 | 51.92 (50.80–54.17) |
+| quote-t2-c4096 | 4.358771 (4.347334–4.598869; 0.011438) | 205,881 | 98.25 (88.97–102.12) |
+| fixture-t2-c4096 | 0.110453 (0.106891–0.119692; 0.003561) | 181,073 | 63.81 (59.05–67.28) |
+
+- Source identities (SHA256; sizes in bytes):
+  - `benchmarks/results/final-authored-fixture/data/events_clean.parquet`: `caf83a1859db44484a9f2e962771a00deed364eed211dfcb348dba32c7038146`, 190682.
+  - `benchmarks/results/final-authored-fixture/data/trades_clean.parquet`: `1baa70fed833564919f98e2377e21ef142e80c27e75f4ef67e006de9205dc400`, 5790.
+  - `benchmarks/results/final-authored-fixture/reports/event_quality.parquet`: `ac8fef7e0589fb219a23b4fe274335b6e3b416884a6074f00a5d2240d1de626c`, 182070.
+  - `data/order_book_sample/data/events_clean.parquet`: `514dd1f6491ec99b2558054ccf0c3fb5add2c6d34e2d8e004b1ad0572a4cb2fa`, 25095171.
+  - `data/order_book_sample/data/trades_clean.parquet`: `62db3864391b99accff35bbb734a5091d0df661fea3291f55e2037255cd02f3c`, 1306691.
+  - `data/order_book_sample/reports/event_quality.parquet`: `fe0f0806b59f122c22bdcc74df01f4fbb85dc8e8a81a53fde5f1d1f51d230b13`, 8137742.
+  - `data/order_book_sample/raw/LOBSTER_SampleFile_AAPL_2012-06-21_5.zip`: `46419dd0d6106be5fcf43600ccd08b2baa5d4cfb76284f1c58773537a3adac50`, 4791006.
+  - `data/order_book_sample/raw/LOBSTER_SampleFile_MSFT_2012-06-21_5.zip`: `94e65c07786b8d54712fe9a12aee29d51f418d402e96b6e21b4af1d0bd44131d`, 7515038.
+- Profiling: `/usr/bin/sample <own-benchmark-pid> 3 1 -mayDie -file <ignored-profile>` succeeded outside the sandbox for normal (t2/c65536), tiny (t4/c1) and Quote Test (t2/c4096). Sandbox-only attempts could not inspect the processes; they are not claimed as successful profiles. Profiling runs were separate from measured runs.
+- Normal profile shows 303 inclusive samples in format_inner, 281 in Row::index and 123 in validate_local_ns plus 68 in date_for_timestamp, across 1473 sampled main-thread stacks. These inclusive counts can overlap and are diagnostic, not additive timing percentages. Tiny profile shows 1503 inclusive read_records samples among 2208 main-thread stacks; Arrow per-batch work dominates. Worker synchronization is present but less prominent. Profiles retained under `benchmarks/results/optimization/profile-*-authorized.txt`.
+- Plan: independently test/measure metadata/allocation reductions in ingestion, bounded reuse of parsed calendar metadata with per-row checks preserved, and remaining measured allocation bottlenecks. Keep only supported improvements; investigate regressions. Each retained focused subtask gets Rust tests, rebuilt compiled integration checks, all affected benchmarks, diff review, log evidence and a local commit. Final handoff requires full correctness/research/real-width acceptance, isolated wheel and complete final benchmarks.
