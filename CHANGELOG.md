@@ -13,7 +13,7 @@ the owner-provided attachment; `docs/DATASET_CONTRACT.md` remains normative.
 - [x] M3: streaming Parquet/gzip CSV and original quality alignment.
 - [x] M4: gap-aware rank OFI, persistent state and L1 update classification.
 - [x] M5: independent executions, known-direction signing and conservation.
-- [ ] M6: right-closed grids, original boundaries, depth and exclusions.
+- [x] M6: right-closed grids, original boundaries, depth and exclusions.
 - [ ] M7: atomic output, provenance/QC, typed errors, Python CLI.
 - [ ] M8: paired raw adapter and pre-execution Quote Test.
 - [ ] M9: full real sample integrity/parity and independently rebuilt other widths.
@@ -161,3 +161,24 @@ commit hashes are authoritative in Git history, not self-referential log entries
 - Actual input integrity and ingestion are verified; TI/output parity is pending.
 - Intended commit: `feat(core): sign independent executions and conserve volume`.
 - Remaining: M6–M11; Quote Test matching will use the original pre-state adapter.
+
+## M6 — streaming interval aggregation
+
+- Added `buckets.rs`: one live bucket and original-boundary state per active
+  symbol/session, checked OFI/depth/counts, all supported right-closed grids,
+  UTC interval ends and contemporaneous USD/tick mid changes.
+- Emits every grid row to a sink, with explicit reasons and nullable features
+  for exclusions. First incomplete buckets, rejected events, missing/invalid
+  boundaries and unknown segment transitions are excluded. Newer rejected
+  originals invalidate carried boundary states until an accepted original arrives.
+- Average depth uses supplied L1-update markers only; no-update valid intervals
+  use right-boundary depth. Separate executions contribute even on rejected quotes.
+- Checks passed: `cargo fmt --all`, `cargo test -p ofi-core buckets:: --offline`
+  (4 tests covering all widths, exact-right boundaries, empty fallback, tied times,
+  last grid boundary, L1 weighting, half ticks, rejected carry, missing books,
+  independent rejected-quote trades and sink/order errors),
+  `cargo clippy -p ofi-core --all-targets --offline -- -D warnings`.
+  A test closure borrow error was fixed before checks passed.
+- Real feature parity and file-level chunk invariance await the M7 runner/output.
+- Intended commit: `feat(core): aggregate original boundaries on right-closed grids`.
+- Remaining: M7–M11 including atomic Parquet publication and full integration.

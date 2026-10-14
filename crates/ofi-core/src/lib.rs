@@ -12,6 +12,7 @@ mod tests {
 }
 
 pub mod adapter;
+pub mod buckets;
 pub mod config;
 pub mod domain;
 pub mod error;
