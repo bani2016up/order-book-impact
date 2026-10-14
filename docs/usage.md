@@ -44,7 +44,10 @@ external simultaneous directory mutations.
 Feature intervals are contemporaneous, right-closed `(interval_start, timestamp]`.
 Timestamp columns are UTC nanoseconds; date is the New York session date. Prices
 are USD, price changes also include ticks, and OFI/TI/volume/depth are shares.
-Signed values are int64. Excluded intervals are only in `bucket_quality.parquet`,
+Signed values are int64. With unclassified Quote Test executions, full
+`trade_imbalance` is null; `classified_trade_imbalance` keeps the observed partial
+sum and `trade_signing_complete` is false. SigningCoverage.trade_imbalance is the
+classified sum, while `complete_trade_imbalance` returns None when incomplete. Excluded intervals are only in `bucket_quality.parquet`,
 with reasons and null computed features. Verify actual temporal adjacency and
 session before creating lags from sparse accepted rows. Deep OFI is a rank-based
 research extension. The data is single-venue NASDAQ, not consolidated NBBO.

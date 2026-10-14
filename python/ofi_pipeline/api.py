@@ -80,6 +80,11 @@ class SigningCoverage:
     classified_volume: int
     unclassified_volume: int
 
+    @property
+    def complete_trade_imbalance(self) -> int | None:
+        """Full TI is unknown when any execution remains unclassified."""
+        return self.trade_imbalance if self.unclassified_count == 0 else None
+
 
 @dataclass(frozen=True)
 class PartitionReport:

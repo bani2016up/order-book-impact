@@ -114,6 +114,15 @@ impl Worker {
                         }
                         let raw_row = raw.as_mut().map(|r| r.observe(q)).transpose()?;
                         if let Some(event) = event {
+                            if event.execution.as_ref() != trade {
+                                return Err(Error::new(
+                                    ErrorCode::Quality,
+                                    format!(
+                                        "accepted execution/trade table disagreement at {:?}",
+                                        q.key
+                                    ),
+                                ));
+                            }
                             report.rounded_event_timestamps +=
                                 u64::from(event.timestamp_rounded == Some(true));
                             report.missing_precision_flag_rows +=

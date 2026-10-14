@@ -369,3 +369,34 @@ commit hashes are authoritative in Git history, not self-referential log entries
 - Intended commit: `perf: record release sample throughput memory and determinism`.
 - Remaining: M11 comprehensive coverage, clean wheel smoke, CI, English handoff
   and final requirement audit. Neither implementation nor CI has been pushed.
+
+## M11a — acceptance-audit contract hardening
+
+- Audited the attached requirements against current code. Accepted cleaned
+  messages now validate type/size/price/direction and optional raw-price scaling;
+  accepted type-4/type-5 executions must match independent trade fields exactly.
+  Missing or contradictory executions fail, preventing plausible incomplete TI.
+  Updated event domain/adapter/worker and authored fixtures accordingly.
+- Full Quote Test TI is now null when any execution is unclassified; explicit
+  `classified_trade_imbalance` and `trade_signing_complete` columns retain the
+  partial evidence. Typed signing metadata exposes `complete_trade_imbalance`.
+  This replaces a plausible zero/partial sum masquerading as full unknown TI.
+- Added checked pre-book validation, contextual input/worker errors, and a small
+  publication rename seam. Production still calls std::fs::rename; fault tests
+  simulate second/third rename failures and verify actual original file contents
+  are restored or preserved in a recoverable backup. No blanket coverage exclusion.
+- Added focused malformed/empty/truncated evidence, bad units/signs, missing
+  schema fields, duplicate headers, outside-session and atomic-publication tests.
+- Checks passed: `cargo test -p ofi-core --offline` (21 units + 3 adapter + 2
+  pipeline before added publication tests), `cargo test -p ofi-core output:: --offline`
+  (2 publication/path tests), `cargo clippy --workspace --all-targets --offline -- -D warnings`,
+  `cargo fmt --all`, `.venv/bin/ruff check python tests scripts benchmarks`,
+  `.venv/bin/mypy`, `VIRTUAL_ENV="$PWD/.venv" .venv/bin/maturin develop --offline`,
+  `.venv/bin/python -m pytest -q tests/python tests/integration` (62 passed).
+- Earlier Python measurement reached 100% production lines/branches (182 lines,
+  30 branches); native-binding preliminary measurement covered all 42 authored
+  lines. Rust/native profiles will be rebuilt from the frozen final sources and
+  inspected for uncovered reachable code; preliminary coverage is not final.
+- Intended commit: `fix(core): validate execution evidence and represent unknown TI explicitly`.
+- Remaining: full final-source Rust/native/Python coverage, isolated wheel, CI
+  docs/handoff, real parity and refreshed performance after this contract change.

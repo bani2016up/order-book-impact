@@ -78,6 +78,7 @@ pub struct Event {
     pub prev_available: bool,
     pub l1_update: bool,
     pub timestamp_rounded: Option<bool>,
+    pub execution: Option<Trade>,
 }
 #[derive(Debug, Clone)]
 pub struct Quality {
@@ -86,7 +87,7 @@ pub struct Quality {
     pub accepted: bool,
     pub reason: String,
 }
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Trade {
     pub key: Key,
     pub timestamp: i64,

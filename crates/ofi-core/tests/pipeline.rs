@@ -8,7 +8,7 @@ use std::{fs, path::Path};
 
 fn fixture(dir: &Path) -> Inputs {
     let quality = "symbol,event_id,timestamp,time_ns,quote_accepted,reject_reason\n";
-    let events = "symbol,date,event_id,timestamp,time_ns,segment_id,prev_state_available,is_quote_update,bid_price_1,ask_price_1,bid_size_1,ask_size_1\n";
+    let events = "symbol,date,event_id,timestamp,time_ns,segment_id,prev_state_available,is_quote_update,bid_price_1,ask_price_1,bid_size_1,ask_size_1,event_type,event_size,event_price,direction\n";
     let (mut quality, mut events) = (quality.to_owned(), events.to_owned());
     for (id, sec, size, update) in [
         (0, 1, 100, true),
@@ -19,9 +19,14 @@ fn fixture(dir: &Path) -> Inputs {
         let stamp = format!("2012-06-21T13:30:{sec:02}Z");
         let time = 34_200_000_000_000_i64 + i64::from(sec) * 1_000_000_000;
         quality.push_str(&format!("A,{id},{stamp},{time},True,\n"));
+        let (kind, size_event, price, direction) = if id == 3 {
+            (4, 7, 1.01, -1)
+        } else {
+            (1, 1, 1.0, 1)
+        };
         events.push_str(
             &format!(
-                "A,2012-06-21,{id},{stamp},{time},1,{},{} ,1,1.01,{size},120\n",
+                "A,2012-06-21,{id},{stamp},{time},1,{},{} ,1,1.01,{size},120,{kind},{size_event},{price},{direction}\n",
                 id > 0,
                 update
             )

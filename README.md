@@ -7,7 +7,8 @@ Rust data-processing pipeline with a Python library interface through PyO3. The 
 The pure Rust engine, compiled Python API/CLI, streaming Parquet/gzip CSV
 adapters and atomic output are implemented. Known-direction 10-second output
 has been independently checked against the delivered sample. Original pre-execution Quote Test is implemented and tested.
-Parallelism, coverage and distribution acceptance are still in progress.
+Bounded partition parallelism and measured release performance are available.
+Final coverage and distribution acceptance are in progress.
 
 Read [usage](docs/usage.md), [the dataset contract](docs/DATASET_CONTRACT.md),
 [verified physical schemas](docs/verified_schema.md), and

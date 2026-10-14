@@ -68,7 +68,13 @@ impl Transaction {
             )
         };
         for input in inputs {
-            let source = input.canonicalize()?;
+            let source = input.canonicalize().map_err(|error| {
+                let error = Error::from(error);
+                Error::new(
+                    error.code,
+                    format!("{}: {}", input.display(), error.message),
+                )
+            })?;
             if source.starts_with(&target) {
                 return Err(Error::new(
                     ErrorCode::Config,
@@ -128,15 +134,21 @@ impl Transaction {
         Ok(())
     }
     pub fn publish(self) -> Result<PathBuf> {
+        self.publish_with(|source, destination| fs::rename(source, destination))
+    }
+    fn publish_with(
+        self,
+        mut rename: impl FnMut(&Path, &Path) -> std::io::Result<()>,
+    ) -> Result<PathBuf> {
         if self.destination.exists() {
             Self::validate_existing(&self.destination, self.overwrite)?;
             let backup = tempfile::Builder::new()
                 .prefix(".ofi-backup-")
                 .tempdir_in(self.destination.parent().expect("validated output parent"))?;
             fs::remove_dir(backup.path())?;
-            fs::rename(&self.destination, backup.path())?;
-            if let Err(error) = fs::rename(self.stage.path(), &self.destination) {
-                if let Err(restore) = fs::rename(backup.path(), &self.destination) {
+            rename(&self.destination, backup.path())?;
+            if let Err(error) = rename(self.stage.path(), &self.destination) {
+                if let Err(restore) = rename(backup.path(), &self.destination) {
                     let preserved = backup.keep();
                     return Err(io(format!(
                         "publication failed: {error}; restore failed: {restore}; original results preserved at {}",
@@ -147,7 +159,7 @@ impl Transaction {
             }
             backup.close()?;
         } else {
-            fs::rename(self.stage.path(), &self.destination)?;
+            rename(self.stage.path(), &self.destination)?;
         }
         Ok(self.destination)
     }
@@ -189,8 +201,18 @@ fn schema(levels: usize) -> Arc<Schema> {
         "classified_volume",
         "unclassified_volume",
     ] {
-        fields.push(Field::new(name, DataType::Int64, false));
+        fields.push(Field::new(name, DataType::Int64, name == "trade_imbalance"));
     }
+    fields.push(Field::new(
+        "classified_trade_imbalance",
+        DataType::Int64,
+        false,
+    ));
+    fields.push(Field::new(
+        "trade_signing_complete",
+        DataType::Boolean,
+        false,
+    ));
     for name in [
         "mid_price_start",
         "mid_price_end",
@@ -237,14 +259,32 @@ fn batch(rows: &[BucketRow], schema: Arc<Schema>, levels: usize) -> Result<Recor
         |r: &BucketRow| r.event_count,
         |r: &BucketRow| r.rejected_events,
         |r: &BucketRow| r.quote_update_count,
-        |r: &BucketRow| r.trades.volume,
-        |r: &BucketRow| r.trades.trade_imbalance,
+        |r: &BucketRow| r.trades.volume
+    );
+    arrays.push(Arc::new(Int64Array::from(
+        rows.iter()
+            .map(|r| {
+                if r.trades.unclassified_count == 0 {
+                    Some(r.trades.trade_imbalance)
+                } else {
+                    None
+                }
+            })
+            .collect::<Vec<_>>(),
+    )));
+    integers!(
         |r: &BucketRow| r.trades.trade_count,
         |r: &BucketRow| r.trades.classified_count,
         |r: &BucketRow| r.trades.unclassified_count,
         |r: &BucketRow| r.trades.classified_volume,
-        |r: &BucketRow| r.trades.unclassified_volume
+        |r: &BucketRow| r.trades.unclassified_volume,
+        |r: &BucketRow| r.trades.trade_imbalance
     );
+    arrays.push(Arc::new(BooleanArray::from(
+        rows.iter()
+            .map(|r| r.trades.unclassified_count == 0)
+            .collect::<Vec<_>>(),
+    )));
     macro_rules! floats {($($field:ident),+) => {$(arrays.push(Arc::new(Float64Array::from(rows.iter().map(|r|r.features.as_ref().map(|f|f.$field)).collect::<Vec<_>>())));)+};}
     floats!(
         mid_price_start,
@@ -356,5 +396,92 @@ impl Writer {
         self.features.close().map_err(io)?;
         self.quality.close().map_err(io)?;
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    fn owned(path: &Path) {
+        fs::create_dir_all(path).unwrap();
+        write_json(
+            &path.join("manifest.json"),
+            &serde_json::json!({"producer":"ofi-pipeline"}),
+        )
+        .unwrap();
+        fs::write(path.join("features.parquet"), "original").unwrap();
+    }
+    #[test]
+    fn publication_failures_restore_or_preserve_original_data() {
+        for restore_fails in [false, true] {
+            let dir = tempfile::tempdir().unwrap();
+            let target = dir.path().join("result");
+            owned(&target);
+            let tx = Transaction::new(&target, &[], true).unwrap();
+            fs::write(tx.stage.path().join("features.parquet"), "new").unwrap();
+            let mut calls = 0;
+            let error = tx
+                .publish_with(|source, destination| {
+                    calls += 1;
+                    if calls == 2 || (restore_fails && calls == 3) {
+                        Err(std::io::Error::from(std::io::ErrorKind::PermissionDenied))
+                    } else {
+                        fs::rename(source, destination)
+                    }
+                })
+                .unwrap_err();
+            assert_eq!(error.code, ErrorCode::Io);
+            if restore_fails {
+                assert!(error.message.contains("original results preserved"));
+                let backups: Vec<_> = fs::read_dir(dir.path())
+                    .unwrap()
+                    .map(|e| e.unwrap().path())
+                    .filter(|p| {
+                        p.file_name()
+                            .unwrap()
+                            .to_string_lossy()
+                            .starts_with(".ofi-backup-")
+                    })
+                    .collect();
+                assert_eq!(backups.len(), 1);
+                assert_eq!(
+                    fs::read_to_string(backups[0].join("features.parquet")).unwrap(),
+                    "original"
+                );
+            } else {
+                assert_eq!(
+                    fs::read_to_string(target.join("features.parquet")).unwrap(),
+                    "original"
+                );
+            }
+        }
+    }
+    #[test]
+    fn paths_nested_parents_ownership_and_writer_io_errors() {
+        let dir = tempfile::tempdir().unwrap();
+        let tx = Transaction::new(&dir.path().join("a/b/result"), &[], false).unwrap();
+        assert!(tx.stage.path().is_dir());
+        drop(tx);
+        let relative = PathBuf::from("target")
+            .join(format!("relative-transaction-test-{}", std::process::id()));
+        let tx = Transaction::new(&relative, &[], false).unwrap();
+        drop(tx);
+        assert!(Transaction::new(Path::new("/"), &[], false).is_err());
+        let target = dir.path().join("file");
+        fs::write(&target, "user").unwrap();
+        assert!(Transaction::new(&target, &[], true).is_err());
+        let target = dir.path().join("not-owned");
+        fs::create_dir(&target).unwrap();
+        fs::write(target.join("manifest.json"), "bad json").unwrap();
+        assert!(Transaction::new(&target, &[], true).is_err());
+        fs::write(
+            target.join("manifest.json"),
+            r#"{"producer":"someone-else"}"#,
+        )
+        .unwrap();
+        assert!(Transaction::new(&target, &[], true).is_err());
+        assert!(Writer::new(&dir.path().join("missing"), 1, 1).is_err());
+        let mut writer = Writer::new(dir.path(), 1, 1).unwrap();
+        assert!(writer.append_partition(&target).is_err());
     }
 }

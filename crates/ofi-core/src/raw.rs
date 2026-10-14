@@ -220,6 +220,7 @@ pub fn quote_test(trade: &Trade, row: &RawRow, pre: Option<&Book>) -> Result<Opt
     let Some(book) = pre else {
         return Ok(None);
     };
+    book.validate()?;
     let l = book.0[0];
     Ok(if trade.price >= l.ask {
         Some(1)

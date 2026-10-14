@@ -69,8 +69,12 @@ def test_raw_pair_quote_test_chunk_matching(bundle, tmp_path, chunk):
     assert (coverage.classified_volume, coverage.unclassified_volume) == (7, 12)
     assert (coverage.classified_count, coverage.unclassified_count) == (1, 2)
     assert coverage.volume == 19 and coverage.trade_imbalance == 7
+    assert coverage.complete_trade_imbalance is None
     rows = records(report.features_path)
     assert rows[0]["trade_imbalance"] == 7 and rows[2]["unclassified_volume"] == 3
+    assert rows[2]["trade_imbalance"] is None
+    assert rows[2]["classified_trade_imbalance"] == 0
+    assert not rows[2]["trade_signing_complete"]
     assert not list((tmp_path / "out").glob(".raw-pair-*"))
 
 
@@ -78,6 +82,7 @@ def test_zip_discovery_and_missing_pair(bundle, tmp_path):
     m, b = raw_fixture(bundle)
     raw = bundle / "raw"
     raw.mkdir()
+    (raw / "LOBSTER_SampleFile_invalid_5.zip").write_bytes(b"ignored invalid vendor naming")
     archive = raw / "LOBSTER_SampleFile_TEST_2012-06-21_5.zip"
     with ZipFile(archive, "w", compression=ZIP_DEFLATED) as z:
         z.writestr("TEST_message_5.csv", m)

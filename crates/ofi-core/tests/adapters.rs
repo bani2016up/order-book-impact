@@ -15,7 +15,7 @@ use std::{
 };
 
 const QUALITY: &str = "symbol,event_id,timestamp,time_ns,quote_accepted,reject_reason\nA,0,2012-06-21 13:30:00.000000001+00:00,34200000000001,False,spread\nA,1,2012-06-21 13:30:00.000000001+00:00,34200000000001,True,\n";
-const EVENT: &str = "symbol,date,event_id,timestamp,time_ns,segment_id,prev_state_available,is_quote_update,bid_price_1,ask_price_1,bid_size_1,ask_size_1\nA,2012-06-21,1,2012-06-21T13:30:00.000000001Z,34200000000001,1,False,True,1,1.01,100,120\n";
+const EVENT: &str = "symbol,date,event_id,timestamp,time_ns,segment_id,prev_state_available,is_quote_update,bid_price_1,ask_price_1,bid_size_1,ask_size_1,event_type,event_size,event_price,direction\nA,2012-06-21,1,2012-06-21T13:30:00.000000001Z,34200000000001,1,False,True,1,1.01,100,120,1,1,1,1\n";
 const TRADE: &str = "symbol,date,event_id,timestamp,time_ns,event_type,event_size,event_price,direction,quote_accepted,aggressor_side,signed_volume\nA,2012-06-21,0,2012-06-21T13:30:00.000000001Z,34200000000001,4,10,1.01,-1,False,1,10\n";
 
 #[test]

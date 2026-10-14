@@ -53,6 +53,15 @@ def make_bundle(root: Path, format: str = "parquet") -> Path:
                 "time_seconds_text": f"{34200 + seconds}.000000000",
                 "timestamp_subnanosecond_rounded": False,
             }
+            size, direction = {4: (7, -1), 9: (3, 1)}.get(i, (1, 1))
+            event.update(
+                {
+                    "event_type": 4 if i in (4, 9) else 1,
+                    "event_size": size,
+                    "event_price": 1.01 if i in (4, 9) else 1.0,
+                    "direction": direction,
+                }
+            )
             for level in range(1, 6):
                 event.update(
                     {

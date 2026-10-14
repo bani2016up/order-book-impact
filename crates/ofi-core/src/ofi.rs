@@ -270,6 +270,7 @@ mod tests {
             prev_available: prev,
             l1_update: false,
             timestamp_rounded: None,
+            execution: None,
         }
     }
     #[test]

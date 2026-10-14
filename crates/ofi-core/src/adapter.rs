@@ -196,6 +196,10 @@ fn required(kind: Kind, levels: usize) -> Vec<(String, DataType)> {
                 ("segment_id".into(), DataType::Int64),
                 ("prev_state_available".into(), DataType::Boolean),
                 ("is_quote_update".into(), DataType::Boolean),
+                ("event_type".into(), DataType::Int64),
+                ("event_size".into(), DataType::Int64),
+                ("event_price".into(), DataType::Float64),
+                ("direction".into(), DataType::Int64),
             ]);
             for level in 1..=levels {
                 for side in ["bid", "ask"] {
@@ -394,6 +398,31 @@ impl TableReader {
                     ));
                 }
             }
+            let event_type = r.integer("event_type")?;
+            let event_size = r.integer("event_size")?;
+            let event_price = r.price("event_price")?;
+            let direction = r.integer("direction")?;
+            if !(1..=5).contains(&event_type) || event_size <= 0 || ![-1, 1].contains(&direction) {
+                return Err(malformed(format!("invalid accepted message {key:?}")));
+            }
+            if r.has("event_price_raw") && r.integer("event_price_raw")? != event_price {
+                return Err(malformed(
+                    "clean USD event price disagrees with raw USD/10000 price",
+                ));
+            }
+            let execution = if [4, 5].contains(&event_type) {
+                Some(Trade {
+                    key: key.clone(),
+                    timestamp,
+                    size: event_size,
+                    price: event_price,
+                    direction,
+                    event_type,
+                    quote_accepted: true,
+                })
+            } else {
+                None
+            };
             Ok(Event {
                 key,
                 timestamp,
@@ -402,6 +431,7 @@ impl TableReader {
                 prev_available: r.boolean("prev_state_available")?,
                 l1_update: r.boolean("is_quote_update")?,
                 timestamp_rounded,
+                execution,
             })
         })?;
         if let Some(e) = &event {

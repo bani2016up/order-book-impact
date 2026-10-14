@@ -54,6 +54,7 @@ def test_hand_calculated_complete_rust_outputs(bundle, tmp_path):
     p = report.partitions[0]
     assert (p.original_rows, p.clean_events, p.rejected_events) == (10, 9, 1)
     assert p.signing.volume == 19 and p.signing.trade_imbalance == -5
+    assert p.signing.complete_trade_imbalance == -5
     manifest = json.loads(report.manifest_path.read_text())
     assert manifest["units"]["timestamp"] == "UTC nanoseconds"
     assert manifest["dataset_identity"]["events"]["size_bytes"] > 0
@@ -151,3 +152,113 @@ def test_decimal_rounding_flags_and_precision_failures(bundle, tmp_path):
     )
     with pytest.raises(MalformedDataError, match="rounding flag"):
         run_pipeline(bundle, tmp_path / "wrong-flag", config())
+
+
+@pytest.mark.parametrize(
+    "change", ["missing_trade", "different_trade_size", "invalid_event_type", "wrong_raw_scaling"]
+)
+def test_accepted_messages_and_execution_correspondence(bundle, tmp_path, change):
+    from ofi_pipeline import MalformedDataError
+
+    tpath = bundle / "data/trades_clean.parquet"
+    epath = bundle / "data/events_clean.parquet"
+    if change == "missing_trade":
+        pq.write_table(pq.read_table(tpath).slice(1), tpath)
+    elif change == "different_trade_size":
+        table = pq.read_table(tpath)
+        sizes = table["event_size"].to_pylist()
+        sizes[0] = 8
+        table = table.drop(["signed_volume", "aggressor_side"])
+        pq.write_table(
+            table.set_column(
+                table.schema.get_field_index("event_size"), "event_size", pa.array(sizes)
+            ),
+            tpath,
+        )
+    elif change == "invalid_event_type":
+        table = pq.read_table(epath)
+        kinds = table["event_type"].to_pylist()
+        kinds[0] = 6
+        pq.write_table(
+            table.set_column(
+                table.schema.get_field_index("event_type"), "event_type", pa.array(kinds)
+            ),
+            epath,
+        )
+    else:
+        table = pq.read_table(epath)
+        table = table.append_column("event_price_raw", pa.array([1] * table.num_rows))
+        pq.write_table(table, epath)
+    exception = QualityEvidenceError if "trade" in change else MalformedDataError
+    with pytest.raises(exception):
+        run_pipeline(bundle, tmp_path / "invalid", config())
+
+
+@pytest.mark.parametrize(
+    "case",
+    [
+        "empty",
+        "quality_ends",
+        "bad_trade_sign",
+        "bad_trade_direction",
+        "timestamp_units",
+        "missing_message_field",
+        "duplicate_columns",
+        "outside_session",
+    ],
+)
+def test_file_set_failure_branches(bundle, tmp_path, case):
+    from ofi_pipeline import PipelineError
+
+    events = bundle / "data/events_clean.parquet"
+    trades = bundle / "data/trades_clean.parquet"
+    quality = bundle / "reports/event_quality.parquet"
+    cfg = config(chunk_rows=1)
+    if case == "empty":
+        for path in [events, trades, quality]:
+            pq.write_table(pq.read_table(path).slice(0, 0), path)
+    elif case == "quality_ends":
+        pq.write_table(pq.read_table(quality).slice(0, 5), quality)
+    elif case == "bad_trade_sign":
+        table = pq.read_table(trades)
+        pq.write_table(
+            table.set_column(
+                table.schema.get_field_index("signed_volume"), "signed_volume", pa.array([0, 0, 0])
+            ),
+            trades,
+        )
+    elif case == "bad_trade_direction":
+        table = pq.read_table(trades)
+        pq.write_table(
+            table.set_column(
+                table.schema.get_field_index("direction"), "direction", pa.array([0, 1, 1])
+            ),
+            trades,
+        )
+    elif case == "timestamp_units":
+        table = pq.read_table(events)
+        table = table.set_column(
+            table.schema.get_field_index("timestamp"),
+            "timestamp",
+            table["timestamp"].cast(pa.timestamp("us", "UTC")),
+        )
+        pq.write_table(table, events)
+    elif case == "missing_message_field":
+        pq.write_table(pq.read_table(events).drop(["event_type"]), events)
+    elif case == "duplicate_columns":
+        csv = tmp_path / "duplicated.csv"
+        csv.write_text(
+            "symbol,event_id,timestamp,time_ns,quote_accepted,reject_reason,extra,extra\n"
+        )
+        from ofi_pipeline import InputPaths
+
+        with pytest.raises(PipelineError):
+            run_pipeline(
+                output_dir=tmp_path / "bad", config=cfg, inputs=InputPaths(events, trades, csv)
+            )
+        return
+    else:
+        cfg = PipelineConfig(session_close="09:30:10", chunk_rows=1)
+    with pytest.raises(PipelineError):
+        run_pipeline(bundle, tmp_path / "bad", cfg)
+    assert not (tmp_path / "bad").exists()

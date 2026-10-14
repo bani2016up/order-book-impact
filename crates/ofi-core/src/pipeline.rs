@@ -62,7 +62,10 @@ pub struct RunReport {
     pub warnings: Vec<String>,
 }
 fn hash(path: &std::path::Path) -> Result<serde_json::Value> {
-    let mut source = File::open(path)?;
+    let mut source = File::open(path).map_err(|error| {
+        let error = Error::from(error);
+        Error::new(error.code, format!("{}: {}", path.display(), error.message))
+    })?;
     let mut hash = Sha256::new();
     let mut bytes = 0_u64;
     let mut buffer = [0_u8; 65536];
