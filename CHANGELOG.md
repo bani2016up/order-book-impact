@@ -484,3 +484,37 @@ commit hashes are authoritative in Git history, not self-referential log entries
   canonical raw coverage evidence remains under ignored target output.
 - Intended commit: `build: verify isolated wheels and define platform CI checks`.
 - Remaining: final real acceptance, refreshed release metrics, handoff/status audit.
+
+## M11e — final release acceptance and refreshed measurements
+
+- Refreshed `docs/reconciliation.json` and `docs/performance.json` from current
+  release output; added portable `docs/acceptance.json` with source SHA256,
+  wheel hash and per-layer final checks. Dataset and generated tables remain
+  ignored. All 24 delivered hashes and source archive hashes/sizes were checked.
+- Exact final full check passed:
+  `OFI_SAMPLE_DIR="$PWD/order_book_sample" OFI_REBUILD_REFERENCE=1 .venv/bin/python -m pytest -q tests/python tests/integration tests/real_sample --basetemp outputs/final-acceptance`
+  (79 passed in 54.98 s; 74 self-contained and 5 actual real-width tests).
+  Integer OFI L1..L5/TI/volume/counts, accepted keys and full quality agree at
+  1/5/10/30/60 s. 10 s: 4390 accepted / 4680 total / 290 excluded, AAPL 2060,
+  MSFT 2330; 3 delivered rounded MSFT timestamps. Float errors stay below
+  declared USD 1e-10, ticks 1e-8, depth 1e-10 tolerances (depth exact).
+- Rust final checks passed:
+  `PYO3_PYTHON="$PWD/.venv/bin/python" cargo test --workspace --locked --offline`
+  (28 unit + 3 adapter + 2 pipeline; default external test explicitly ignored),
+  `OFI_SAMPLE_DIR="$PWD/order_book_sample" cargo test -p ofi-core --test sample_ingestion --locked --offline -- --ignored`
+  (1 passed in 21.99 s; 887810 events, 68404 trades, 897387 original rows,
+  9577 rejected quotes). Rust 1.90/LLVM coverage tests also passed in M11c.
+- Final release benchmarks ran sequential fresh processes after compiler/test
+  jobs ended. Exact commands/configs/scopes are in `docs/performance.json`:
+  real t1/c4096 4.0239 s, 99.27 MiB; t2/c65536 3.9107 s, 323.13 MiB;
+  t4/c1 31.2190 s, 54.77 MiB; real Quote Test t2/c4096 4.3259 s, 102 MiB;
+  authored 20k t2/c4096 0.1029 s, 62.31 MiB. Hardware M2 Pro/10 cores/16 GiB.
+  Whole-process RSS, uncontrolled warm-leaning OS cache, one run per config;
+  no general speedup or RSS guarantee. Compile/install excluded.
+- PyArrow inspection asserted exact decoded features/full quality and stable
+  manifest equality across known-direction chunks/threads. Quote Test quote
+  features, accepted keys/quality and total trade volumes/counts are unchanged;
+  classified/unclassified conservation is exact. Signing differences remain
+  explicit unknown TI, not a parity claim against known direction.
+- Intended commit: `test: record final release acceptance and measured determinism`.
+- Remaining: English handoff/ordered local history, final repository audit.

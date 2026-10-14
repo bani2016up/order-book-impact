@@ -10,6 +10,238 @@
     "matplotlib": "3.10.7"
   },
   "widths": {
+    "1s": {
+      "missing_keys": [],
+      "extra_keys": [],
+      "max_abs_error": {
+        "ofi_l1": 0,
+        "ofi_l2": 0,
+        "ofi_l3": 0,
+        "ofi_l4": 0,
+        "ofi_l5": 0,
+        "trade_imbalance": 0,
+        "volume": 0,
+        "event_count": 0,
+        "quote_update_count": 0,
+        "mid_price_change": 2.1827852025868566e-13,
+        "mid_price_change_ticks": 2.1827872842550278e-11,
+        "avg_depth": 0.0
+      },
+      "mismatches": {
+        "ofi_l1": {
+          "count": 0,
+          "first": []
+        },
+        "ofi_l2": {
+          "count": 0,
+          "first": []
+        },
+        "ofi_l3": {
+          "count": 0,
+          "first": []
+        },
+        "ofi_l4": {
+          "count": 0,
+          "first": []
+        },
+        "ofi_l5": {
+          "count": 0,
+          "first": []
+        },
+        "trade_imbalance": {
+          "count": 0,
+          "first": []
+        },
+        "volume": {
+          "count": 0,
+          "first": []
+        },
+        "event_count": {
+          "count": 0,
+          "first": []
+        },
+        "quote_update_count": {
+          "count": 0,
+          "first": []
+        },
+        "mid_price_change": {
+          "count": 0,
+          "first": []
+        },
+        "mid_price_change_ticks": {
+          "count": 0,
+          "first": []
+        },
+        "avg_depth": {
+          "count": 0,
+          "first": []
+        }
+      },
+      "quality_equal": true,
+      "accepted_rows": 45966
+    },
+    "5s": {
+      "missing_keys": [],
+      "extra_keys": [],
+      "max_abs_error": {
+        "ofi_l1": 0,
+        "ofi_l2": 0,
+        "ofi_l3": 0,
+        "ofi_l4": 0,
+        "ofi_l5": 0,
+        "trade_imbalance": 0,
+        "volume": 0,
+        "event_count": 0,
+        "quote_update_count": 0,
+        "mid_price_change": 2.0008994461306884e-13,
+        "mid_price_change_ticks": 2.000888343900442e-11,
+        "avg_depth": 0.0
+      },
+      "mismatches": {
+        "ofi_l1": {
+          "count": 0,
+          "first": []
+        },
+        "ofi_l2": {
+          "count": 0,
+          "first": []
+        },
+        "ofi_l3": {
+          "count": 0,
+          "first": []
+        },
+        "ofi_l4": {
+          "count": 0,
+          "first": []
+        },
+        "ofi_l5": {
+          "count": 0,
+          "first": []
+        },
+        "trade_imbalance": {
+          "count": 0,
+          "first": []
+        },
+        "volume": {
+          "count": 0,
+          "first": []
+        },
+        "event_count": {
+          "count": 0,
+          "first": []
+        },
+        "quote_update_count": {
+          "count": 0,
+          "first": []
+        },
+        "mid_price_change": {
+          "count": 0,
+          "first": []
+        },
+        "mid_price_change_ticks": {
+          "count": 0,
+          "first": []
+        },
+        "avg_depth": {
+          "count": 0,
+          "first": []
+        }
+      },
+      "quality_equal": true,
+      "accepted_rows": 8985
+    },
+    "10s": {
+      "missing_keys": [],
+      "extra_keys": [],
+      "max_abs_error": {
+        "ofi_l1": 0,
+        "ofi_l2": 0,
+        "ofi_l3": 0,
+        "ofi_l4": 0,
+        "ofi_l5": 0,
+        "trade_imbalance": 0,
+        "volume": 0,
+        "event_count": 0,
+        "quote_update_count": 0,
+        "mid_price_change": 2.0008994461306884e-13,
+        "mid_price_change_ticks": 2.000888343900442e-11,
+        "avg_depth": 0.0
+      },
+      "mismatches": {
+        "ofi_l1": {
+          "count": 0,
+          "first": []
+        },
+        "ofi_l2": {
+          "count": 0,
+          "first": []
+        },
+        "ofi_l3": {
+          "count": 0,
+          "first": []
+        },
+        "ofi_l4": {
+          "count": 0,
+          "first": []
+        },
+        "ofi_l5": {
+          "count": 0,
+          "first": []
+        },
+        "trade_imbalance": {
+          "count": 0,
+          "first": []
+        },
+        "volume": {
+          "count": 0,
+          "first": []
+        },
+        "event_count": {
+          "count": 0,
+          "first": []
+        },
+        "quote_update_count": {
+          "count": 0,
+          "first": []
+        },
+        "mid_price_change": {
+          "count": 0,
+          "first": []
+        },
+        "mid_price_change_ticks": {
+          "count": 0,
+          "first": []
+        },
+        "avg_depth": {
+          "count": 0,
+          "first": []
+        }
+      },
+      "quality_mismatches": [],
+      "partitions": [
+        {
+          "symbol": "AAPL",
+          "original_rows": 301587,
+          "clean_events": 292337,
+          "feature_rows": 2060,
+          "rejected_buckets": 280,
+          "rounded_event_timestamps": 0
+        },
+        {
+          "symbol": "MSFT",
+          "original_rows": 595800,
+          "clean_events": 595473,
+          "feature_rows": 2330,
+          "rejected_buckets": 10,
+          "rounded_event_timestamps": 3
+        }
+      ],
+      "float_tolerances": {
+        "mid_price_change": 1e-10,
+        "mid_price_change_ticks": 1e-08,
+        "avg_depth": 1e-10
+      }
+    },
     "30s": {
       "missing_keys": [],
       "extra_keys": [],
@@ -149,238 +381,19 @@
       },
       "quality_equal": true,
       "accepted_rows": 650
-    },
-    "5s": {
-      "missing_keys": [],
-      "extra_keys": [],
-      "max_abs_error": {
-        "ofi_l1": 0,
-        "ofi_l2": 0,
-        "ofi_l3": 0,
-        "ofi_l4": 0,
-        "ofi_l5": 0,
-        "trade_imbalance": 0,
-        "volume": 0,
-        "event_count": 0,
-        "quote_update_count": 0,
-        "mid_price_change": 2.0008994461306884e-13,
-        "mid_price_change_ticks": 2.000888343900442e-11,
-        "avg_depth": 0.0
-      },
-      "mismatches": {
-        "ofi_l1": {
-          "count": 0,
-          "first": []
-        },
-        "ofi_l2": {
-          "count": 0,
-          "first": []
-        },
-        "ofi_l3": {
-          "count": 0,
-          "first": []
-        },
-        "ofi_l4": {
-          "count": 0,
-          "first": []
-        },
-        "ofi_l5": {
-          "count": 0,
-          "first": []
-        },
-        "trade_imbalance": {
-          "count": 0,
-          "first": []
-        },
-        "volume": {
-          "count": 0,
-          "first": []
-        },
-        "event_count": {
-          "count": 0,
-          "first": []
-        },
-        "quote_update_count": {
-          "count": 0,
-          "first": []
-        },
-        "mid_price_change": {
-          "count": 0,
-          "first": []
-        },
-        "mid_price_change_ticks": {
-          "count": 0,
-          "first": []
-        },
-        "avg_depth": {
-          "count": 0,
-          "first": []
-        }
-      },
-      "quality_equal": true,
-      "accepted_rows": 8985
-    },
-    "1s": {
-      "missing_keys": [],
-      "extra_keys": [],
-      "max_abs_error": {
-        "ofi_l1": 0,
-        "ofi_l2": 0,
-        "ofi_l3": 0,
-        "ofi_l4": 0,
-        "ofi_l5": 0,
-        "trade_imbalance": 0,
-        "volume": 0,
-        "event_count": 0,
-        "quote_update_count": 0,
-        "mid_price_change": 2.1827852025868566e-13,
-        "mid_price_change_ticks": 2.1827872842550278e-11,
-        "avg_depth": 0.0
-      },
-      "mismatches": {
-        "ofi_l1": {
-          "count": 0,
-          "first": []
-        },
-        "ofi_l2": {
-          "count": 0,
-          "first": []
-        },
-        "ofi_l3": {
-          "count": 0,
-          "first": []
-        },
-        "ofi_l4": {
-          "count": 0,
-          "first": []
-        },
-        "ofi_l5": {
-          "count": 0,
-          "first": []
-        },
-        "trade_imbalance": {
-          "count": 0,
-          "first": []
-        },
-        "volume": {
-          "count": 0,
-          "first": []
-        },
-        "event_count": {
-          "count": 0,
-          "first": []
-        },
-        "quote_update_count": {
-          "count": 0,
-          "first": []
-        },
-        "mid_price_change": {
-          "count": 0,
-          "first": []
-        },
-        "mid_price_change_ticks": {
-          "count": 0,
-          "first": []
-        },
-        "avg_depth": {
-          "count": 0,
-          "first": []
-        }
-      },
-      "quality_equal": true,
-      "accepted_rows": 45966
-    },
-    "10s": {
-      "missing_keys": [],
-      "extra_keys": [],
-      "max_abs_error": {
-        "ofi_l1": 0,
-        "ofi_l2": 0,
-        "ofi_l3": 0,
-        "ofi_l4": 0,
-        "ofi_l5": 0,
-        "trade_imbalance": 0,
-        "volume": 0,
-        "event_count": 0,
-        "quote_update_count": 0,
-        "mid_price_change": 2.0008994461306884e-13,
-        "mid_price_change_ticks": 2.000888343900442e-11,
-        "avg_depth": 0.0
-      },
-      "mismatches": {
-        "ofi_l1": {
-          "count": 0,
-          "first": []
-        },
-        "ofi_l2": {
-          "count": 0,
-          "first": []
-        },
-        "ofi_l3": {
-          "count": 0,
-          "first": []
-        },
-        "ofi_l4": {
-          "count": 0,
-          "first": []
-        },
-        "ofi_l5": {
-          "count": 0,
-          "first": []
-        },
-        "trade_imbalance": {
-          "count": 0,
-          "first": []
-        },
-        "volume": {
-          "count": 0,
-          "first": []
-        },
-        "event_count": {
-          "count": 0,
-          "first": []
-        },
-        "quote_update_count": {
-          "count": 0,
-          "first": []
-        },
-        "mid_price_change": {
-          "count": 0,
-          "first": []
-        },
-        "mid_price_change_ticks": {
-          "count": 0,
-          "first": []
-        },
-        "avg_depth": {
-          "count": 0,
-          "first": []
-        }
-      },
-      "quality_mismatches": [],
-      "partitions": [
-        {
-          "symbol": "AAPL",
-          "original_rows": 301587,
-          "clean_events": 292337,
-          "feature_rows": 2060,
-          "rejected_buckets": 280,
-          "rounded_event_timestamps": 0
-        },
-        {
-          "symbol": "MSFT",
-          "original_rows": 595800,
-          "clean_events": 595473,
-          "feature_rows": 2330,
-          "rejected_buckets": 10,
-          "rounded_event_timestamps": 3
-        }
-      ],
-      "float_tolerances": {
-        "mid_price_change": 1e-10,
-        "mid_price_change_ticks": 1e-08,
-        "avg_depth": 1e-10
-      }
     }
+  },
+  "source_snapshot": "production SHA256 values in docs/coverage.json; final-source full acceptance after 2105657",
+  "command": "OFI_SAMPLE_DIR=\"$PWD/order_book_sample\" OFI_REBUILD_REFERENCE=1 .venv/bin/python -m pytest -q tests/python tests/integration tests/real_sample --basetemp outputs/final-acceptance",
+  "test_result": "79 passed in 54.98s; includes 74 self-contained Python/compiled tests and 5 real width acceptance tests",
+  "verified_counts": {
+    "clean_events": 887810,
+    "independent_trades": 68404,
+    "original_quality_rows": 897387,
+    "rejected_original_quotes": 9577,
+    "accepted_10s": 4390,
+    "total_10s": 4680,
+    "rejected_10s": 290,
+    "delivery_hashes": 24
   }
 }
