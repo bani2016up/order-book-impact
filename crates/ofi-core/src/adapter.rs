@@ -39,7 +39,7 @@ enum Source {
 
 pub struct TableReader {
     source: Source,
-    columns: HashMap<String, usize>,
+    columns: ColumnIndices,
     path: PathBuf,
     rows: u64,
     order: OrderGuard,
@@ -59,12 +59,91 @@ fn malformed(error: impl std::fmt::Display) -> Error {
     Error::new(ErrorCode::Malformed, error.to_string())
 }
 
-const BOOK_COLUMNS: [[&str; 4]; 5] = [
-    ["bid_price_1", "ask_price_1", "bid_size_1", "ask_size_1"],
-    ["bid_price_2", "ask_price_2", "bid_size_2", "ask_size_2"],
-    ["bid_price_3", "ask_price_3", "bid_size_3", "ask_size_3"],
-    ["bid_price_4", "ask_price_4", "bid_size_4", "ask_size_4"],
-    ["bid_price_5", "ask_price_5", "bid_size_5", "ask_size_5"],
+// Canonical slots are resolved once; physical input order remains arbitrary.
+macro_rules! columns {
+    ($($variant:ident => $name:literal),+ $(,)?) => {
+        #[derive(Clone, Copy)]
+        enum Column { $($variant),+ }
+        const COLUMN_NAMES: &[&str] = &[$($name),+];
+        impl Column {
+            fn name(self) -> &'static str { COLUMN_NAMES[self as usize] }
+        }
+    };
+}
+columns! {
+    Symbol => "symbol",
+    Date => "date",
+    EventId => "event_id",
+    Timestamp => "timestamp",
+    TimeNs => "time_ns",
+    SegmentId => "segment_id",
+    PrevStateAvailable => "prev_state_available",
+    IsQuoteUpdate => "is_quote_update",
+    EventType => "event_type",
+    EventSize => "event_size",
+    EventPrice => "event_price",
+    Direction => "direction",
+    QuoteAccepted => "quote_accepted",
+    RejectReason => "reject_reason",
+    TimeSecondsText => "time_seconds_text",
+    TimestampRounded => "timestamp_subnanosecond_rounded",
+    EventPriceRaw => "event_price_raw",
+    AggressorSide => "aggressor_side",
+    SignedVolume => "signed_volume",
+    BidPrice1 => "bid_price_1",
+    AskPrice1 => "ask_price_1",
+    BidSize1 => "bid_size_1",
+    AskSize1 => "ask_size_1",
+    BidPrice2 => "bid_price_2",
+    AskPrice2 => "ask_price_2",
+    BidSize2 => "bid_size_2",
+    AskSize2 => "ask_size_2",
+    BidPrice3 => "bid_price_3",
+    AskPrice3 => "ask_price_3",
+    BidSize3 => "bid_size_3",
+    AskSize3 => "ask_size_3",
+    BidPrice4 => "bid_price_4",
+    AskPrice4 => "ask_price_4",
+    BidSize4 => "bid_size_4",
+    AskSize4 => "ask_size_4",
+    BidPrice5 => "bid_price_5",
+    AskPrice5 => "ask_price_5",
+    BidSize5 => "bid_size_5",
+    AskSize5 => "ask_size_5",
+}
+type ColumnIndices = [Option<usize>; COLUMN_NAMES.len()];
+
+const BOOK_COLUMNS: [[Column; 4]; 5] = [
+    [
+        Column::BidPrice1,
+        Column::AskPrice1,
+        Column::BidSize1,
+        Column::AskSize1,
+    ],
+    [
+        Column::BidPrice2,
+        Column::AskPrice2,
+        Column::BidSize2,
+        Column::AskSize2,
+    ],
+    [
+        Column::BidPrice3,
+        Column::AskPrice3,
+        Column::BidSize3,
+        Column::AskSize3,
+    ],
+    [
+        Column::BidPrice4,
+        Column::AskPrice4,
+        Column::BidSize4,
+        Column::AskSize4,
+    ],
+    [
+        Column::BidPrice5,
+        Column::AskPrice5,
+        Column::BidSize5,
+        Column::AskSize5,
+    ],
 ];
 
 impl Row<'_> {
@@ -80,8 +159,29 @@ impl Row<'_> {
     pub fn has(&self, name: &str) -> bool {
         self.index(name).is_ok()
     }
-    fn array(&self, name: &str) -> Result<(&dyn Array, usize)> {
-        let index = self.index(name)?;
+}
+
+enum IndexedRow<'a> {
+    Parquet(&'a RecordBatch, usize, &'a ColumnIndices),
+    Csv(&'a csv::StringRecord, &'a ColumnIndices),
+}
+impl IndexedRow<'_> {
+    fn index(&self, column: Column) -> Result<usize> {
+        let columns = match self {
+            Self::Parquet(_, _, c) | Self::Csv(_, c) => c,
+        };
+        columns[column as usize]
+            .ok_or_else(|| schema(format!("missing required column {}", column.name())))
+    }
+    fn has(&self, column: Column) -> bool {
+        let columns = match self {
+            Self::Parquet(_, _, c) | Self::Csv(_, c) => c,
+        };
+        columns[column as usize].is_some()
+    }
+    fn array(&self, column: Column) -> Result<(&dyn Array, usize)> {
+        let name = column.name();
+        let index = self.index(column)?;
         let Self::Parquet(batch, row, _) = self else {
             return Err(schema("internal CSV array access"));
         };
@@ -91,13 +191,14 @@ impl Row<'_> {
         }
         Ok((array, *row))
     }
-    fn text(&self, name: &str) -> Result<&str> {
+    fn text(&self, column: Column) -> Result<&str> {
+        let name = column.name();
         match self {
             Self::Csv(record, _) => record
-                .get(self.index(name)?)
+                .get(self.index(column)?)
                 .ok_or_else(|| malformed(format!("missing CSV field {name}"))),
             Self::Parquet(_, _, _) => {
-                let (array, row) = self.array(name)?;
+                let (array, row) = self.array(column)?;
                 Ok(array
                     .as_any()
                     .downcast_ref::<StringArray>()
@@ -106,11 +207,12 @@ impl Row<'_> {
             }
         }
     }
-    fn integer(&self, name: &str) -> Result<i64> {
+    fn integer(&self, column: Column) -> Result<i64> {
+        let name = column.name();
         match self {
-            Self::Csv(_, _) => self.text(name)?.parse().map_err(malformed),
+            Self::Csv(_, _) => self.text(column)?.parse().map_err(malformed),
             Self::Parquet(_, _, _) => {
-                let (array, row) = self.array(name)?;
+                let (array, row) = self.array(column)?;
                 Ok(array
                     .as_any()
                     .downcast_ref::<Int64Array>()
@@ -119,15 +221,16 @@ impl Row<'_> {
             }
         }
     }
-    fn boolean(&self, name: &str) -> Result<bool> {
+    fn boolean(&self, column: Column) -> Result<bool> {
+        let name = column.name();
         match self {
-            Self::Csv(_, _) => match self.text(name)? {
+            Self::Csv(_, _) => match self.text(column)? {
                 "True" | "true" => Ok(true),
                 "False" | "false" => Ok(false),
                 value => Err(malformed(format!("{name} invalid bool {value}"))),
             },
             Self::Parquet(_, _, _) => {
-                let (array, row) = self.array(name)?;
+                let (array, row) = self.array(column)?;
                 Ok(array
                     .as_any()
                     .downcast_ref::<BooleanArray>()
@@ -136,11 +239,12 @@ impl Row<'_> {
             }
         }
     }
-    fn price(&self, name: &str) -> Result<i64> {
+    fn price(&self, column: Column) -> Result<i64> {
+        let name = column.name();
         let value = match self {
-            Self::Csv(_, _) => self.text(name)?.parse::<f64>().map_err(malformed)?,
+            Self::Csv(_, _) => self.text(column)?.parse::<f64>().map_err(malformed)?,
             Self::Parquet(_, _, _) => {
-                let (array, row) = self.array(name)?;
+                let (array, row) = self.array(column)?;
                 array
                     .as_any()
                     .downcast_ref::<Float64Array>()
@@ -152,9 +256,9 @@ impl Row<'_> {
     }
     fn timestamp(&self) -> Result<i64> {
         match self {
-            Self::Csv(_, _) => timestamp_from_text(self.text("timestamp")?),
+            Self::Csv(_, _) => timestamp_from_text(self.text(Column::Timestamp)?),
             Self::Parquet(_, _, _) => {
-                let (array, row) = self.array("timestamp")?;
+                let (array, row) = self.array(Column::Timestamp)?;
                 if !matches!(array.data_type(), DataType::Timestamp(TimeUnit::Nanosecond, Some(tz)) if tz.as_ref() == "UTC")
                 {
                     return Err(schema("timestamp requires nanoseconds and UTC timezone"));
@@ -172,14 +276,14 @@ impl Row<'_> {
         let date = if quality {
             local_time.date_for_timestamp(timestamp)
         } else {
-            self.text("date")?.to_owned()
+            self.text(Column::Date)?.to_owned()
         };
-        local_time.validate(&date, timestamp, self.integer("time_ns")?)?;
+        local_time.validate(&date, timestamp, self.integer(Column::TimeNs)?)?;
         Ok((
             Key {
-                symbol: self.text("symbol")?.to_owned(),
+                symbol: self.text(Column::Symbol)?.to_owned(),
                 date,
-                event_id: self.integer("event_id")?,
+                event_id: self.integer(Column::EventId)?,
             },
             timestamp,
         ))
@@ -327,7 +431,7 @@ impl TableReader {
         }
         Ok(Self {
             source,
-            columns,
+            columns: std::array::from_fn(|i| columns.get(COLUMN_NAMES[i]).copied()),
             path: path.to_owned(),
             rows: 0,
             order: OrderGuard::default(),
@@ -337,14 +441,14 @@ impl TableReader {
     }
     fn next<T>(
         &mut self,
-        parse: impl FnOnce(&Row<'_>, &mut LocalTimeValidator) -> Result<T>,
+        parse: impl FnOnce(&IndexedRow<'_>, &mut LocalTimeValidator) -> Result<T>,
     ) -> Result<Option<T>> {
         let row = match &mut self.source {
             Source::Csv { reader, record } => {
                 if !reader.read_record(record).map_err(malformed)? {
                     return Ok(None);
                 }
-                Row::Csv(record, &self.columns)
+                IndexedRow::Csv(record, &self.columns)
             }
             Source::Parquet {
                 reader,
@@ -358,7 +462,7 @@ impl TableReader {
                     };
                     *offset = 0;
                 }
-                let row = Row::Parquet(
+                let row = IndexedRow::Parquet(
                     batch.as_ref().expect("batch populated above"),
                     *offset,
                     &self.columns,
@@ -382,26 +486,26 @@ impl TableReader {
             let mut book = Vec::with_capacity(levels);
             for [bid, ask, bid_size, ask_size] in &BOOK_COLUMNS[..levels] {
                 book.push(Level {
-                    bid: r.price(bid)?,
-                    ask: r.price(ask)?,
-                    bid_size: r.integer(bid_size)?,
-                    ask_size: r.integer(ask_size)?,
+                    bid: r.price(*bid)?,
+                    ask: r.price(*ask)?,
+                    bid_size: r.integer(*bid_size)?,
+                    ask_size: r.integer(*ask_size)?,
                 });
             }
             let book = Book(book);
             book.validate()?;
-            let segment = r.integer("segment_id")?;
+            let segment = r.integer(Column::SegmentId)?;
             if segment < 1 {
                 return Err(malformed("accepted segment_id must be positive"));
             }
-            let timestamp_rounded = if r.has("timestamp_subnanosecond_rounded") {
-                Some(r.boolean("timestamp_subnanosecond_rounded")?)
+            let timestamp_rounded = if r.has(Column::TimestampRounded) {
+                Some(r.boolean(Column::TimestampRounded)?)
             } else {
                 None
             };
-            if r.has("time_seconds_text") {
-                let (ns, rounded) = decimal_seconds_ns(r.text("time_seconds_text")?)?;
-                if ns != r.integer("time_ns")?
+            if r.has(Column::TimeSecondsText) {
+                let (ns, rounded) = decimal_seconds_ns(r.text(Column::TimeSecondsText)?)?;
+                if ns != r.integer(Column::TimeNs)?
                     || timestamp_rounded.is_some_and(|flag| flag != rounded)
                 {
                     return Err(malformed(
@@ -409,14 +513,14 @@ impl TableReader {
                     ));
                 }
             }
-            let event_type = r.integer("event_type")?;
-            let event_size = r.integer("event_size")?;
-            let event_price = r.price("event_price")?;
-            let direction = r.integer("direction")?;
+            let event_type = r.integer(Column::EventType)?;
+            let event_size = r.integer(Column::EventSize)?;
+            let event_price = r.price(Column::EventPrice)?;
+            let direction = r.integer(Column::Direction)?;
             if !(1..=5).contains(&event_type) || event_size <= 0 || ![-1, 1].contains(&direction) {
                 return Err(malformed(format!("invalid accepted message {key:?}")));
             }
-            if r.has("event_price_raw") && r.integer("event_price_raw")? != event_price {
+            if r.has(Column::EventPriceRaw) && r.integer(Column::EventPriceRaw)? != event_price {
                 return Err(malformed(
                     "clean USD event price disagrees with raw USD/10000 price",
                 ));
@@ -439,8 +543,8 @@ impl TableReader {
                 timestamp,
                 book,
                 segment,
-                prev_available: r.boolean("prev_state_available")?,
-                l1_update: r.boolean("is_quote_update")?,
+                prev_available: r.boolean(Column::PrevStateAvailable)?,
+                l1_update: r.boolean(Column::IsQuoteUpdate)?,
                 timestamp_rounded,
                 execution,
             })
@@ -453,8 +557,8 @@ impl TableReader {
     pub fn next_quality(&mut self) -> Result<Option<Quality>> {
         let q = self.next(|r, local_time| {
             let (key, timestamp) = r.key_time(true, local_time)?;
-            let accepted = r.boolean("quote_accepted")?;
-            let reason = r.text("reject_reason")?.to_owned();
+            let accepted = r.boolean(Column::QuoteAccepted)?;
+            let reason = r.text(Column::RejectReason)?.to_owned();
             if !matches!(
                 reason.as_str(),
                 "" | "outside_session" | "invalid_book" | "invalid_event" | "spread_above_p95"
@@ -487,15 +591,16 @@ impl TableReader {
             let t = Trade {
                 key,
                 timestamp,
-                size: r.integer("event_size")?,
-                price: r.price("event_price")?,
-                direction: r.integer("direction")?,
-                event_type: r.integer("event_type")?,
-                quote_accepted: r.boolean("quote_accepted")?,
+                size: r.integer(Column::EventSize)?,
+                price: r.price(Column::EventPrice)?,
+                direction: r.integer(Column::Direction)?,
+                event_type: r.integer(Column::EventType)?,
+                quote_accepted: r.boolean(Column::QuoteAccepted)?,
             };
             t.validate()?;
-            if (r.has("aggressor_side") && r.integer("aggressor_side")? != -t.direction)
-                || (r.has("signed_volume") && r.integer("signed_volume")? != t.size * -t.direction)
+            if (r.has(Column::AggressorSide) && r.integer(Column::AggressorSide)? != -t.direction)
+                || (r.has(Column::SignedVolume)
+                    && r.integer(Column::SignedVolume)? != t.size * -t.direction)
             {
                 return Err(malformed(format!(
                     "inconsistent supplied trade sign {:?}",

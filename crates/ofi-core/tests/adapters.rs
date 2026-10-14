@@ -1,5 +1,6 @@
 use arrow_array::{
-    ArrayRef, BooleanArray, Int64Array, RecordBatch, StringArray, TimestampNanosecondArray,
+    ArrayRef, BooleanArray, Float64Array, Int64Array, RecordBatch, StringArray,
+    TimestampNanosecondArray,
 };
 use arrow_schema::{DataType, Field, Schema, TimeUnit};
 use flate2::{Compression, write::GzEncoder};
@@ -253,4 +254,233 @@ fn malformed_missing_inconsistent_and_order_failures() {
     let bad = dir.path().join("bad.csv.gz");
     fs::write(&bad, "invalid gzip").unwrap();
     assert!(TableReader::open(&bad, Kind::Quality, 1, 1).is_err());
+}
+
+// Authored rows exercise column mapping and row/batch validation, not market data.
+fn event_batch(levels: usize) -> RecordBatch {
+    let mut columns: Vec<(&str, ArrayRef)> = vec![
+        ("symbol", Arc::new(StringArray::from(vec!["A"; 5]))),
+        ("date", Arc::new(StringArray::from(vec!["2012-06-21"; 5]))),
+        ("event_id", Arc::new(Int64Array::from(vec![0, 1, 2, 3, 4]))),
+        (
+            "timestamp",
+            Arc::new(
+                TimestampNanosecondArray::from(vec![1_340_285_400_000_000_001; 5])
+                    .with_timezone("UTC"),
+            ),
+        ),
+        (
+            "time_ns",
+            Arc::new(Int64Array::from(vec![34_200_000_000_001; 5])),
+        ),
+        ("segment_id", Arc::new(Int64Array::from(vec![1; 5]))),
+        (
+            "prev_state_available",
+            Arc::new(BooleanArray::from(vec![false, true, true, true, true])),
+        ),
+        (
+            "is_quote_update",
+            Arc::new(BooleanArray::from(vec![true; 5])),
+        ),
+        ("event_type", Arc::new(Int64Array::from(vec![4; 5]))),
+        ("event_size", Arc::new(Int64Array::from(vec![10; 5]))),
+        ("event_price", Arc::new(Float64Array::from(vec![1.01; 5]))),
+        ("direction", Arc::new(Int64Array::from(vec![-1; 5]))),
+        (
+            "quote_accepted",
+            Arc::new(BooleanArray::from(vec![true; 5])),
+        ),
+        ("reject_reason", Arc::new(StringArray::from(vec![""; 5]))),
+    ];
+    let mut names = Vec::new();
+    let mut arrays = Vec::new();
+    for level in 1..=levels {
+        names.extend([
+            format!("bid_price_{level}"),
+            format!("ask_price_{level}"),
+            format!("bid_size_{level}"),
+            format!("ask_size_{level}"),
+        ]);
+        arrays.extend([
+            Arc::new(Float64Array::from(vec![1.0 - (level - 1) as f64 * 0.01; 5])) as ArrayRef,
+            Arc::new(Float64Array::from(vec![
+                1.01 + (level - 1) as f64 * 0.01;
+                5
+            ])),
+            Arc::new(Int64Array::from(vec![100 + level as i64; 5])),
+            Arc::new(Int64Array::from(vec![120 + level as i64; 5])),
+        ]);
+    }
+    columns.extend(names.iter().map(String::as_str).zip(arrays));
+    columns.reverse();
+    let schema = Arc::new(Schema::new(
+        columns
+            .iter()
+            .map(|(name, array)| Field::new(*name, array.data_type().clone(), true))
+            .collect::<Vec<_>>(),
+    ));
+    RecordBatch::try_new(
+        schema,
+        columns.into_iter().map(|(_, array)| array).collect(),
+    )
+    .unwrap()
+}
+
+fn with_column(batch: &RecordBatch, name: &str, array: ArrayRef) -> RecordBatch {
+    let mut fields = batch.schema().fields().to_vec();
+    let mut arrays = batch.columns().to_vec();
+    let field = Arc::new(Field::new(name, array.data_type().clone(), true));
+    if let Ok(index) = batch.schema().index_of(name) {
+        fields[index] = field;
+        arrays[index] = array;
+    } else {
+        fields.push(field);
+        arrays.push(array);
+    }
+    RecordBatch::try_new(Arc::new(Schema::new(fields)), arrays).unwrap()
+}
+
+fn write_batch(path: &std::path::Path, batch: &RecordBatch) {
+    let properties = parquet::file::properties::WriterProperties::builder()
+        .set_max_row_group_row_count(Some(2))
+        .build();
+    let mut writer = ArrowWriter::try_new(
+        File::create(path).unwrap(),
+        batch.schema(),
+        Some(properties),
+    )
+    .unwrap();
+    writer.write(batch).unwrap();
+    writer.close().unwrap();
+}
+
+#[test]
+fn parquet_column_mapping_survives_all_depths_batches_and_row_groups() {
+    let directory = tempfile::tempdir().unwrap();
+    let path = directory.path().join("events.parquet");
+    for levels in 1..=5 {
+        let batch = event_batch(levels);
+        // Unrequested deeper columns remain irrelevant even with another dtype.
+        let batch = if levels < 5 {
+            with_column(
+                &batch,
+                "bid_price_5",
+                Arc::new(StringArray::from(vec!["ignored"; 5])),
+            )
+        } else {
+            batch
+        };
+        write_batch(&path, &batch);
+        for chunk in [1, 2, 4, 8] {
+            let mut reader = TableReader::open(&path, Kind::Events, levels, chunk).unwrap();
+            for id in 0..5 {
+                let event = reader.next_event().unwrap().unwrap();
+                assert_eq!(event.key.event_id, id);
+                assert_eq!(event.book.0.len(), levels);
+                for (rank, level) in event.book.0.iter().enumerate() {
+                    assert_eq!(level.bid, 10000 - rank as i64 * 100);
+                    assert_eq!(level.ask, 10100 + rank as i64 * 100);
+                    assert_eq!(level.bid_size, 101 + rank as i64);
+                    assert_eq!(level.ask_size, 121 + rank as i64);
+                }
+                assert_eq!(event.execution.unwrap().direction, -1);
+            }
+            assert!(reader.next_event().unwrap().is_none());
+            // Methods retain their historical lack of Kind enforcement.
+            let mut reader = TableReader::open(&path, Kind::Events, levels, chunk).unwrap();
+            assert!(reader.next_quality().unwrap().unwrap().accepted);
+            let mut reader = TableReader::open(&path, Kind::Events, levels, chunk).unwrap();
+            assert_eq!(reader.next_trade().unwrap().unwrap().size, 10);
+        }
+    }
+}
+
+#[test]
+fn indexed_optional_fields_preserve_lazy_types_nulls_and_error_precedence() {
+    let directory = tempfile::tempdir().unwrap();
+    let path = directory.path().join("optional.parquet");
+    let base = event_batch(1);
+    for (name, expected) in [
+        ("timestamp_subnanosecond_rounded", "requires bool"),
+        ("time_seconds_text", "requires UTF8 string"),
+        ("event_price_raw", "requires int64"),
+    ] {
+        let wrong: ArrayRef = if name == "event_price_raw" {
+            Arc::new(Float64Array::from(vec![1.01; 5]))
+        } else {
+            Arc::new(Int64Array::from(vec![0; 5]))
+        };
+        let batch = with_column(&base, name, wrong);
+        write_batch(&path, &batch);
+        let mut reader = TableReader::open(&path, Kind::Events, 1, 2).unwrap();
+        let error = reader.next_event().unwrap_err();
+        assert_eq!(error.code, ErrorCode::Schema);
+        assert!(
+            error.message.contains(&format!("row 1: {name} {expected}")),
+            "{}",
+            error.message
+        );
+        // A null is rejected before its optional dtype is inspected.
+        let batch = with_column(
+            &base,
+            name,
+            Arc::new(StringArray::from(vec![None::<&str>; 5])),
+        );
+        write_batch(&path, &batch);
+        let mut reader = TableReader::open(&path, Kind::Events, 1, 2).unwrap();
+        let error = reader.next_event().unwrap_err();
+        assert_eq!(error.code, ErrorCode::Malformed);
+        assert!(
+            error
+                .message
+                .contains(&format!("row 1: null required value {name}"))
+        );
+        // Parsing errors consume the row; the next attempt carries the next row number.
+        assert!(reader.next_event().unwrap_err().message.contains("row 2:"));
+        let batch = with_column(&batch, "segment_id", Arc::new(Int64Array::from(vec![0; 5])));
+        write_batch(&path, &batch);
+        let error = TableReader::open(&path, Kind::Events, 1, 2)
+            .unwrap()
+            .next_event()
+            .unwrap_err();
+        assert!(
+            error
+                .message
+                .contains("accepted segment_id must be positive")
+        );
+    }
+    // Optional supplied sign types are validated at open for every Kind.
+    for name in ["aggressor_side", "signed_volume"] {
+        let batch = with_column(&base, name, Arc::new(Float64Array::from(vec![1.0; 5])));
+        write_batch(&path, &batch);
+        for kind in [Kind::Events, Kind::Trades, Kind::Quality] {
+            let error = TableReader::open(&path, kind, 1, 1).err().unwrap();
+            assert_eq!(error.code, ErrorCode::Schema);
+            assert_eq!(error.message, format!("{name} requires int64"));
+        }
+    }
+    let batch = with_column(
+        &base,
+        "aggressor_side",
+        Arc::new(Int64Array::from(vec![-1; 5])),
+    );
+    let batch = with_column(
+        &batch,
+        "signed_volume",
+        Arc::new(Int64Array::from(vec![None; 5])),
+    );
+    write_batch(&path, &batch);
+    let error = TableReader::open(&path, Kind::Trades, 1, 1)
+        .unwrap()
+        .next_trade()
+        .unwrap_err();
+    assert!(error.message.contains("inconsistent supplied trade sign"));
+    // Trade validation runs before either supplied sign is accessed.
+    let batch = with_column(&batch, "event_size", Arc::new(Int64Array::from(vec![0; 5])));
+    write_batch(&path, &batch);
+    let error = TableReader::open(&path, Kind::Trades, 1, 1)
+        .unwrap()
+        .next_trade()
+        .unwrap_err();
+    assert!(error.message.contains("invalid execution"));
 }

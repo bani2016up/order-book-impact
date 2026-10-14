@@ -904,3 +904,90 @@ Baseline to final (B → F); time variability is median absolute deviation; proc
 - Wall medians t1/t4: 1M 2.677294/2.574657s; 10M 26.680096/25.990904s; 20M 52.696098/51.591414s. RSS medians t1/t4: 1M 133.219/234.828 MiB; 10M 113.188/251.594 MiB; 20M 109.797/249.938 MiB. Full ranges/MAD are recorded in docs/COLD_INPUT_BENCHMARK.md and raw evidence. Observed t4 RSS maxima 364.938 MiB at 10M and 336.250 MiB at 20M disclose substantial variability; no memory benefit claim.
 - Every run passed unchanged high_load verification and matched normal-reference canonical decoded fingerprints; fixture/source/harness/native/helper hashes remained identical before/after. Independent post-suite audit checked status/counts, every zero-residency observation, identities, six aggregate fingerprints and real cold self-comparison guards. Final full per-row QC/manifest comparison remains supervising-root-owned. Regular five-case baseline completed and was independently verified before this exclusive suite; no concurrent builds/tests/profiles/benchmarks occurred.
 - Helper SHA-256 `9bf1590d6c6839eae1248d6a4981d36a7c3de869480a165a74a15db458ae31ee`; native SHA-256 `6cf58dacbb60d5408e0d125321c973aa2cb298fc8b7a9fce7b2a0e52ddb63691`; baseline summary SHA-256 `597a04f7d7c69cf832a6a636a54ea3bd132be30ec964d84ded24b6ea187a8f55`. Future paired cold runs must keep the helper byte-identical. This evidence update is documentation-only; no extra native tests are needed beyond the eight passed focused checks and successful full suite. No push or history rewrite performed.
+
+## Rust optimization P4 — canonical reader indices (2026-10-14, candidate)
+
+- Current-task baseline production is `a662211`; subsequent `a910217` and
+  `f9fa511` add the independent cold-input protocol/evidence only. Baselines
+  remain retained: regular `optimization/highload-before-20261014`, full warm
+  `high-load/baseline-20261014`, and full cold
+  `high-load/cold-input-baseline-20261014` under ignored benchmark results.
+- First hypothesis: replace per-cell input-name hashing with a private canonical
+  39-slot index table resolved once after existing schema/header validation.
+  Keep public `Row` variants/`has`, reader methods and all Arrow null/downcast,
+  CSV conversion, required/optional schema, ordering and precision checks.
+  Physical columns remain arbitrary; unrequested deeper columns stay ignored.
+  No decoder batch, queue, worker or configured operational bound increases.
+  Typed batch caching and string/book changes are deferred to separate evidence.
+- Added authored Rust checks for reversed Parquet columns at all five depths,
+  chunks 1/2/4/8 across multiple row groups, ignored deeper wrong-type columns,
+  historical cross-kind calls, lazy optional types/null-before-type checks,
+  consumed-row error context, earlier segment/trade validation, and optional
+  sign validation at open for every input kind with sign short-circuiting.
+- Focused checks passed: `cargo fmt --all`; `PYO3_PYTHON="$PWD/.venv/bin/python"
+  cargo test -p ofi-core --test adapters --locked --offline` (6 passed);
+  `cargo clippy -p ofi-core --all-targets --locked --offline -- -D warnings`;
+  `cargo test -p ofi-core --locked --offline` (29 unit + 6 adapter + 2 pipeline
+  passed; external sample remains explicitly ignored in this focused command).
+  An initial test compile used an unavailable Parquet writer method; corrected
+  to the pinned version's `set_max_row_group_row_count` before passing checks.
+- Release rebuild passed with explicit `VIRTUAL_ENV="$PWD/.venv"` and
+  `PYO3_PYTHON="$PWD/.venv/bin/python"` using
+  `.venv/bin/maturin develop --release --locked --offline`.
+  `.venv/bin/python -m pytest -q tests/integration/test_pipeline.py --basetemp
+  outputs/features/indexed-adapter-checks`: 24 passed in 2.12s through the newly
+  rebuilt extension. `git diff --check` passed. Loaded extension SHA-256:
+  `6d9ce62675db8d8ebb8c834f563e5943fe31f82f010f7d7a7b7464fd71565ce6`.
+- Performance retention is pending serialized regular and preliminary 1M warm/
+  cold measurements. No performance claim or production commit yet.
+- Serialized regular measurement completed with the unchanged harness via
+  `.venv/bin/python /tmp/ofi_regular_stage.py indexed-highload-20261014
+  highload-before-20261014`: one warmup + five measured fresh processes per
+  case in rounds. All 30 complete outputs match the retained original baseline
+  exactly (schemas, ordered values/floats/nulls, full quality, manifest and
+  stable QC); current source/native identity guards, chunk/thread invariance
+  and Quote Test conservation passed. Current-task baseline comparisons:
+
+| Case | Median seconds before → indexed (MAD before → indexed) | Indexed min–max s | Peak MiB median before → indexed (indexed min–max) | Speedup |
+| --- | --- | --- | --- | ---: |
+| real-t1-c4096 | 2.377169 → 1.518004 (0.014816 → 0.014327) | 1.452028–1.532331 | 117.11 → 108.88 (104.05–112.23) | 1.566x |
+| real-t2-c65536 | 2.327638 → 1.352256 (0.028670 → 0.018413) | 1.333843–1.475855 | 356.75 → 250.86 (238.36–404.38) | 1.721x |
+| real-t4-c1 | 29.688308 → 28.917654 (0.264505 → 0.082363) | 28.835291–29.802041 | 57.33 → 49.50 (48.41–50.89) | 1.027x |
+| quote-t2-c4096 | 3.056617 → 3.103519 (0.088745 → 0.032509) | 3.042897–3.469477 | 106.06 → 102.33 (98.73–104.69) | 0.985x |
+| fixture-t2-c4096 | 0.072252 → 0.058762 (0.000980 → 0.001804) | 0.052883–0.070050 | 63.27 → 65.56 (63.67–67.42) | 1.230x |
+
+- Incremental family-weighted geometric speedup: real-direction 1.404x,
+  real Quote Test 0.985x, authored 1.230x; balanced 1.194x. Quote Test's median
+  is 1.5% slower with overlapping ranges; all unfavorable results are retained.
+- Preliminary 1M-only warm pilot:
+  `.venv/bin/python -m benchmarks.high_load --root
+  benchmarks/results/high-load/indexed-1m-20261014 --sizes 1000000
+  --reuse-fixtures --offline --compare-to /tmp/ofi_warm_baseline_1m.json`.
+  Eight calls verified; 3 measured repeats per case. t1/c4096 median 1.702222s
+  (1.643256–1.988758; MAD 0.058966), RSS 120.78 MiB (109.14–126.34), 1.560x;
+  t4/c65536 1.463256s (1.418391–1.482590; MAD 0.019335), RSS 248.17 MiB
+  (234.61–295.97), 1.743x. Equal-case geometric speedup 1.649x.
+- Preliminary 1M-only verified low-residency pilot:
+  `.venv/bin/python -m scripts.benchmark_cold --root
+  benchmarks/results/high-load/indexed-cold-1m-20261014 --normal-reference
+  benchmarks/results/high-load/indexed-1m-20261014/summary.json --compare-to
+  /tmp/ofi_cold_baseline_1m.json`. All eight parent/child zero-residency gates,
+  unchanged helper/input/source/native identities and decoded output checks
+  passed. t1/c4096 median 1.537537s (1.531785–1.626211; MAD 0.005752), RSS
+  129.44 MiB (117.61–139.02), 1.741x; t4/c65536 1.435804s
+  (1.419273–1.462420; MAD 0.016531), RSS 300.11 MiB (238.55–360.09), 1.793x.
+  Equal-case geometric speedup 1.767x. The t4 RSS median increased 27.8% versus
+  its cold baseline; no general memory reduction is claimed. Operational buffer
+  and worker bounds are unchanged. RSS ranges remain broad; allocator/scheduling
+  occupancy is a possible explanation, not a proven cause.
+- Both /tmp pilot references are explicitly documented selections of the two
+  original 1M cases from preserved full baselines, with original verification
+  and comparison guards. Pilots do not replace required final 1M/10M/20M suites.
+  Machine/cache limitations remain those of the established protocols: normal
+  cache uncontrolled/warm leaning; verified pre-call input residency is separate
+  from unverified device cache and hashing can warm decoding inside the call.
+  Retention decision and commit await supervisor review of all measurements.
+- Decision: retain the indexed-only hypothesis for the measured speed-priority
+  benefit, preserving the small Quote Test regression and inconclusive RSS evidence.
+  Typed batch caching remains unimplemented; the next candidate isolates private
+  string/book copy reductions. No implementation commit is pushed.
