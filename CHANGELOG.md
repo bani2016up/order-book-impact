@@ -16,7 +16,7 @@ the owner-provided attachment; `docs/DATASET_CONTRACT.md` remains normative.
 - [x] M6: right-closed grids, original boundaries, depth and exclusions.
 - [x] M7: atomic output, provenance/QC, typed errors, Python CLI.
 - [x] M8: paired raw adapter and pre-execution Quote Test.
-- [ ] M9: full real sample integrity/parity and independently rebuilt other widths.
+- [x] M9: full real sample integrity/parity and independently rebuilt other widths.
 - [ ] M10: bounded partition concurrency, chunk/thread invariance and benchmarks.
 - [ ] M11: isolated wheel, coverage, CI, complete English handoff documentation.
 
@@ -289,3 +289,29 @@ commit hashes are authoritative in Git history, not self-referential log entries
   files are committed or modified. New QC distinguishes absent flags from false.
 - Intended commit: `fix(io): validate and report delivered timestamp precision evidence`.
 - Remaining: M9 acceptance report, M10 concurrency/performance, M11 distribution/coverage.
+
+## M9b — repeatable real-sample acceptance at every width
+
+- Added opt-in `tests/real_sample/test_acceptance.py`, validation-only dependency
+  extras, reproducible testing documentation and `docs/reconciliation.json`.
+  Integrity fixture checks all delivered hashes, vendor source SHA256/size,
+  actual schema/counts/nulls before native acceptance. Missing sample skips
+  explicitly; rebuilding reference widths is explicitly opted in.
+- Focused check passed:
+  `OFI_SAMPLE_DIR="$PWD/order_book_sample" OFI_REBUILD_REFERENCE=1 .venv/bin/python -m pytest -q tests/real_sample --basetemp outputs/m9-acceptance`
+  (5 passed in 154.32 seconds). `.venv/bin/ruff check tests/real_sample` passed.
+- At 10s: all 4,680 quality decisions, 4,390 accepted keys and 290 rejected
+  intervals match; exact integer OFI L1–L5, TI, volume and event/L1-update counts;
+  USD max abs error 2.0008994461306884e-13, ticks 2.000888343900442e-11,
+  depth 0. Verified all three delivered rounded MSFT event timestamps in QC.
+- At 1/5/30/60s: separately rebuilt reference from original archives using the
+  fully inspected Lev preparation code as a **test-only oracle**, then compared
+  native output and full-width quality. Exact keys/integers/quality all pass;
+  float errors within declared tight tolerances. Full counts/error evidence is
+  in reconciliation.json. No reference code or Python math enters production.
+- Cargo metadata confirms no locked dependency declares an MSRV >1.90; actual
+  minimum-toolchain build and platform matrix remain M11 checks.
+- Intended commit: `test(sample): reconcile native features against all reference widths`.
+- Remaining: M10 bounded concurrency/release measurements; M11 coverage, clean
+  wheel installation, CI and final requirement audit. Real-sample acceptance is
+  now passed, not pending.
