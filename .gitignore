@@ -1,0 +1,44 @@
+# Build products and native extensions
+target/
+dist/
+build/
+*.so
+*.pyd
+*.dll
+*.dylib
+*.egg-info/
+
+# Python environments and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage/
+
+# Local datasets and generated results
+data/
+raw/
+order_book_sample/
+output/
+outputs/
+benchmarks/results/
+*.zip
+*.parquet
+*.csv.gz
+SHA256SUMS.txt
+
+# Explicitly authored small fixtures may be committed
+!tests/fixtures/**/*.parquet
+!tests/fixtures/**/*.csv.gz
+
+# Local settings
+.env
+.env.*
+!.env.example
+.DS_Store
