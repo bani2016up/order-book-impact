@@ -4,25 +4,54 @@ Rust data-processing pipeline with a Python library interface through PyO3. The 
 
 ## Current status
 
-The pure Rust engine, compiled Python API/CLI, streaming Parquet/gzip CSV
-adapters and atomic output are implemented. Known-direction 10-second output
-has been independently checked against the delivered sample. Original pre-execution Quote Test is implemented and tested.
-Bounded partition parallelism and measured release performance are available.
-Final coverage and distribution acceptance are in progress.
+Implementation and local acceptance are complete: pure Rust core, compiled PyO3
+Python API/CLI, streaming Parquet/gzip CSV adapters, known-direction and original
+pre-execution Quote Test, bounded partition workers and atomic output.
 
-Read [usage](docs/usage.md), [the dataset contract](docs/DATASET_CONTRACT.md),
-[verified physical schemas](docs/verified_schema.md), and
-[the implementation work log](CHANGELOG.md). The owner requested keeping the
-previous implementation-task/work-log documents deleted. Work on local `main`,
-make tested local commits, and **do not push**.
+All five bucket widths match the verified delivered/rebuilt sample references.
+Final checks passed 79 Python/compiled tests, Rust suites, explicit real ingestion
+and an isolated release-wheel install. Measured coverage: Rust core 99.5465%
+(with eight documented missed guards/OS paths), native binding 100%, Python
+100% lines/branches. Linux/macOS/Windows CI is configured but unrun remotely.
+
+Read [the final handoff](docs/handoff.md), [usage](docs/usage.md),
+[architecture](docs/architecture.md), [output columns and units](docs/output_contract.md),
+[tests/coverage](docs/testing.md), and [the change log](CHANGELOG.md). The owner
+requested keeping the earlier task/work-log documents deleted. All work is on
+local `main`; nothing has been pushed or published.
+
+## Usage
+
+```python
+from pathlib import Path
+from ofi_pipeline import PipelineConfig, run_pipeline
+
+report = run_pipeline(
+    Path("/path/to/order_book_sample"),
+    Path("/new/features"),
+    PipelineConfig(bucket_seconds=10, levels=5, threads=2, chunk_rows=65536),
+)
+print(report.features_path, report.feature_rows)
+```
+
+Install a compatible prebuilt wheel with pip, or build from source with Python
+>=3.10, Rust >=1.90 and maturin 1.9.6. The installed `ofi-pipeline` CLI calls the
+same Rust core. Coworkers using a compatible wheel need no Rust compiler or
+Python data libraries for production computation. See [installation](docs/usage.md).
 
 ## Sample and boundaries
 
-The supplied dataset description covers AAPL and MSFT on 2012-06-21, 09:30-16:00 America/New_York, with five order-book levels. It reports 887,810 cleaned events, 68,404 execution messages, and 4,390 valid 10-second intervals. These counts require verification against the delivered files.
+Actual file inspection verified AAPL/MSFT on 2012-06-21, 09:30–16:00
+America/New_York: 887810 clean events, 68404 executions and 897387 original
+quality rows. Independent 10-second computation matches 4390 accepted intervals
+out of 4680 (290 exclusions). All delivery hashes and five-level schemas were
+checked; [reconciliation](docs/reconciliation.json) includes all five widths.
 
-The data is a single-venue NASDAQ sample, not the original paper's consolidated NBBO dataset. Known aggressor direction is the default trade-signing method. Invalid quote gaps and incomplete intervals must remain explicit.
-
-Keep the real dataset outside version control. Point the implementation to the local `order_book_sample` directory through a configurable path or `OFI_SAMPLE_DIR`. Do not commit raw archives, full real-data Parquet files, environments, or generated output.
+The sample is single-venue NASDAQ. OFI and price change are contemporaneous;
+invalid gaps/intervals and unknown signing remain explicit. No forecasting or
+profitability result is claimed. Real data and archives are ignored; select the
+local `order_book_sample` directory or `OFI_SAMPLE_DIR`, and keep generated
+outputs outside Git.
 
 ## References
 

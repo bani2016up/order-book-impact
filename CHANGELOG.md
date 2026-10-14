@@ -18,7 +18,7 @@ the owner-provided attachment; `docs/DATASET_CONTRACT.md` remains normative.
 - [x] M8: paired raw adapter and pre-execution Quote Test.
 - [x] M9: full real sample integrity/parity and independently rebuilt other widths.
 - [x] M10: bounded partition concurrency, chunk/thread invariance and benchmarks.
-- [ ] M11: isolated wheel, coverage, CI, complete English handoff documentation.
+- [x] M11: isolated wheel, coverage, CI, complete English handoff documentation.
 
 Each completed subtask records files/design decisions, exact focused commands,
 outcomes/evidence, data status, intended commit message, and remaining work. Final
@@ -518,3 +518,28 @@ commit hashes are authoritative in Git history, not self-referential log entries
   explicit unknown TI, not a parity claim against known direction.
 - Intended commit: `test: record final release acceptance and measured determinism`.
 - Remaining: English handoff/ordered local history, final repository audit.
+
+## M11f — final English handoff and repository audit
+
+- Added `docs/handoff.md` with API example, full final evidence, coverage limits,
+  actual all-width parity, Quote Test conservation, measured release performance,
+  operational limitations and ordered authoritative local commits. Updated README
+  from bootstrap/pending language to verified completion. Marked M11 complete.
+- Documentation points to reproducible commands, portable source/wheel hashes,
+  schema/units and per-milestone evidence. Hosted platform CI remains explicitly
+  unrun. No research model, GUI/server/database, TAQ claims or trading result
+  was added. Optional standalone Rust CLI is omitted; installed Python CLI shares
+  the engine. No real data or generated binary/output is committed.
+- Final checks: docs/evidence consistency and link review, `git diff --check`,
+  production SHA256 verification against measured coverage snapshot,
+  `git status --short --branch`, `git ls-files order_book_sample raw data outputs dist`,
+  and ordered `git log` audit. Functional/lint/type/coverage/wheel/real acceptance
+  results are recorded in M11c–M11e; no production sources changed afterward.
+- Repository status: all task changes committed after this entry; only the
+  external `.gitignore` edit remains dirty. Cargo.lock is tracked despite its
+  new ignore rule. Owner-requested docs deletions remain preserved. No push,
+  release/package upload, PR or remote hosted execution occurred.
+- Intended commit: `docs: hand off verified Rust pipeline and local acceptance`.
+- Remaining required implementation work: none. Known limitations remain honest
+  coverage/OS paths, unrun hosted platform matrix, scoped Lev-v1 data and
+  documented filesystem/cache/temporary-disk behavior.
