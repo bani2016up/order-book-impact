@@ -8,6 +8,11 @@ See the [benchmark protocol](../../benchmarks/HIGH_LOAD.md),
 [runner](../../benchmarks/high_load.py), [bounded generator](../../benchmarks/high_load_fixture.py)
 and [machine-readable comparison reference](results.json).
 
+Subsequent Rust optimization is recorded separately in the
+[supervised optimization report](optimization-20261014.md), including paired
+regular, full warm and verified low-residency results. This baseline remains
+unchanged as a comparison reference.
+
 ## Workload and measurement scope
 
 Four independent synthetic symbols, five varying book ranks, type-4/type-5

@@ -1,0 +1,2085 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-14",
+  "priority": "execution time first, whole-process RSS second",
+  "regular": {
+    "baseline_path": "benchmarks/results/optimization/highload-before-20261014/summary.json",
+    "baseline_sha256": "bceab063cd80e9a977f3c72cadd80edd4ebc5a49dcc83a0d8196efa0a5afe6d8",
+    "final_path": "benchmarks/results/optimization/io-highload-20261014/summary.json",
+    "final_sha256": "086ea719647b001ad72f7183e2e4a3d07d3d3d8232f713b6eda53de1eb98ae79",
+    "cases": [
+      {
+        "case_id": "real-t1-c4096",
+        "family": "real-direction",
+        "before": {
+          "seconds": 2.377168959006667,
+          "min_seconds": 2.3253877499955706,
+          "max_seconds": 2.391985249996651,
+          "mad_seconds": 0.014816290989983827,
+          "rss_mib": 117.109375,
+          "min_rss_mib": 107.453125,
+          "max_rss_mib": 122.328125,
+          "rows_per_second": 377502.4053717181,
+          "max_workers": 1
+        },
+        "after": {
+          "seconds": 1.2274688340257853,
+          "min_seconds": 1.2100329589447938,
+          "max_seconds": 1.3536508749821223,
+          "mad_seconds": 0.017435875080991536,
+          "rss_mib": 114.734375,
+          "min_rss_mib": 107.359375,
+          "max_rss_mib": 119.140625,
+          "rows_per_second": 731087.4012636223,
+          "max_workers": 1
+        },
+        "speedup": 1.9366430275953794,
+        "median_rss_ratio": 0.9797198132088059
+      },
+      {
+        "case_id": "real-t2-c65536",
+        "family": "real-direction",
+        "before": {
+          "seconds": 2.3276380829920527,
+          "min_seconds": 2.298552833002759,
+          "max_seconds": 2.36300970899174,
+          "mad_seconds": 0.028669874998740852,
+          "rss_mib": 356.75,
+          "min_rss_mib": 221.40625,
+          "max_rss_mib": 411.9375,
+          "rows_per_second": 385535.45182009466,
+          "max_workers": 2
+        },
+        "after": {
+          "seconds": 1.143881500000134,
+          "min_seconds": 1.0943236669991165,
+          "max_seconds": 1.1511892499984242,
+          "mad_seconds": 0.007307749998290092,
+          "rss_mib": 245.875,
+          "min_rss_mib": 209.90625,
+          "max_rss_mib": 406.90625,
+          "rows_per_second": 784510.4584696009,
+          "max_workers": 2
+        },
+        "speedup": 2.0348594526546497,
+        "median_rss_ratio": 0.689208128941836
+      },
+      {
+        "case_id": "real-t4-c1",
+        "family": "real-direction",
+        "before": {
+          "seconds": 29.68830787501065,
+          "min_seconds": 29.33858133299509,
+          "max_seconds": 30.544158333010273,
+          "mad_seconds": 0.26450462502543814,
+          "rss_mib": 57.328125,
+          "min_rss_mib": 52.171875,
+          "max_rss_mib": 58.15625,
+          "rows_per_second": 30226.95007671191,
+          "max_workers": 2
+        },
+        "after": {
+          "seconds": 28.531394374964293,
+          "min_seconds": 28.359381249989383,
+          "max_seconds": 28.926279374980368,
+          "mad_seconds": 0.17201312497491017,
+          "rss_mib": 51.796875,
+          "min_rss_mib": 48.46875,
+          "max_rss_mib": 53.796875,
+          "rows_per_second": 31452.61630772026,
+          "max_workers": 2
+        },
+        "speedup": 1.0405487893385794,
+        "median_rss_ratio": 0.9035159443990188
+      },
+      {
+        "case_id": "quote-t2-c4096",
+        "family": "real-quote",
+        "before": {
+          "seconds": 3.0566171249956824,
+          "min_seconds": 2.9678724170080386,
+          "max_seconds": 3.220844166993629,
+          "mad_seconds": 0.08874470798764378,
+          "rss_mib": 106.0625,
+          "min_rss_mib": 102.140625,
+          "max_rss_mib": 118.96875,
+          "rows_per_second": 293588.29166452034,
+          "max_workers": 2
+        },
+        "after": {
+          "seconds": 1.689397584006656,
+          "min_seconds": 1.5943200829788111,
+          "max_seconds": 1.8844943749718368,
+          "mad_seconds": 0.053020749997813255,
+          "rss_mib": 113.90625,
+          "min_rss_mib": 109.875,
+          "max_rss_mib": 117.09375,
+          "rows_per_second": 531187.5715316901,
+          "max_workers": 2
+        },
+        "speedup": 1.8092941258661346,
+        "median_rss_ratio": 1.073954036535062
+      },
+      {
+        "case_id": "fixture-t2-c4096",
+        "family": "authored",
+        "before": {
+          "seconds": 0.0722515000088606,
+          "min_seconds": 0.07127166600548662,
+          "max_seconds": 0.07744379198993556,
+          "mad_seconds": 0.0009798340033739805,
+          "rss_mib": 63.265625,
+          "min_rss_mib": 59.5625,
+          "max_rss_mib": 65.078125,
+          "rows_per_second": 276810.8620242803,
+          "max_workers": 2
+        },
+        "after": {
+          "seconds": 0.04927795799449086,
+          "min_seconds": 0.048534832953009754,
+          "max_seconds": 0.0529409580049105,
+          "mad_seconds": 0.0003899579751305282,
+          "rss_mib": 58.65625,
+          "min_rss_mib": 55.90625,
+          "max_rss_mib": 63.59375,
+          "rows_per_second": 405860.97342418175,
+          "max_workers": 2
+        },
+        "speedup": 1.466203206247672,
+        "median_rss_ratio": 0.9271425043220548
+      }
+    ],
+    "family_speedups": {
+      "real-direction": 1.6005975493323725,
+      "real-quote": 1.8092941258661346,
+      "authored": 1.466203206247672
+    },
+    "balanced_speedup": 1.6193043972947827
+  },
+  "high_load": {
+    "warm": {
+      "baseline_path": "benchmarks/results/high-load/baseline-20261014/summary.json",
+      "baseline_sha256": "d7c7115f5263897bfd5b52a67d5e928e013ff10dfaa34aff47c120532c44aba4",
+      "final_path": "benchmarks/results/high-load/optimized-20261014/summary.json",
+      "final_sha256": "dfa02d0daf479a45a9a1a535b7dcefb559555480fa26611bf2193af106f6a7c6",
+      "protocol": {
+        "sizes": [
+          1000000,
+          10000000,
+          20000000
+        ],
+        "partitions": 4,
+        "cases": [
+          "t1-c4096",
+          "t4-c65536"
+        ],
+        "signings": [
+          "lobster_direction"
+        ],
+        "repetitions": 3,
+        "warmups": 1,
+        "bucket_seconds": 10,
+        "sample_interval_seconds": 0.5,
+        "cache": "Uncontrolled OS cache; fixture generation/identity checks warm inputs; one serial warmup per case by default; not cold-cache measurements"
+      },
+      "cases": [
+        {
+          "case_id": "n1000000-lobster_direction-t1-c4096",
+          "before": {
+            "case_id": "n1000000-lobster_direction-t1-c4096",
+            "original_rows": 1000000,
+            "repetitions": 3,
+            "signing": "lobster_direction",
+            "threads": 1,
+            "chunk_rows": 4096,
+            "wall_seconds_median": 2.6562490420183167,
+            "wall_seconds_min": 2.617255709017627,
+            "wall_seconds_max": 2.901492207980482,
+            "wall_seconds_mad": 0.038993333000689745,
+            "rows_per_second": 376470.7240101865,
+            "peak_rss_mib_median": 121.921875,
+            "peak_rss_mib_min": 113.640625,
+            "peak_rss_mib_max": 126.359375,
+            "peak_workers": 1
+          },
+          "after": {
+            "case_id": "n1000000-lobster_direction-t1-c4096",
+            "original_rows": 1000000,
+            "repetitions": 3,
+            "signing": "lobster_direction",
+            "threads": 1,
+            "chunk_rows": 4096,
+            "wall_seconds_median": 1.4506394590134732,
+            "wall_seconds_min": 1.3342609590035863,
+            "wall_seconds_max": 1.5083490000106394,
+            "wall_seconds_mad": 0.05770954099716619,
+            "rows_per_second": 689351.1642652154,
+            "peak_rss_mib_median": 131.625,
+            "peak_rss_mib_min": 119.53125,
+            "peak_rss_mib_max": 142.078125,
+            "peak_workers": 1
+          },
+          "speedup": 1.8310883696936897,
+          "median_rss_ratio": 1.0795847750865053,
+          "output_fingerprints": {
+            "features.parquet": {
+              "decoded_sha256": "c0722437d9b78cf5a4fa61d7f0515d7366b1409452ac1543197cc489ff5a06c2",
+              "rows": 9348,
+              "totals": {
+                "event_count": 998716,
+                "volume": 1262202,
+                "trade_count": 39952,
+                "accepted": 9348
+              }
+            },
+            "bucket_quality.parquet": {
+              "decoded_sha256": "f2bfe6c46953a7a82c75d76226ea3a86030fa76d95ee7c4063779ec74a7b567c",
+              "rows": 9360,
+              "totals": {
+                "event_count": 1000000,
+                "volume": 1263589,
+                "trade_count": 40000,
+                "accepted": 9348
+              }
+            }
+          }
+        },
+        {
+          "case_id": "n1000000-lobster_direction-t4-c65536",
+          "before": {
+            "case_id": "n1000000-lobster_direction-t4-c65536",
+            "original_rows": 1000000,
+            "repetitions": 3,
+            "signing": "lobster_direction",
+            "threads": 4,
+            "chunk_rows": 65536,
+            "wall_seconds_median": 2.5509251250186935,
+            "wall_seconds_min": 2.5376213749987073,
+            "wall_seconds_max": 2.5513684589823242,
+            "wall_seconds_mad": 0.000443333963630721,
+            "rows_per_second": 392014.6421360258,
+            "peak_rss_mib_median": 269.625,
+            "peak_rss_mib_min": 250.09375,
+            "peak_rss_mib_max": 292.125,
+            "peak_workers": 2
+          },
+          "after": {
+            "case_id": "n1000000-lobster_direction-t4-c65536",
+            "original_rows": 1000000,
+            "repetitions": 3,
+            "signing": "lobster_direction",
+            "threads": 4,
+            "chunk_rows": 65536,
+            "wall_seconds_median": 1.1045397080015391,
+            "wall_seconds_min": 1.1021910000126809,
+            "wall_seconds_max": 1.4370887909899466,
+            "wall_seconds_mad": 0.002348707988858223,
+            "rows_per_second": 905354.5044653176,
+            "peak_rss_mib_median": 306.046875,
+            "peak_rss_mib_min": 286.578125,
+            "peak_rss_mib_max": 367.828125,
+            "peak_workers": 2
+          },
+          "speedup": 2.3094915524894275,
+          "median_rss_ratio": 1.1350834492350488,
+          "output_fingerprints": {
+            "features.parquet": {
+              "decoded_sha256": "c0722437d9b78cf5a4fa61d7f0515d7366b1409452ac1543197cc489ff5a06c2",
+              "rows": 9348,
+              "totals": {
+                "event_count": 998716,
+                "volume": 1262202,
+                "trade_count": 39952,
+                "accepted": 9348
+              }
+            },
+            "bucket_quality.parquet": {
+              "decoded_sha256": "f2bfe6c46953a7a82c75d76226ea3a86030fa76d95ee7c4063779ec74a7b567c",
+              "rows": 9360,
+              "totals": {
+                "event_count": 1000000,
+                "volume": 1263589,
+                "trade_count": 40000,
+                "accepted": 9348
+              }
+            }
+          }
+        },
+        {
+          "case_id": "n10000000-lobster_direction-t1-c4096",
+          "before": {
+            "case_id": "n10000000-lobster_direction-t1-c4096",
+            "original_rows": 10000000,
+            "repetitions": 3,
+            "signing": "lobster_direction",
+            "threads": 1,
+            "chunk_rows": 4096,
+            "wall_seconds_median": 26.39601466601016,
+            "wall_seconds_min": 26.260071791999508,
+            "wall_seconds_max": 26.615132583974628,
+            "wall_seconds_mad": 0.1359428740106523,
+            "rows_per_second": 378845.0690958618,
+            "peak_rss_mib_median": 117.484375,
+            "peak_rss_mib_min": 109.09375,
+            "peak_rss_mib_max": 120.046875,
+            "peak_workers": 1
+          },
+          "after": {
+            "case_id": "n10000000-lobster_direction-t1-c4096",
+            "original_rows": 10000000,
+            "repetitions": 3,
+            "signing": "lobster_direction",
+            "threads": 1,
+            "chunk_rows": 4096,
+            "wall_seconds_median": 13.070797666965518,
+            "wall_seconds_min": 12.745940374967176,
+            "wall_seconds_max": 13.073700707987882,
+            "wall_seconds_mad": 0.00290304102236405,
+            "rows_per_second": 765064.2489305378,
+            "peak_rss_mib_median": 152.65625,
+            "peak_rss_mib_min": 139.5,
+            "peak_rss_mib_max": 170.96875,
+            "peak_workers": 1
+          },
+          "speedup": 2.019464713521052,
+          "median_rss_ratio": 1.2993749168772444,
+          "output_fingerprints": {
+            "features.parquet": {
+              "decoded_sha256": "b28e37e092bdc4d43eb6932095e0130ef3a6832adc6c8ac8e01616f0ffa0801e",
+              "rows": 9260,
+              "totals": {
+                "event_count": 9893160,
+                "volume": 12459189,
+                "trade_count": 395720,
+                "accepted": 9260
+              }
+            },
+            "bucket_quality.parquet": {
+              "decoded_sha256": "5b69d7ed3ca3f5f775b78444fb2c6bf4fb8a0108865d39813e89e5cbf79c0024",
+              "rows": 9360,
+              "totals": {
+                "event_count": 10000000,
+                "volume": 12596088,
+                "trade_count": 400000,
+                "accepted": 9260
+              }
+            }
+          }
+        },
+        {
+          "case_id": "n10000000-lobster_direction-t4-c65536",
+          "before": {
+            "case_id": "n10000000-lobster_direction-t4-c65536",
+            "original_rows": 10000000,
+            "repetitions": 3,
+            "signing": "lobster_direction",
+            "threads": 4,
+            "chunk_rows": 65536,
+            "wall_seconds_median": 25.988424000010127,
+            "wall_seconds_min": 25.625999624986434,
+            "wall_seconds_max": 26.055584082991118,
+            "wall_seconds_mad": 0.06716008298099041,
+            "rows_per_second": 384786.7034952217,
+            "peak_rss_mib_median": 242.859375,
+            "peak_rss_mib_min": 226.0625,
+            "peak_rss_mib_max": 270.265625,
+            "peak_workers": 2
+          },
+          "after": {
+            "case_id": "n10000000-lobster_direction-t4-c65536",
+            "original_rows": 10000000,
+            "repetitions": 3,
+            "signing": "lobster_direction",
+            "threads": 4,
+            "chunk_rows": 65536,
+            "wall_seconds_median": 10.995942374982405,
+            "wall_seconds_min": 10.919062834000215,
+            "wall_seconds_max": 11.158118958002888,
+            "wall_seconds_mad": 0.07687954098219052,
+            "rows_per_second": 909426.3737459793,
+            "peak_rss_mib_median": 317.671875,
+            "peak_rss_mib_min": 301.578125,
+            "peak_rss_mib_max": 609.484375,
+            "peak_workers": 2
+          },
+          "speedup": 2.363455819770219,
+          "median_rss_ratio": 1.3080486392588304,
+          "output_fingerprints": {
+            "features.parquet": {
+              "decoded_sha256": "b28e37e092bdc4d43eb6932095e0130ef3a6832adc6c8ac8e01616f0ffa0801e",
+              "rows": 9260,
+              "totals": {
+                "event_count": 9893160,
+                "volume": 12459189,
+                "trade_count": 395720,
+                "accepted": 9260
+              }
+            },
+            "bucket_quality.parquet": {
+              "decoded_sha256": "5b69d7ed3ca3f5f775b78444fb2c6bf4fb8a0108865d39813e89e5cbf79c0024",
+              "rows": 9360,
+              "totals": {
+                "event_count": 10000000,
+                "volume": 12596088,
+                "trade_count": 400000,
+                "accepted": 9260
+              }
+            }
+          }
+        },
+        {
+          "case_id": "n20000000-lobster_direction-t1-c4096",
+          "before": {
+            "case_id": "n20000000-lobster_direction-t1-c4096",
+            "original_rows": 20000000,
+            "repetitions": 3,
+            "signing": "lobster_direction",
+            "threads": 1,
+            "chunk_rows": 4096,
+            "wall_seconds_median": 53.152608124975814,
+            "wall_seconds_min": 52.906668332987465,
+            "wall_seconds_max": 53.77380512500531,
+            "wall_seconds_mad": 0.2459397919883486,
+            "rows_per_second": 376275.04473486455,
+            "peak_rss_mib_median": 109.34375,
+            "peak_rss_mib_min": 105.53125,
+            "peak_rss_mib_max": 110.65625,
+            "peak_workers": 1
+          },
+          "after": {
+            "case_id": "n20000000-lobster_direction-t1-c4096",
+            "original_rows": 20000000,
+            "repetitions": 3,
+            "signing": "lobster_direction",
+            "threads": 1,
+            "chunk_rows": 4096,
+            "wall_seconds_median": 25.88994379201904,
+            "wall_seconds_min": 25.551659249991644,
+            "wall_seconds_max": 26.087094291986432,
+            "wall_seconds_mad": 0.19715049996739253,
+            "rows_per_second": 772500.7114988522,
+            "peak_rss_mib_median": 135.046875,
+            "peak_rss_mib_min": 127.953125,
+            "peak_rss_mib_max": 138.375,
+            "peak_workers": 1
+          },
+          "speedup": 2.0530213797281744,
+          "median_rss_ratio": 1.235067162046299,
+          "output_fingerprints": {
+            "features.parquet": {
+              "decoded_sha256": "9922bf97f8354abb2dc6dfe3fbafb3b369884451a304a325d99aeff60c7dc51b",
+              "rows": 9160,
+              "totals": {
+                "event_count": 19572648,
+                "volume": 24658763,
+                "trade_count": 782840,
+                "accepted": 9160
+              }
+            },
+            "bucket_quality.parquet": {
+              "decoded_sha256": "f803a8121bd215bc1b8317cab9d2a23f07d0d14f1570e70b080042fe97f50b62",
+              "rows": 9360,
+              "totals": {
+                "event_count": 20000000,
+                "volume": 25204061,
+                "trade_count": 800000,
+                "accepted": 9160
+              }
+            }
+          }
+        },
+        {
+          "case_id": "n20000000-lobster_direction-t4-c65536",
+          "before": {
+            "case_id": "n20000000-lobster_direction-t4-c65536",
+            "original_rows": 20000000,
+            "repetitions": 3,
+            "signing": "lobster_direction",
+            "threads": 4,
+            "chunk_rows": 65536,
+            "wall_seconds_median": 51.378437165985815,
+            "wall_seconds_min": 50.7659045420005,
+            "wall_seconds_max": 52.43823704199167,
+            "wall_seconds_mad": 0.6125326239853166,
+            "rows_per_second": 389268.3604872405,
+            "peak_rss_mib_median": 258.875,
+            "peak_rss_mib_min": 241.28125,
+            "peak_rss_mib_max": 292.859375,
+            "peak_workers": 2
+          },
+          "after": {
+            "case_id": "n20000000-lobster_direction-t4-c65536",
+            "original_rows": 20000000,
+            "repetitions": 3,
+            "signing": "lobster_direction",
+            "threads": 4,
+            "chunk_rows": 65536,
+            "wall_seconds_median": 22.864259082998615,
+            "wall_seconds_min": 22.698686291987542,
+            "wall_seconds_max": 24.038166292011738,
+            "wall_seconds_mad": 0.1655727910110727,
+            "rows_per_second": 874727.6667657944,
+            "peak_rss_mib_median": 336.96875,
+            "peak_rss_mib_min": 266.171875,
+            "peak_rss_mib_max": 559.90625,
+            "peak_workers": 2
+          },
+          "speedup": 2.247107023213787,
+          "median_rss_ratio": 1.3016658619024626,
+          "output_fingerprints": {
+            "features.parquet": {
+              "decoded_sha256": "9922bf97f8354abb2dc6dfe3fbafb3b369884451a304a325d99aeff60c7dc51b",
+              "rows": 9160,
+              "totals": {
+                "event_count": 19572648,
+                "volume": 24658763,
+                "trade_count": 782840,
+                "accepted": 9160
+              }
+            },
+            "bucket_quality.parquet": {
+              "decoded_sha256": "f803a8121bd215bc1b8317cab9d2a23f07d0d14f1570e70b080042fe97f50b62",
+              "rows": 9360,
+              "totals": {
+                "event_count": 20000000,
+                "volume": 25204061,
+                "trade_count": 800000,
+                "accepted": 9160
+              }
+            }
+          }
+        }
+      ],
+      "equal_case_geometric_speedup": 2.1289776952842034,
+      "baseline_measured_peak_mib": 292.859375,
+      "final_measured_peak_mib": 609.484375,
+      "source_before": {
+        "git_commit": "b8ff8f6e5a56e184e73f72e6535db445056ee076",
+        "git_status": [],
+        "source_hashes": {
+          "Cargo.lock": "9bb24d3bc84fec21fdd17c757578033b954e3d33c700d5c25d3c4278bfde0a86",
+          "Cargo.toml": "a4d02a2b87c6d7368261a90819741c2e73528f130b709034a4ccef6cc6c9deb9",
+          "benchmarks/__init__.py": "bc702347dda06c6cd64efe12b5a90091125ccd51bf7cbaba9932bb1d4c7fde87",
+          "benchmarks/high_load.py": "627bb3d88121bd695ff0f216f9dc48b816df9930d32061deec6161d60f38d960",
+          "benchmarks/high_load_fixture.py": "5b22881ff0eaedf440b9344cbe7a9ac48916970272192d9af7f8b3b7cd1fdcc0",
+          "benchmarks/high_load_plot.py": "b01ee62ba54f39f96456495424c4ead87ee3d4cbbde9a1ff45c566dad1572a1f",
+          "benchmarks/high_load_rss.py": "9222035919448fd099f15d613e0afc34eac6d378e98d49ca34d4116d9cdc68b8",
+          "benchmarks/high_load_worker.py": "5a7ea2ada5df361ab12d997ecce9580a26e2fc35137c05e0760eea163f78789e",
+          "benchmarks/make_fixture.py": "0570b9a07b96b7ce3c88f827a0432fea0659cfe14258f7ab397c0a093d950f4e",
+          "benchmarks/results/optimization_measure.py": "b75ec3b1de9ec247342f5952b1cb987e34bb92ce2862dde59bd829d274978ea3",
+          "benchmarks/results/optimization_summary.py": "a0cacb1006e97f9cf925eec1cb7342d576d1262fbe5d859d76b77c7405a23795",
+          "benchmarks/results/optimization_verify.py": "021dbddf26c373618b078fe3b7121e2324c7c852455d879ee905729f4137ac09",
+          "benchmarks/run.py": "011aa42ce09e822c4463614f55b580748778829dedbd0801e8f804ff75de112d",
+          "crates/ofi-core/Cargo.toml": "f8d3e6ce37200ed5169b8d8d4a036e70ffb338977a0e085916e33e36d4cb45bf",
+          "crates/ofi-core/src/adapter.rs": "b127d3953343c3ace26bf2c4d71c5ac3546c4dd331fb3c551d50845fea11dc91",
+          "crates/ofi-core/src/buckets.rs": "1dc7a4c8d26b9c34819c1821210ea79a84a3282d33978334bc12a7fd50e8ddf4",
+          "crates/ofi-core/src/config.rs": "5e1ea3f89d5f2398495d4dcb725bdd77507b64045ecf0d5077552b6695c6d20c",
+          "crates/ofi-core/src/domain.rs": "32f1e79f09b54eefe3afc2eb15d21e22d342694a20d2f0c44cb28076aea93ccd",
+          "crates/ofi-core/src/error.rs": "d94c39bc6c4ffb41955b348fbef8951f456ea48c5b76f7297e41336a39e75d44",
+          "crates/ofi-core/src/lib.rs": "b0bd4c584d625b5f74ec25ea89be339884f2f2a528fa2f412d4e4943dc68245f",
+          "crates/ofi-core/src/ofi.rs": "302f481ca9345cb7f378be4c4d969d8177d66f925ef6315c6e64ef11cddf95e3",
+          "crates/ofi-core/src/output.rs": "0f09c09242cd349f11fc5c1074105a43a6e6e708c66a80898536cd8e3f95c626",
+          "crates/ofi-core/src/pipeline.rs": "a4951c854c39a90de7ceb18b5f5aab5dac7f66818eb3d0d0727f7f912b299612",
+          "crates/ofi-core/src/raw.rs": "a1a074bdba5927d946d57b2945d9a23bc78066a94c4fd104412eacebf0a5b015",
+          "crates/ofi-core/src/time.rs": "9c3cf67166091d24734a742dcae98f3aad0ba31c00952379397beaf3d426546a",
+          "crates/ofi-core/src/trades.rs": "c09ec552021a1510fd0f3751a1f8e4b46d59d52ef0755b7ee88220d3064b0e9f",
+          "crates/ofi-core/src/worker.rs": "522cfcffe96ba63989bbd89c74c247be59bdc2dfb66af1c2e1400c45c68b0b54",
+          "crates/ofi-core/tests/adapters.rs": "8998f73964c4b96d2eb89251e917b502472f237f5a2d3bd640fdea27bbbcb770",
+          "crates/ofi-core/tests/pipeline.rs": "ea46694ed4f85d6585309383d1ab7f97942642ab75fc7c2853c9f574b1e91ebd",
+          "crates/ofi-core/tests/sample_ingestion.rs": "1a9500658ec9d218f101c5d77c261c9eabc17a141562e9ec75cd33eaa18f6294",
+          "crates/ofi-python/Cargo.toml": "c0d8676805575ba448a53e57e5f304e129aaa41ad0a515ec1030b0e05a8608ec",
+          "crates/ofi-python/src/lib.rs": "1d4c14681c37391f54e2e9ad2dedb337e122353405baa88fb60c634dc80e1de7",
+          "pyproject.toml": "67f6d1672f4603998c181b7aba3a46c991d0069d089b8afd28384e3585a3372b",
+          "python/ofi_pipeline/__init__.py": "40173c8d560a5baa3e2868ce44b34c04d0e159c74aead866709216104aeae334",
+          "python/ofi_pipeline/__main__.py": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+          "python/ofi_pipeline/api.py": "923ea7104f148652240528c9164a87c53158917e2c747a849c95c4c335853c00",
+          "python/ofi_pipeline/cli.py": "28a5c51171c282b25913266b845dbfc72c0f1fc1557fe538f3a6aa8a8fdab855",
+          "python/ofi_pipeline/errors.py": "e4322914f4b213ef999bc2d01ae95e53603130caf4cdbc14b7220eb2f69b39a2",
+          "python/ofi_pipeline/research.py": "b25da669e5095e1a673b5acdb039dd8f5b93281ec444b0e484c635b36be6709d"
+        },
+        "native_path": "/Users/daniilparfenov/Documents/my-obsidian-database/Git-sync/Study/RSS/order-book-impact-pipeline/python/ofi_pipeline/_native.abi3.so",
+        "native_sha256": "a4bbe9c69622920b9e6f589ea73ff66f0ac8f497cb5993f54789eeba15507d35",
+        "native_version": "0.1.0",
+        "platform": "macOS-26.5.1-arm64-arm-64bit",
+        "machine": "arm64",
+        "host_id": "9035fe6517812967bfbb5181b75b960ef44afd2e9dcc2a2addafa7f58772092e",
+        "python": "3.12.0",
+        "cpu_count": 10,
+        "host_load_average": [
+          5.740234375,
+          5.3515625,
+          6.08935546875
+        ]
+      },
+      "source_after": {
+        "git_commit": "b8ff8f6e5a56e184e73f72e6535db445056ee076",
+        "git_status": [],
+        "source_hashes": {
+          "Cargo.lock": "9bb24d3bc84fec21fdd17c757578033b954e3d33c700d5c25d3c4278bfde0a86",
+          "Cargo.toml": "a4d02a2b87c6d7368261a90819741c2e73528f130b709034a4ccef6cc6c9deb9",
+          "benchmarks/__init__.py": "bc702347dda06c6cd64efe12b5a90091125ccd51bf7cbaba9932bb1d4c7fde87",
+          "benchmarks/high_load.py": "627bb3d88121bd695ff0f216f9dc48b816df9930d32061deec6161d60f38d960",
+          "benchmarks/high_load_fixture.py": "5b22881ff0eaedf440b9344cbe7a9ac48916970272192d9af7f8b3b7cd1fdcc0",
+          "benchmarks/high_load_plot.py": "b01ee62ba54f39f96456495424c4ead87ee3d4cbbde9a1ff45c566dad1572a1f",
+          "benchmarks/high_load_rss.py": "9222035919448fd099f15d613e0afc34eac6d378e98d49ca34d4116d9cdc68b8",
+          "benchmarks/high_load_worker.py": "5a7ea2ada5df361ab12d997ecce9580a26e2fc35137c05e0760eea163f78789e",
+          "benchmarks/make_fixture.py": "0570b9a07b96b7ce3c88f827a0432fea0659cfe14258f7ab397c0a093d950f4e",
+          "benchmarks/results/optimization_measure.py": "b75ec3b1de9ec247342f5952b1cb987e34bb92ce2862dde59bd829d274978ea3",
+          "benchmarks/results/optimization_summary.py": "a0cacb1006e97f9cf925eec1cb7342d576d1262fbe5d859d76b77c7405a23795",
+          "benchmarks/results/optimization_verify.py": "021dbddf26c373618b078fe3b7121e2324c7c852455d879ee905729f4137ac09",
+          "benchmarks/run.py": "011aa42ce09e822c4463614f55b580748778829dedbd0801e8f804ff75de112d",
+          "crates/ofi-core/Cargo.toml": "f8d3e6ce37200ed5169b8d8d4a036e70ffb338977a0e085916e33e36d4cb45bf",
+          "crates/ofi-core/src/adapter.rs": "b127d3953343c3ace26bf2c4d71c5ac3546c4dd331fb3c551d50845fea11dc91",
+          "crates/ofi-core/src/buckets.rs": "1dc7a4c8d26b9c34819c1821210ea79a84a3282d33978334bc12a7fd50e8ddf4",
+          "crates/ofi-core/src/config.rs": "5e1ea3f89d5f2398495d4dcb725bdd77507b64045ecf0d5077552b6695c6d20c",
+          "crates/ofi-core/src/domain.rs": "32f1e79f09b54eefe3afc2eb15d21e22d342694a20d2f0c44cb28076aea93ccd",
+          "crates/ofi-core/src/error.rs": "d94c39bc6c4ffb41955b348fbef8951f456ea48c5b76f7297e41336a39e75d44",
+          "crates/ofi-core/src/lib.rs": "b0bd4c584d625b5f74ec25ea89be339884f2f2a528fa2f412d4e4943dc68245f",
+          "crates/ofi-core/src/ofi.rs": "302f481ca9345cb7f378be4c4d969d8177d66f925ef6315c6e64ef11cddf95e3",
+          "crates/ofi-core/src/output.rs": "0f09c09242cd349f11fc5c1074105a43a6e6e708c66a80898536cd8e3f95c626",
+          "crates/ofi-core/src/pipeline.rs": "a4951c854c39a90de7ceb18b5f5aab5dac7f66818eb3d0d0727f7f912b299612",
+          "crates/ofi-core/src/raw.rs": "a1a074bdba5927d946d57b2945d9a23bc78066a94c4fd104412eacebf0a5b015",
+          "crates/ofi-core/src/time.rs": "9c3cf67166091d24734a742dcae98f3aad0ba31c00952379397beaf3d426546a",
+          "crates/ofi-core/src/trades.rs": "c09ec552021a1510fd0f3751a1f8e4b46d59d52ef0755b7ee88220d3064b0e9f",
+          "crates/ofi-core/src/worker.rs": "522cfcffe96ba63989bbd89c74c247be59bdc2dfb66af1c2e1400c45c68b0b54",
+          "crates/ofi-core/tests/adapters.rs": "8998f73964c4b96d2eb89251e917b502472f237f5a2d3bd640fdea27bbbcb770",
+          "crates/ofi-core/tests/pipeline.rs": "ea46694ed4f85d6585309383d1ab7f97942642ab75fc7c2853c9f574b1e91ebd",
+          "crates/ofi-core/tests/sample_ingestion.rs": "1a9500658ec9d218f101c5d77c261c9eabc17a141562e9ec75cd33eaa18f6294",
+          "crates/ofi-python/Cargo.toml": "c0d8676805575ba448a53e57e5f304e129aaa41ad0a515ec1030b0e05a8608ec",
+          "crates/ofi-python/src/lib.rs": "1d4c14681c37391f54e2e9ad2dedb337e122353405baa88fb60c634dc80e1de7",
+          "pyproject.toml": "67f6d1672f4603998c181b7aba3a46c991d0069d089b8afd28384e3585a3372b",
+          "python/ofi_pipeline/__init__.py": "40173c8d560a5baa3e2868ce44b34c04d0e159c74aead866709216104aeae334",
+          "python/ofi_pipeline/__main__.py": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+          "python/ofi_pipeline/api.py": "923ea7104f148652240528c9164a87c53158917e2c747a849c95c4c335853c00",
+          "python/ofi_pipeline/cli.py": "28a5c51171c282b25913266b845dbfc72c0f1fc1557fe538f3a6aa8a8fdab855",
+          "python/ofi_pipeline/errors.py": "e4322914f4b213ef999bc2d01ae95e53603130caf4cdbc14b7220eb2f69b39a2",
+          "python/ofi_pipeline/research.py": "b25da669e5095e1a673b5acdb039dd8f5b93281ec444b0e484c635b36be6709d"
+        },
+        "native_path": "/Users/daniilparfenov/Documents/my-obsidian-database/Git-sync/Study/RSS/order-book-impact-pipeline/python/ofi_pipeline/_native.abi3.so",
+        "native_sha256": "a4bbe9c69622920b9e6f589ea73ff66f0ac8f497cb5993f54789eeba15507d35",
+        "native_version": "0.1.0",
+        "platform": "macOS-26.5.1-arm64-arm-64bit",
+        "machine": "arm64",
+        "host_id": "9035fe6517812967bfbb5181b75b960ef44afd2e9dcc2a2addafa7f58772092e",
+        "python": "3.12.0",
+        "cpu_count": 10,
+        "host_load_average": [
+          7.3525390625,
+          6.375,
+          6.31005859375
+        ]
+      },
+      "native_calls": 24,
+      "measured_calls": 18
+    },
+    "cold": {
+      "baseline_path": "benchmarks/results/high-load/cold-input-baseline-20261014/summary.json",
+      "baseline_sha256": "597a04f7d7c69cf832a6a636a54ea3bd132be30ec964d84ded24b6ea187a8f55",
+      "final_path": "benchmarks/results/high-load/optimized-cold-20261014/summary.json",
+      "final_sha256": "2988d33650ed29e14afccb5aa1660f9538b25a208dc8fe53a791950de39a0bf3",
+      "protocol": {
+        "sizes": [
+          1000000,
+          10000000,
+          20000000
+        ],
+        "partitions": 4,
+        "cases": [
+          "t1-c4096",
+          "t4-c65536"
+        ],
+        "signings": [
+          "lobster_direction"
+        ],
+        "repetitions": 3,
+        "warmups": 1,
+        "bucket_seconds": 10,
+        "sample_interval_seconds": 0.5,
+        "cache": {
+          "version": 1,
+          "preparation": "read-only MAP_SHARED; msync(MS_SYNC | MS_INVALIDATE), file-targeted",
+          "gate": "independent fresh-child mincore; zero MINCORE_INCORE pages in every input",
+          "state": "verified-zero-input-page-residency-before-worker-setup",
+          "physical_device_cache": "unverified",
+          "scope": "full unchanged public call; source hashing can warm inputs before decoding",
+          "startup": "fresh Python process; startup and cache preparation excluded from timing"
+        }
+      },
+      "cases": [
+        {
+          "case_id": "n1000000-lobster_direction-t1-c4096",
+          "before": {
+            "case_id": "n1000000-lobster_direction-t1-c4096",
+            "original_rows": 1000000,
+            "repetitions": 3,
+            "signing": "lobster_direction",
+            "threads": 1,
+            "chunk_rows": 4096,
+            "wall_seconds_median": 2.6772935840126593,
+            "wall_seconds_min": 2.632271375012351,
+            "wall_seconds_max": 2.728507708001416,
+            "wall_seconds_mad": 0.04502220900030807,
+            "rows_per_second": 373511.5214750657,
+            "peak_rss_mib_median": 133.21875,
+            "peak_rss_mib_min": 124.171875,
+            "peak_rss_mib_max": 144.546875,
+            "peak_workers": 1
+          },
+          "after": {
+            "case_id": "n1000000-lobster_direction-t1-c4096",
+            "original_rows": 1000000,
+            "repetitions": 3,
+            "signing": "lobster_direction",
+            "threads": 1,
+            "chunk_rows": 4096,
+            "wall_seconds_median": 1.2670883330283687,
+            "wall_seconds_min": 1.253415999992285,
+            "wall_seconds_max": 1.357789125002455,
+            "wall_seconds_mad": 0.013672333036083728,
+            "rows_per_second": 789210.9602256208,
+            "peak_rss_mib_median": 127.3125,
+            "peak_rss_mib_min": 117.875,
+            "peak_rss_mib_max": 128.0,
+            "peak_workers": 1
+          },
+          "speedup": 2.1129494402445244,
+          "median_rss_ratio": 0.9556650246305419,
+          "output_fingerprints": {
+            "features.parquet": {
+              "decoded_sha256": "c0722437d9b78cf5a4fa61d7f0515d7366b1409452ac1543197cc489ff5a06c2",
+              "rows": 9348,
+              "totals": {
+                "event_count": 998716,
+                "volume": 1262202,
+                "trade_count": 39952,
+                "accepted": 9348
+              }
+            },
+            "bucket_quality.parquet": {
+              "decoded_sha256": "f2bfe6c46953a7a82c75d76226ea3a86030fa76d95ee7c4063779ec74a7b567c",
+              "rows": 9360,
+              "totals": {
+                "event_count": 1000000,
+                "volume": 1263589,
+                "trade_count": 40000,
+                "accepted": 9348
+              }
+            }
+          }
+        },
+        {
+          "case_id": "n1000000-lobster_direction-t4-c65536",
+          "before": {
+            "case_id": "n1000000-lobster_direction-t4-c65536",
+            "original_rows": 1000000,
+            "repetitions": 3,
+            "signing": "lobster_direction",
+            "threads": 4,
+            "chunk_rows": 65536,
+            "wall_seconds_median": 2.5746567500173114,
+            "wall_seconds_min": 2.5423646249982994,
+            "wall_seconds_max": 2.6409475420077797,
+            "wall_seconds_mad": 0.03229212501901202,
+            "rows_per_second": 388401.2888293852,
+            "peak_rss_mib_median": 234.828125,
+            "peak_rss_mib_min": 224.96875,
+            "peak_rss_mib_max": 242.703125,
+            "peak_workers": 2
+          },
+          "after": {
+            "case_id": "n1000000-lobster_direction-t4-c65536",
+            "original_rows": 1000000,
+            "repetitions": 3,
+            "signing": "lobster_direction",
+            "threads": 4,
+            "chunk_rows": 65536,
+            "wall_seconds_median": 1.1798244580277242,
+            "wall_seconds_min": 1.1300548329600133,
+            "wall_seconds_max": 1.1915981249767356,
+            "wall_seconds_mad": 0.011773666949011385,
+            "rows_per_second": 847583.7173876433,
+            "peak_rss_mib_median": 379.859375,
+            "peak_rss_mib_min": 288.328125,
+            "peak_rss_mib_max": 480.828125,
+            "peak_workers": 2
+          },
+          "speedup": 2.182237139176861,
+          "median_rss_ratio": 1.6176059618071728,
+          "output_fingerprints": {
+            "features.parquet": {
+              "decoded_sha256": "c0722437d9b78cf5a4fa61d7f0515d7366b1409452ac1543197cc489ff5a06c2",
+              "rows": 9348,
+              "totals": {
+                "event_count": 998716,
+                "volume": 1262202,
+                "trade_count": 39952,
+                "accepted": 9348
+              }
+            },
+            "bucket_quality.parquet": {
+              "decoded_sha256": "f2bfe6c46953a7a82c75d76226ea3a86030fa76d95ee7c4063779ec74a7b567c",
+              "rows": 9360,
+              "totals": {
+                "event_count": 1000000,
+                "volume": 1263589,
+                "trade_count": 40000,
+                "accepted": 9348
+              }
+            }
+          }
+        },
+        {
+          "case_id": "n10000000-lobster_direction-t1-c4096",
+          "before": {
+            "case_id": "n10000000-lobster_direction-t1-c4096",
+            "original_rows": 10000000,
+            "repetitions": 3,
+            "signing": "lobster_direction",
+            "threads": 1,
+            "chunk_rows": 4096,
+            "wall_seconds_median": 26.680095957999583,
+            "wall_seconds_min": 26.444109167001443,
+            "wall_seconds_max": 27.78556445799768,
+            "wall_seconds_mad": 0.23598679099814035,
+            "rows_per_second": 374811.2456470257,
+            "peak_rss_mib_median": 113.1875,
+            "peak_rss_mib_min": 111.78125,
+            "peak_rss_mib_max": 119.53125,
+            "peak_workers": 1
+          },
+          "after": {
+            "case_id": "n10000000-lobster_direction-t1-c4096",
+            "original_rows": 10000000,
+            "repetitions": 3,
+            "signing": "lobster_direction",
+            "threads": 1,
+            "chunk_rows": 4096,
+            "wall_seconds_median": 12.545615083014127,
+            "wall_seconds_min": 12.535152333031874,
+            "wall_seconds_max": 12.552891874976922,
+            "wall_seconds_mad": 0.0072767919627949595,
+            "rows_per_second": 797091.2493193969,
+            "peak_rss_mib_median": 150.875,
+            "peak_rss_mib_min": 142.34375,
+            "peak_rss_mib_max": 154.0,
+            "peak_workers": 1
+          },
+          "speedup": 2.126647101912328,
+          "median_rss_ratio": 1.3329652125897293,
+          "output_fingerprints": {
+            "features.parquet": {
+              "decoded_sha256": "b28e37e092bdc4d43eb6932095e0130ef3a6832adc6c8ac8e01616f0ffa0801e",
+              "rows": 9260,
+              "totals": {
+                "event_count": 9893160,
+                "volume": 12459189,
+                "trade_count": 395720,
+                "accepted": 9260
+              }
+            },
+            "bucket_quality.parquet": {
+              "decoded_sha256": "5b69d7ed3ca3f5f775b78444fb2c6bf4fb8a0108865d39813e89e5cbf79c0024",
+              "rows": 9360,
+              "totals": {
+                "event_count": 10000000,
+                "volume": 12596088,
+                "trade_count": 400000,
+                "accepted": 9260
+              }
+            }
+          }
+        },
+        {
+          "case_id": "n10000000-lobster_direction-t4-c65536",
+          "before": {
+            "case_id": "n10000000-lobster_direction-t4-c65536",
+            "original_rows": 10000000,
+            "repetitions": 3,
+            "signing": "lobster_direction",
+            "threads": 4,
+            "chunk_rows": 65536,
+            "wall_seconds_median": 25.990904125006637,
+            "wall_seconds_min": 25.01709891599603,
+            "wall_seconds_max": 26.290287542011356,
+            "wall_seconds_mad": 0.2993834170047194,
+            "rows_per_second": 384749.98606834526,
+            "peak_rss_mib_median": 251.59375,
+            "peak_rss_mib_min": 248.0625,
+            "peak_rss_mib_max": 364.9375,
+            "peak_workers": 2
+          },
+          "after": {
+            "case_id": "n10000000-lobster_direction-t4-c65536",
+            "original_rows": 10000000,
+            "repetitions": 3,
+            "signing": "lobster_direction",
+            "threads": 4,
+            "chunk_rows": 65536,
+            "wall_seconds_median": 11.195503875031136,
+            "wall_seconds_min": 11.134544333035592,
+            "wall_seconds_max": 11.511820916028228,
+            "wall_seconds_mad": 0.06095954199554399,
+            "rows_per_second": 893215.7151320882,
+            "peak_rss_mib_median": 299.8125,
+            "peak_rss_mib_min": 295.15625,
+            "peak_rss_mib_max": 305.765625,
+            "peak_workers": 2
+          },
+          "speedup": 2.3215484014947343,
+          "median_rss_ratio": 1.1916532107812694,
+          "output_fingerprints": {
+            "features.parquet": {
+              "decoded_sha256": "b28e37e092bdc4d43eb6932095e0130ef3a6832adc6c8ac8e01616f0ffa0801e",
+              "rows": 9260,
+              "totals": {
+                "event_count": 9893160,
+                "volume": 12459189,
+                "trade_count": 395720,
+                "accepted": 9260
+              }
+            },
+            "bucket_quality.parquet": {
+              "decoded_sha256": "5b69d7ed3ca3f5f775b78444fb2c6bf4fb8a0108865d39813e89e5cbf79c0024",
+              "rows": 9360,
+              "totals": {
+                "event_count": 10000000,
+                "volume": 12596088,
+                "trade_count": 400000,
+                "accepted": 9260
+              }
+            }
+          }
+        },
+        {
+          "case_id": "n20000000-lobster_direction-t1-c4096",
+          "before": {
+            "case_id": "n20000000-lobster_direction-t1-c4096",
+            "original_rows": 20000000,
+            "repetitions": 3,
+            "signing": "lobster_direction",
+            "threads": 1,
+            "chunk_rows": 4096,
+            "wall_seconds_median": 52.6960984999896,
+            "wall_seconds_min": 52.54183583299164,
+            "wall_seconds_max": 53.0161128329928,
+            "wall_seconds_mad": 0.15426266699796543,
+            "rows_per_second": 379534.7391800542,
+            "peak_rss_mib_median": 109.796875,
+            "peak_rss_mib_min": 108.6875,
+            "peak_rss_mib_max": 126.640625,
+            "peak_workers": 1
+          },
+          "after": {
+            "case_id": "n20000000-lobster_direction-t1-c4096",
+            "original_rows": 20000000,
+            "repetitions": 3,
+            "signing": "lobster_direction",
+            "threads": 1,
+            "chunk_rows": 4096,
+            "wall_seconds_median": 24.24944854102796,
+            "wall_seconds_min": 23.303677165997215,
+            "wall_seconds_max": 24.359530499961693,
+            "wall_seconds_mad": 0.1100819589337334,
+            "rows_per_second": 824761.0235821131,
+            "peak_rss_mib_median": 141.25,
+            "peak_rss_mib_min": 131.265625,
+            "peak_rss_mib_max": 159.765625,
+            "peak_workers": 1
+          },
+          "speedup": 2.173084406881764,
+          "median_rss_ratio": 1.2864664864095632,
+          "output_fingerprints": {
+            "features.parquet": {
+              "decoded_sha256": "9922bf97f8354abb2dc6dfe3fbafb3b369884451a304a325d99aeff60c7dc51b",
+              "rows": 9160,
+              "totals": {
+                "event_count": 19572648,
+                "volume": 24658763,
+                "trade_count": 782840,
+                "accepted": 9160
+              }
+            },
+            "bucket_quality.parquet": {
+              "decoded_sha256": "f803a8121bd215bc1b8317cab9d2a23f07d0d14f1570e70b080042fe97f50b62",
+              "rows": 9360,
+              "totals": {
+                "event_count": 20000000,
+                "volume": 25204061,
+                "trade_count": 800000,
+                "accepted": 9160
+              }
+            }
+          }
+        },
+        {
+          "case_id": "n20000000-lobster_direction-t4-c65536",
+          "before": {
+            "case_id": "n20000000-lobster_direction-t4-c65536",
+            "original_rows": 20000000,
+            "repetitions": 3,
+            "signing": "lobster_direction",
+            "threads": 4,
+            "chunk_rows": 65536,
+            "wall_seconds_median": 51.591414334019646,
+            "wall_seconds_min": 50.98357170901727,
+            "wall_seconds_max": 51.66823250002926,
+            "wall_seconds_mad": 0.0768181660096161,
+            "rows_per_second": 387661.4017695556,
+            "peak_rss_mib_median": 249.9375,
+            "peak_rss_mib_min": 233.890625,
+            "peak_rss_mib_max": 336.25,
+            "peak_workers": 2
+          },
+          "after": {
+            "case_id": "n20000000-lobster_direction-t4-c65536",
+            "original_rows": 20000000,
+            "repetitions": 3,
+            "signing": "lobster_direction",
+            "threads": 4,
+            "chunk_rows": 65536,
+            "wall_seconds_median": 23.822834166989196,
+            "wall_seconds_min": 23.446321374969557,
+            "wall_seconds_max": 24.14466195902787,
+            "wall_seconds_mad": 0.3218277920386754,
+            "rows_per_second": 839530.67295887,
+            "peak_rss_mib_median": 375.953125,
+            "peak_rss_mib_min": 311.4375,
+            "peak_rss_mib_max": 615.140625,
+            "peak_workers": 2
+          },
+          "speedup": 2.1656287397369702,
+          "median_rss_ratio": 1.5041885471367842,
+          "output_fingerprints": {
+            "features.parquet": {
+              "decoded_sha256": "9922bf97f8354abb2dc6dfe3fbafb3b369884451a304a325d99aeff60c7dc51b",
+              "rows": 9160,
+              "totals": {
+                "event_count": 19572648,
+                "volume": 24658763,
+                "trade_count": 782840,
+                "accepted": 9160
+              }
+            },
+            "bucket_quality.parquet": {
+              "decoded_sha256": "f803a8121bd215bc1b8317cab9d2a23f07d0d14f1570e70b080042fe97f50b62",
+              "rows": 9360,
+              "totals": {
+                "event_count": 20000000,
+                "volume": 25204061,
+                "trade_count": 800000,
+                "accepted": 9160
+              }
+            }
+          }
+        }
+      ],
+      "equal_case_geometric_speedup": 2.179318991370636,
+      "baseline_measured_peak_mib": 364.9375,
+      "final_measured_peak_mib": 615.140625,
+      "source_before": {
+        "git_commit": "8e2b70b3c4960d9e228f02aa95c5b0bb32f4a803",
+        "git_status": [],
+        "source_hashes": {
+          "Cargo.lock": "9bb24d3bc84fec21fdd17c757578033b954e3d33c700d5c25d3c4278bfde0a86",
+          "Cargo.toml": "a4d02a2b87c6d7368261a90819741c2e73528f130b709034a4ccef6cc6c9deb9",
+          "benchmarks/__init__.py": "bc702347dda06c6cd64efe12b5a90091125ccd51bf7cbaba9932bb1d4c7fde87",
+          "benchmarks/high_load.py": "627bb3d88121bd695ff0f216f9dc48b816df9930d32061deec6161d60f38d960",
+          "benchmarks/high_load_fixture.py": "5b22881ff0eaedf440b9344cbe7a9ac48916970272192d9af7f8b3b7cd1fdcc0",
+          "benchmarks/high_load_plot.py": "b01ee62ba54f39f96456495424c4ead87ee3d4cbbde9a1ff45c566dad1572a1f",
+          "benchmarks/high_load_rss.py": "9222035919448fd099f15d613e0afc34eac6d378e98d49ca34d4116d9cdc68b8",
+          "benchmarks/high_load_worker.py": "5a7ea2ada5df361ab12d997ecce9580a26e2fc35137c05e0760eea163f78789e",
+          "benchmarks/make_fixture.py": "0570b9a07b96b7ce3c88f827a0432fea0659cfe14258f7ab397c0a093d950f4e",
+          "benchmarks/results/optimization_measure.py": "b75ec3b1de9ec247342f5952b1cb987e34bb92ce2862dde59bd829d274978ea3",
+          "benchmarks/results/optimization_summary.py": "a0cacb1006e97f9cf925eec1cb7342d576d1262fbe5d859d76b77c7405a23795",
+          "benchmarks/results/optimization_verify.py": "021dbddf26c373618b078fe3b7121e2324c7c852455d879ee905729f4137ac09",
+          "benchmarks/run.py": "011aa42ce09e822c4463614f55b580748778829dedbd0801e8f804ff75de112d",
+          "crates/ofi-core/Cargo.toml": "f8d3e6ce37200ed5169b8d8d4a036e70ffb338977a0e085916e33e36d4cb45bf",
+          "crates/ofi-core/src/adapter.rs": "b127d3953343c3ace26bf2c4d71c5ac3546c4dd331fb3c551d50845fea11dc91",
+          "crates/ofi-core/src/buckets.rs": "1dc7a4c8d26b9c34819c1821210ea79a84a3282d33978334bc12a7fd50e8ddf4",
+          "crates/ofi-core/src/config.rs": "5e1ea3f89d5f2398495d4dcb725bdd77507b64045ecf0d5077552b6695c6d20c",
+          "crates/ofi-core/src/domain.rs": "32f1e79f09b54eefe3afc2eb15d21e22d342694a20d2f0c44cb28076aea93ccd",
+          "crates/ofi-core/src/error.rs": "d94c39bc6c4ffb41955b348fbef8951f456ea48c5b76f7297e41336a39e75d44",
+          "crates/ofi-core/src/lib.rs": "b0bd4c584d625b5f74ec25ea89be339884f2f2a528fa2f412d4e4943dc68245f",
+          "crates/ofi-core/src/ofi.rs": "302f481ca9345cb7f378be4c4d969d8177d66f925ef6315c6e64ef11cddf95e3",
+          "crates/ofi-core/src/output.rs": "0f09c09242cd349f11fc5c1074105a43a6e6e708c66a80898536cd8e3f95c626",
+          "crates/ofi-core/src/pipeline.rs": "a4951c854c39a90de7ceb18b5f5aab5dac7f66818eb3d0d0727f7f912b299612",
+          "crates/ofi-core/src/raw.rs": "a1a074bdba5927d946d57b2945d9a23bc78066a94c4fd104412eacebf0a5b015",
+          "crates/ofi-core/src/time.rs": "9c3cf67166091d24734a742dcae98f3aad0ba31c00952379397beaf3d426546a",
+          "crates/ofi-core/src/trades.rs": "c09ec552021a1510fd0f3751a1f8e4b46d59d52ef0755b7ee88220d3064b0e9f",
+          "crates/ofi-core/src/worker.rs": "522cfcffe96ba63989bbd89c74c247be59bdc2dfb66af1c2e1400c45c68b0b54",
+          "crates/ofi-core/tests/adapters.rs": "8998f73964c4b96d2eb89251e917b502472f237f5a2d3bd640fdea27bbbcb770",
+          "crates/ofi-core/tests/pipeline.rs": "ea46694ed4f85d6585309383d1ab7f97942642ab75fc7c2853c9f574b1e91ebd",
+          "crates/ofi-core/tests/sample_ingestion.rs": "1a9500658ec9d218f101c5d77c261c9eabc17a141562e9ec75cd33eaa18f6294",
+          "crates/ofi-python/Cargo.toml": "c0d8676805575ba448a53e57e5f304e129aaa41ad0a515ec1030b0e05a8608ec",
+          "crates/ofi-python/src/lib.rs": "1d4c14681c37391f54e2e9ad2dedb337e122353405baa88fb60c634dc80e1de7",
+          "pyproject.toml": "67f6d1672f4603998c181b7aba3a46c991d0069d089b8afd28384e3585a3372b",
+          "python/ofi_pipeline/__init__.py": "40173c8d560a5baa3e2868ce44b34c04d0e159c74aead866709216104aeae334",
+          "python/ofi_pipeline/__main__.py": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+          "python/ofi_pipeline/api.py": "923ea7104f148652240528c9164a87c53158917e2c747a849c95c4c335853c00",
+          "python/ofi_pipeline/cli.py": "28a5c51171c282b25913266b845dbfc72c0f1fc1557fe538f3a6aa8a8fdab855",
+          "python/ofi_pipeline/errors.py": "e4322914f4b213ef999bc2d01ae95e53603130caf4cdbc14b7220eb2f69b39a2",
+          "python/ofi_pipeline/research.py": "b25da669e5095e1a673b5acdb039dd8f5b93281ec444b0e484c635b36be6709d"
+        },
+        "native_path": "/Users/daniilparfenov/Documents/my-obsidian-database/Git-sync/Study/RSS/order-book-impact-pipeline/python/ofi_pipeline/_native.abi3.so",
+        "native_sha256": "a4bbe9c69622920b9e6f589ea73ff66f0ac8f497cb5993f54789eeba15507d35",
+        "native_version": "0.1.0",
+        "platform": "macOS-26.5.1-arm64-arm-64bit",
+        "machine": "arm64",
+        "host_id": "9035fe6517812967bfbb5181b75b960ef44afd2e9dcc2a2addafa7f58772092e",
+        "python": "3.12.0",
+        "cpu_count": 10,
+        "host_load_average": [
+          7.177734375,
+          6.634765625,
+          6.4892578125
+        ]
+      },
+      "source_after": {
+        "git_commit": "8e2b70b3c4960d9e228f02aa95c5b0bb32f4a803",
+        "git_status": [],
+        "source_hashes": {
+          "Cargo.lock": "9bb24d3bc84fec21fdd17c757578033b954e3d33c700d5c25d3c4278bfde0a86",
+          "Cargo.toml": "a4d02a2b87c6d7368261a90819741c2e73528f130b709034a4ccef6cc6c9deb9",
+          "benchmarks/__init__.py": "bc702347dda06c6cd64efe12b5a90091125ccd51bf7cbaba9932bb1d4c7fde87",
+          "benchmarks/high_load.py": "627bb3d88121bd695ff0f216f9dc48b816df9930d32061deec6161d60f38d960",
+          "benchmarks/high_load_fixture.py": "5b22881ff0eaedf440b9344cbe7a9ac48916970272192d9af7f8b3b7cd1fdcc0",
+          "benchmarks/high_load_plot.py": "b01ee62ba54f39f96456495424c4ead87ee3d4cbbde9a1ff45c566dad1572a1f",
+          "benchmarks/high_load_rss.py": "9222035919448fd099f15d613e0afc34eac6d378e98d49ca34d4116d9cdc68b8",
+          "benchmarks/high_load_worker.py": "5a7ea2ada5df361ab12d997ecce9580a26e2fc35137c05e0760eea163f78789e",
+          "benchmarks/make_fixture.py": "0570b9a07b96b7ce3c88f827a0432fea0659cfe14258f7ab397c0a093d950f4e",
+          "benchmarks/results/optimization_measure.py": "b75ec3b1de9ec247342f5952b1cb987e34bb92ce2862dde59bd829d274978ea3",
+          "benchmarks/results/optimization_summary.py": "a0cacb1006e97f9cf925eec1cb7342d576d1262fbe5d859d76b77c7405a23795",
+          "benchmarks/results/optimization_verify.py": "021dbddf26c373618b078fe3b7121e2324c7c852455d879ee905729f4137ac09",
+          "benchmarks/run.py": "011aa42ce09e822c4463614f55b580748778829dedbd0801e8f804ff75de112d",
+          "crates/ofi-core/Cargo.toml": "f8d3e6ce37200ed5169b8d8d4a036e70ffb338977a0e085916e33e36d4cb45bf",
+          "crates/ofi-core/src/adapter.rs": "b127d3953343c3ace26bf2c4d71c5ac3546c4dd331fb3c551d50845fea11dc91",
+          "crates/ofi-core/src/buckets.rs": "1dc7a4c8d26b9c34819c1821210ea79a84a3282d33978334bc12a7fd50e8ddf4",
+          "crates/ofi-core/src/config.rs": "5e1ea3f89d5f2398495d4dcb725bdd77507b64045ecf0d5077552b6695c6d20c",
+          "crates/ofi-core/src/domain.rs": "32f1e79f09b54eefe3afc2eb15d21e22d342694a20d2f0c44cb28076aea93ccd",
+          "crates/ofi-core/src/error.rs": "d94c39bc6c4ffb41955b348fbef8951f456ea48c5b76f7297e41336a39e75d44",
+          "crates/ofi-core/src/lib.rs": "b0bd4c584d625b5f74ec25ea89be339884f2f2a528fa2f412d4e4943dc68245f",
+          "crates/ofi-core/src/ofi.rs": "302f481ca9345cb7f378be4c4d969d8177d66f925ef6315c6e64ef11cddf95e3",
+          "crates/ofi-core/src/output.rs": "0f09c09242cd349f11fc5c1074105a43a6e6e708c66a80898536cd8e3f95c626",
+          "crates/ofi-core/src/pipeline.rs": "a4951c854c39a90de7ceb18b5f5aab5dac7f66818eb3d0d0727f7f912b299612",
+          "crates/ofi-core/src/raw.rs": "a1a074bdba5927d946d57b2945d9a23bc78066a94c4fd104412eacebf0a5b015",
+          "crates/ofi-core/src/time.rs": "9c3cf67166091d24734a742dcae98f3aad0ba31c00952379397beaf3d426546a",
+          "crates/ofi-core/src/trades.rs": "c09ec552021a1510fd0f3751a1f8e4b46d59d52ef0755b7ee88220d3064b0e9f",
+          "crates/ofi-core/src/worker.rs": "522cfcffe96ba63989bbd89c74c247be59bdc2dfb66af1c2e1400c45c68b0b54",
+          "crates/ofi-core/tests/adapters.rs": "8998f73964c4b96d2eb89251e917b502472f237f5a2d3bd640fdea27bbbcb770",
+          "crates/ofi-core/tests/pipeline.rs": "ea46694ed4f85d6585309383d1ab7f97942642ab75fc7c2853c9f574b1e91ebd",
+          "crates/ofi-core/tests/sample_ingestion.rs": "1a9500658ec9d218f101c5d77c261c9eabc17a141562e9ec75cd33eaa18f6294",
+          "crates/ofi-python/Cargo.toml": "c0d8676805575ba448a53e57e5f304e129aaa41ad0a515ec1030b0e05a8608ec",
+          "crates/ofi-python/src/lib.rs": "1d4c14681c37391f54e2e9ad2dedb337e122353405baa88fb60c634dc80e1de7",
+          "pyproject.toml": "67f6d1672f4603998c181b7aba3a46c991d0069d089b8afd28384e3585a3372b",
+          "python/ofi_pipeline/__init__.py": "40173c8d560a5baa3e2868ce44b34c04d0e159c74aead866709216104aeae334",
+          "python/ofi_pipeline/__main__.py": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+          "python/ofi_pipeline/api.py": "923ea7104f148652240528c9164a87c53158917e2c747a849c95c4c335853c00",
+          "python/ofi_pipeline/cli.py": "28a5c51171c282b25913266b845dbfc72c0f1fc1557fe538f3a6aa8a8fdab855",
+          "python/ofi_pipeline/errors.py": "e4322914f4b213ef999bc2d01ae95e53603130caf4cdbc14b7220eb2f69b39a2",
+          "python/ofi_pipeline/research.py": "b25da669e5095e1a673b5acdb039dd8f5b93281ec444b0e484c635b36be6709d"
+        },
+        "native_path": "/Users/daniilparfenov/Documents/my-obsidian-database/Git-sync/Study/RSS/order-book-impact-pipeline/python/ofi_pipeline/_native.abi3.so",
+        "native_sha256": "a4bbe9c69622920b9e6f589ea73ff66f0ac8f497cb5993f54789eeba15507d35",
+        "native_version": "0.1.0",
+        "platform": "macOS-26.5.1-arm64-arm-64bit",
+        "machine": "arm64",
+        "host_id": "9035fe6517812967bfbb5181b75b960ef44afd2e9dcc2a2addafa7f58772092e",
+        "python": "3.12.0",
+        "cpu_count": 10,
+        "host_load_average": [
+          7.25927734375,
+          6.96875,
+          6.65283203125
+        ]
+      },
+      "native_calls": 24,
+      "measured_calls": 18
+    }
+  },
+  "cold_helper_sha256": "9bf1590d6c6839eae1248d6a4981d36a7c3de869480a165a74a15db458ae31ee",
+  "final_acceptance": {
+    "status": "passed",
+    "commit": "8e2b70b3c4960d9e228f02aa95c5b0bb32f4a803",
+    "production_commit": "2b53b01",
+    "commands": [
+      {
+        "name": "01-fmt",
+        "command": "cargo fmt --all -- --check",
+        "returncode": 0,
+        "started_unix": 1791996880.198729,
+        "finished_unix": 1791996880.565941,
+        "log": "/Users/daniilparfenov/Documents/my-obsidian-database/Git-sync/Study/RSS/order-book-impact-pipeline/outputs/features/performance-experiments/final-checks/01-fmt.log",
+        "log_sha256": "39284fa33a34b51a69ff61fe0d33b9ee2c1016268f5a09fdb638ad3fdb163c94"
+      },
+      {
+        "name": "02-clippy",
+        "command": "PYO3_PYTHON=$PWD/.venv/bin/python cargo clippy --workspace --all-targets --locked --offline -- -D warnings",
+        "returncode": 0,
+        "started_unix": 1791996884.6260018,
+        "finished_unix": 1791996886.219869,
+        "log": "/Users/daniilparfenov/Documents/my-obsidian-database/Git-sync/Study/RSS/order-book-impact-pipeline/outputs/features/performance-experiments/final-checks/02-clippy.log",
+        "log_sha256": "88c9e4799fd9916cb29978bdd0d79bac23fbc6ded25f8600e94fd0f548b817a4"
+      },
+      {
+        "name": "03-cargo-tests",
+        "command": "PYO3_PYTHON=$PWD/.venv/bin/python cargo test --workspace --locked --offline",
+        "returncode": 0,
+        "started_unix": 1791996900.857332,
+        "finished_unix": 1791996907.6934888,
+        "log": "/Users/daniilparfenov/Documents/my-obsidian-database/Git-sync/Study/RSS/order-book-impact-pipeline/outputs/features/performance-experiments/final-checks/03-cargo-tests.log",
+        "log_sha256": "1104e25dc1af023331b02e52b6b1f03f38092d16dc28e94d20d14e11e89c8df8"
+      },
+      {
+        "name": "04-real-cargo",
+        "command": "OFI_SAMPLE_DIR=$PWD/data/order_book_sample cargo test -p ofi-core --test sample_ingestion --locked --offline -- --ignored",
+        "returncode": 0,
+        "started_unix": 1791996913.040742,
+        "finished_unix": 1791996918.9630668,
+        "log": "/Users/daniilparfenov/Documents/my-obsidian-database/Git-sync/Study/RSS/order-book-impact-pipeline/outputs/features/performance-experiments/final-checks/04-real-cargo.log",
+        "log_sha256": "dcca53e40cfff09c7d676932b479143c30edde082db58d10362cc8401bff7f75"
+      },
+      {
+        "name": "05-msrv",
+        "command": "CARGO_TARGET_DIR=target/msrv PYO3_PYTHON=$PWD/.venv/bin/python /Users/daniilparfenov/.cargo/bin/cargo +1.90.0 test --workspace --locked --offline",
+        "returncode": 0,
+        "started_unix": 1791996932.2192352,
+        "finished_unix": 1791996937.9084952,
+        "log": "/Users/daniilparfenov/Documents/my-obsidian-database/Git-sync/Study/RSS/order-book-impact-pipeline/outputs/features/performance-experiments/final-checks/05-msrv.log",
+        "log_sha256": "c516333096fe8abf9164fed6e9a3bee91c90b5fc5eefc8f510206dc0955dd145"
+      },
+      {
+        "name": "06-python-tests",
+        "command": "OFI_SAMPLE_DIR=$PWD/data/order_book_sample OFI_REBUILD_REFERENCE=1 .venv/bin/python -m pytest -q tests/python tests/integration tests/research tests/real_sample tests/benchmarks --basetemp outputs/features/performance-experiments/final-python-tests",
+        "returncode": 0,
+        "started_unix": 1791996943.014039,
+        "finished_unix": 1791996988.2639098,
+        "log": "/Users/daniilparfenov/Documents/my-obsidian-database/Git-sync/Study/RSS/order-book-impact-pipeline/outputs/features/performance-experiments/final-checks/06-python-tests.log",
+        "log_sha256": "aa8d375a327d03c9320bf4cac10d4f9d21729a1ba6af347cfdfcb0304f6a856f"
+      },
+      {
+        "name": "07-ruff",
+        "command": ".venv/bin/ruff check python research tests benchmarks scripts",
+        "returncode": 0,
+        "started_unix": 1791996994.419762,
+        "finished_unix": 1791996994.643771,
+        "log": "/Users/daniilparfenov/Documents/my-obsidian-database/Git-sync/Study/RSS/order-book-impact-pipeline/outputs/features/performance-experiments/final-checks/07-ruff.log",
+        "log_sha256": "b3f6d6e81932f0b3841ce3ac8ecb50e6690c7ded7fb6d7f9f8a5d4f4a09a779f"
+      },
+      {
+        "name": "08-mypy",
+        "command": ".venv/bin/mypy",
+        "returncode": 0,
+        "started_unix": 1791996994.722419,
+        "finished_unix": 1791996995.730264,
+        "log": "/Users/daniilparfenov/Documents/my-obsidian-database/Git-sync/Study/RSS/order-book-impact-pipeline/outputs/features/performance-experiments/final-checks/08-mypy.log",
+        "log_sha256": "c90abdfb7b5bf063ebf64198be61303937efa280f7b0e1a9b8b42ac6cc85e4b8"
+      },
+      {
+        "name": "09-diff",
+        "command": "git diff --check",
+        "returncode": 0,
+        "started_unix": 1791997001.995223,
+        "finished_unix": 1791997002.024535,
+        "log": "/Users/daniilparfenov/Documents/my-obsidian-database/Git-sync/Study/RSS/order-book-impact-pipeline/outputs/features/performance-experiments/final-checks/09-diff.log",
+        "log_sha256": "67ed49579618d496128d77d629ef1b52b8207f1f9ee83407c51324aa0f2532ae"
+      },
+      {
+        "name": "10-wheel-build",
+        "command": "PYO3_PYTHON=$PWD/.venv/bin/python .venv/bin/maturin build --release --locked --offline --out dist",
+        "returncode": 0,
+        "started_unix": 1791997002.133926,
+        "finished_unix": 1791997025.143094,
+        "log": "/Users/daniilparfenov/Documents/my-obsidian-database/Git-sync/Study/RSS/order-book-impact-pipeline/outputs/features/performance-experiments/final-checks/10-wheel-build.log",
+        "log_sha256": "57db3c9098b773366232f0cbdb898c360f1c466ad2579aa91132e2285a158dc2"
+      },
+      {
+        "name": "11-wheel-smoke-network",
+        "command": ".venv/bin/python scripts/wheel_check.py 'dist/*.whl'",
+        "returncode": 0,
+        "started_unix": 1791997148.220927,
+        "finished_unix": 1791997203.718483,
+        "log": "/Users/daniilparfenov/Documents/my-obsidian-database/Git-sync/Study/RSS/order-book-impact-pipeline/outputs/features/performance-experiments/final-checks/11-wheel-smoke-network.log",
+        "log_sha256": "e00d88b2212e3d611429ed7d70b128ca1b9b5985d0480a3a5a1283e644968dce"
+      },
+      {
+        "name": "11-wheel-smoke-normal",
+        "command": ".venv/bin/python scripts/wheel_check.py 'dist/*.whl'",
+        "returncode": 1,
+        "started_unix": 1791997032.988939,
+        "finished_unix": 1791997043.2360861,
+        "log": "/Users/daniilparfenov/Documents/my-obsidian-database/Git-sync/Study/RSS/order-book-impact-pipeline/outputs/features/performance-experiments/final-checks/11-wheel-smoke-normal.log",
+        "log_sha256": "e524c3f70e05474a85b91cb53c4add4f7451e78910ba8a455079ac7e1a9bb245"
+      }
+    ],
+    "counts": {
+      "rust_workspace": {
+        "passed": 42,
+        "failed": 0,
+        "ignored": 1
+      },
+      "rust_real_sample": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "msrv_workspace": {
+        "passed": 42,
+        "failed": 0,
+        "ignored": 1
+      },
+      "python": {
+        "passed": 114,
+        "failed": 0,
+        "skipped": 0
+      },
+      "mypy_files": 7
+    },
+    "source_before": {
+      "git_commit": "8e2b70b3c4960d9e228f02aa95c5b0bb32f4a803",
+      "git_status": [],
+      "source_hashes": {
+        "Cargo.lock": "9bb24d3bc84fec21fdd17c757578033b954e3d33c700d5c25d3c4278bfde0a86",
+        "Cargo.toml": "a4d02a2b87c6d7368261a90819741c2e73528f130b709034a4ccef6cc6c9deb9",
+        "benchmarks/__init__.py": "bc702347dda06c6cd64efe12b5a90091125ccd51bf7cbaba9932bb1d4c7fde87",
+        "benchmarks/high_load.py": "627bb3d88121bd695ff0f216f9dc48b816df9930d32061deec6161d60f38d960",
+        "benchmarks/high_load_fixture.py": "5b22881ff0eaedf440b9344cbe7a9ac48916970272192d9af7f8b3b7cd1fdcc0",
+        "benchmarks/high_load_plot.py": "b01ee62ba54f39f96456495424c4ead87ee3d4cbbde9a1ff45c566dad1572a1f",
+        "benchmarks/high_load_rss.py": "9222035919448fd099f15d613e0afc34eac6d378e98d49ca34d4116d9cdc68b8",
+        "benchmarks/high_load_worker.py": "5a7ea2ada5df361ab12d997ecce9580a26e2fc35137c05e0760eea163f78789e",
+        "benchmarks/make_fixture.py": "0570b9a07b96b7ce3c88f827a0432fea0659cfe14258f7ab397c0a093d950f4e",
+        "benchmarks/results/optimization_measure.py": "b75ec3b1de9ec247342f5952b1cb987e34bb92ce2862dde59bd829d274978ea3",
+        "benchmarks/results/optimization_summary.py": "a0cacb1006e97f9cf925eec1cb7342d576d1262fbe5d859d76b77c7405a23795",
+        "benchmarks/results/optimization_verify.py": "021dbddf26c373618b078fe3b7121e2324c7c852455d879ee905729f4137ac09",
+        "benchmarks/run.py": "011aa42ce09e822c4463614f55b580748778829dedbd0801e8f804ff75de112d",
+        "crates/ofi-core/Cargo.toml": "f8d3e6ce37200ed5169b8d8d4a036e70ffb338977a0e085916e33e36d4cb45bf",
+        "crates/ofi-core/src/adapter.rs": "b127d3953343c3ace26bf2c4d71c5ac3546c4dd331fb3c551d50845fea11dc91",
+        "crates/ofi-core/src/buckets.rs": "1dc7a4c8d26b9c34819c1821210ea79a84a3282d33978334bc12a7fd50e8ddf4",
+        "crates/ofi-core/src/config.rs": "5e1ea3f89d5f2398495d4dcb725bdd77507b64045ecf0d5077552b6695c6d20c",
+        "crates/ofi-core/src/domain.rs": "32f1e79f09b54eefe3afc2eb15d21e22d342694a20d2f0c44cb28076aea93ccd",
+        "crates/ofi-core/src/error.rs": "d94c39bc6c4ffb41955b348fbef8951f456ea48c5b76f7297e41336a39e75d44",
+        "crates/ofi-core/src/lib.rs": "b0bd4c584d625b5f74ec25ea89be339884f2f2a528fa2f412d4e4943dc68245f",
+        "crates/ofi-core/src/ofi.rs": "302f481ca9345cb7f378be4c4d969d8177d66f925ef6315c6e64ef11cddf95e3",
+        "crates/ofi-core/src/output.rs": "0f09c09242cd349f11fc5c1074105a43a6e6e708c66a80898536cd8e3f95c626",
+        "crates/ofi-core/src/pipeline.rs": "a4951c854c39a90de7ceb18b5f5aab5dac7f66818eb3d0d0727f7f912b299612",
+        "crates/ofi-core/src/raw.rs": "a1a074bdba5927d946d57b2945d9a23bc78066a94c4fd104412eacebf0a5b015",
+        "crates/ofi-core/src/time.rs": "9c3cf67166091d24734a742dcae98f3aad0ba31c00952379397beaf3d426546a",
+        "crates/ofi-core/src/trades.rs": "c09ec552021a1510fd0f3751a1f8e4b46d59d52ef0755b7ee88220d3064b0e9f",
+        "crates/ofi-core/src/worker.rs": "522cfcffe96ba63989bbd89c74c247be59bdc2dfb66af1c2e1400c45c68b0b54",
+        "crates/ofi-core/tests/adapters.rs": "8998f73964c4b96d2eb89251e917b502472f237f5a2d3bd640fdea27bbbcb770",
+        "crates/ofi-core/tests/pipeline.rs": "ea46694ed4f85d6585309383d1ab7f97942642ab75fc7c2853c9f574b1e91ebd",
+        "crates/ofi-core/tests/sample_ingestion.rs": "1a9500658ec9d218f101c5d77c261c9eabc17a141562e9ec75cd33eaa18f6294",
+        "crates/ofi-python/Cargo.toml": "c0d8676805575ba448a53e57e5f304e129aaa41ad0a515ec1030b0e05a8608ec",
+        "crates/ofi-python/src/lib.rs": "1d4c14681c37391f54e2e9ad2dedb337e122353405baa88fb60c634dc80e1de7",
+        "pyproject.toml": "67f6d1672f4603998c181b7aba3a46c991d0069d089b8afd28384e3585a3372b",
+        "python/ofi_pipeline/__init__.py": "40173c8d560a5baa3e2868ce44b34c04d0e159c74aead866709216104aeae334",
+        "python/ofi_pipeline/__main__.py": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+        "python/ofi_pipeline/api.py": "923ea7104f148652240528c9164a87c53158917e2c747a849c95c4c335853c00",
+        "python/ofi_pipeline/cli.py": "28a5c51171c282b25913266b845dbfc72c0f1fc1557fe538f3a6aa8a8fdab855",
+        "python/ofi_pipeline/errors.py": "e4322914f4b213ef999bc2d01ae95e53603130caf4cdbc14b7220eb2f69b39a2",
+        "python/ofi_pipeline/research.py": "b25da669e5095e1a673b5acdb039dd8f5b93281ec444b0e484c635b36be6709d"
+      },
+      "native_path": "/Users/daniilparfenov/Documents/my-obsidian-database/Git-sync/Study/RSS/order-book-impact-pipeline/python/ofi_pipeline/_native.abi3.so",
+      "native_sha256": "a4bbe9c69622920b9e6f589ea73ff66f0ac8f497cb5993f54789eeba15507d35",
+      "native_version": "0.1.0",
+      "platform": "macOS-26.5.1-arm64-arm-64bit",
+      "machine": "arm64",
+      "host_id": "9035fe6517812967bfbb5181b75b960ef44afd2e9dcc2a2addafa7f58772092e",
+      "python": "3.12.0",
+      "cpu_count": 10,
+      "host_load_average": [
+        3.06494140625,
+        5.22265625,
+        5.9853515625
+      ]
+    },
+    "source_after": {
+      "git_commit": "8e2b70b3c4960d9e228f02aa95c5b0bb32f4a803",
+      "git_status": [],
+      "source_hashes": {
+        "Cargo.lock": "9bb24d3bc84fec21fdd17c757578033b954e3d33c700d5c25d3c4278bfde0a86",
+        "Cargo.toml": "a4d02a2b87c6d7368261a90819741c2e73528f130b709034a4ccef6cc6c9deb9",
+        "benchmarks/__init__.py": "bc702347dda06c6cd64efe12b5a90091125ccd51bf7cbaba9932bb1d4c7fde87",
+        "benchmarks/high_load.py": "627bb3d88121bd695ff0f216f9dc48b816df9930d32061deec6161d60f38d960",
+        "benchmarks/high_load_fixture.py": "5b22881ff0eaedf440b9344cbe7a9ac48916970272192d9af7f8b3b7cd1fdcc0",
+        "benchmarks/high_load_plot.py": "b01ee62ba54f39f96456495424c4ead87ee3d4cbbde9a1ff45c566dad1572a1f",
+        "benchmarks/high_load_rss.py": "9222035919448fd099f15d613e0afc34eac6d378e98d49ca34d4116d9cdc68b8",
+        "benchmarks/high_load_worker.py": "5a7ea2ada5df361ab12d997ecce9580a26e2fc35137c05e0760eea163f78789e",
+        "benchmarks/make_fixture.py": "0570b9a07b96b7ce3c88f827a0432fea0659cfe14258f7ab397c0a093d950f4e",
+        "benchmarks/results/optimization_measure.py": "b75ec3b1de9ec247342f5952b1cb987e34bb92ce2862dde59bd829d274978ea3",
+        "benchmarks/results/optimization_summary.py": "a0cacb1006e97f9cf925eec1cb7342d576d1262fbe5d859d76b77c7405a23795",
+        "benchmarks/results/optimization_verify.py": "021dbddf26c373618b078fe3b7121e2324c7c852455d879ee905729f4137ac09",
+        "benchmarks/run.py": "011aa42ce09e822c4463614f55b580748778829dedbd0801e8f804ff75de112d",
+        "crates/ofi-core/Cargo.toml": "f8d3e6ce37200ed5169b8d8d4a036e70ffb338977a0e085916e33e36d4cb45bf",
+        "crates/ofi-core/src/adapter.rs": "b127d3953343c3ace26bf2c4d71c5ac3546c4dd331fb3c551d50845fea11dc91",
+        "crates/ofi-core/src/buckets.rs": "1dc7a4c8d26b9c34819c1821210ea79a84a3282d33978334bc12a7fd50e8ddf4",
+        "crates/ofi-core/src/config.rs": "5e1ea3f89d5f2398495d4dcb725bdd77507b64045ecf0d5077552b6695c6d20c",
+        "crates/ofi-core/src/domain.rs": "32f1e79f09b54eefe3afc2eb15d21e22d342694a20d2f0c44cb28076aea93ccd",
+        "crates/ofi-core/src/error.rs": "d94c39bc6c4ffb41955b348fbef8951f456ea48c5b76f7297e41336a39e75d44",
+        "crates/ofi-core/src/lib.rs": "b0bd4c584d625b5f74ec25ea89be339884f2f2a528fa2f412d4e4943dc68245f",
+        "crates/ofi-core/src/ofi.rs": "302f481ca9345cb7f378be4c4d969d8177d66f925ef6315c6e64ef11cddf95e3",
+        "crates/ofi-core/src/output.rs": "0f09c09242cd349f11fc5c1074105a43a6e6e708c66a80898536cd8e3f95c626",
+        "crates/ofi-core/src/pipeline.rs": "a4951c854c39a90de7ceb18b5f5aab5dac7f66818eb3d0d0727f7f912b299612",
+        "crates/ofi-core/src/raw.rs": "a1a074bdba5927d946d57b2945d9a23bc78066a94c4fd104412eacebf0a5b015",
+        "crates/ofi-core/src/time.rs": "9c3cf67166091d24734a742dcae98f3aad0ba31c00952379397beaf3d426546a",
+        "crates/ofi-core/src/trades.rs": "c09ec552021a1510fd0f3751a1f8e4b46d59d52ef0755b7ee88220d3064b0e9f",
+        "crates/ofi-core/src/worker.rs": "522cfcffe96ba63989bbd89c74c247be59bdc2dfb66af1c2e1400c45c68b0b54",
+        "crates/ofi-core/tests/adapters.rs": "8998f73964c4b96d2eb89251e917b502472f237f5a2d3bd640fdea27bbbcb770",
+        "crates/ofi-core/tests/pipeline.rs": "ea46694ed4f85d6585309383d1ab7f97942642ab75fc7c2853c9f574b1e91ebd",
+        "crates/ofi-core/tests/sample_ingestion.rs": "1a9500658ec9d218f101c5d77c261c9eabc17a141562e9ec75cd33eaa18f6294",
+        "crates/ofi-python/Cargo.toml": "c0d8676805575ba448a53e57e5f304e129aaa41ad0a515ec1030b0e05a8608ec",
+        "crates/ofi-python/src/lib.rs": "1d4c14681c37391f54e2e9ad2dedb337e122353405baa88fb60c634dc80e1de7",
+        "pyproject.toml": "67f6d1672f4603998c181b7aba3a46c991d0069d089b8afd28384e3585a3372b",
+        "python/ofi_pipeline/__init__.py": "40173c8d560a5baa3e2868ce44b34c04d0e159c74aead866709216104aeae334",
+        "python/ofi_pipeline/__main__.py": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+        "python/ofi_pipeline/api.py": "923ea7104f148652240528c9164a87c53158917e2c747a849c95c4c335853c00",
+        "python/ofi_pipeline/cli.py": "28a5c51171c282b25913266b845dbfc72c0f1fc1557fe538f3a6aa8a8fdab855",
+        "python/ofi_pipeline/errors.py": "e4322914f4b213ef999bc2d01ae95e53603130caf4cdbc14b7220eb2f69b39a2",
+        "python/ofi_pipeline/research.py": "b25da669e5095e1a673b5acdb039dd8f5b93281ec444b0e484c635b36be6709d"
+      },
+      "native_path": "/Users/daniilparfenov/Documents/my-obsidian-database/Git-sync/Study/RSS/order-book-impact-pipeline/python/ofi_pipeline/_native.abi3.so",
+      "native_sha256": "a4bbe9c69622920b9e6f589ea73ff66f0ac8f497cb5993f54789eeba15507d35",
+      "native_version": "0.1.0",
+      "platform": "macOS-26.5.1-arm64-arm-64bit",
+      "machine": "arm64",
+      "host_id": "9035fe6517812967bfbb5181b75b960ef44afd2e9dcc2a2addafa7f58772092e",
+      "python": "3.12.0",
+      "cpu_count": 10,
+      "host_load_average": [
+        7.71923828125,
+        6.5205078125,
+        6.29736328125
+      ]
+    },
+    "source_reference_proof": {
+      "benchmarks/results/optimization/io-highload-20261014/metadata.json": {
+        "sha256": "204c69a970161da094b5fdacf15819ace0f4022c758d5e19bdff8c1daa006dec",
+        "both_source_snapshots_equal": true,
+        "native_equal": true,
+        "source_count": 39
+      },
+      "benchmarks/results/high-load/optimized-20261014/summary.json": {
+        "sha256": "dfa02d0daf479a45a9a1a535b7dcefb559555480fa26611bf2193af106f6a7c6",
+        "both_source_snapshots_equal": true,
+        "native_equal": true,
+        "source_count": 39
+      },
+      "benchmarks/results/high-load/optimized-cold-20261014/summary.json": {
+        "sha256": "2988d33650ed29e14afccb5aa1660f9538b25a208dc8fe53a791950de39a0bf3",
+        "both_source_snapshots_equal": true,
+        "native_equal": true,
+        "source_count": 39
+      }
+    },
+    "compiled_native_confirmed": true,
+    "native_unchanged": true,
+    "source_closure_unchanged": true,
+    "delivery_hashes": [
+      {
+        "path": "DATA_DICTIONARY.md",
+        "sha256": "cd4c6a8e0329de003b69fd1a6b8f32615504ad96d65952f714cbaa50cdd71b08",
+        "size_bytes": 10157
+      },
+      {
+        "path": "README.md",
+        "sha256": "4d9c61379141610f69c8c4fb852ab7dfcbf2661b7e768117942c983de3a66fdf",
+        "size_bytes": 14339
+      },
+      {
+        "path": "data/events_clean.csv.gz",
+        "sha256": "bd360b6ce7f689c445a988c912e50d0eb4b89af4871760d6ee46917d3df32636",
+        "size_bytes": 24952462
+      },
+      {
+        "path": "data/events_clean.parquet",
+        "sha256": "514dd1f6491ec99b2558054ccf0c3fb5add2c6d34e2d8e004b1ad0572a4cb2fa",
+        "size_bytes": 25095171
+      },
+      {
+        "path": "data/features_10s.csv.gz",
+        "sha256": "abb1c8683dd1c7a904d220dac5c2379f0c85d69b0b5efbe5bf092049e3ebe653",
+        "size_bytes": 175020
+      },
+      {
+        "path": "data/features_10s.parquet",
+        "sha256": "e88057414998d3a36abf5daf1cdcd62b7699428dd447fb152d6e4413676483dd",
+        "size_bytes": 218205
+      },
+      {
+        "path": "data/trades_clean.csv.gz",
+        "sha256": "e2d834b8bd3473079ae6e8dfa7e68756a3d327ac0553c7e4a8bed947b1b9ff26",
+        "size_bytes": 1034488
+      },
+      {
+        "path": "data/trades_clean.parquet",
+        "sha256": "62db3864391b99accff35bbb734a5091d0df661fea3291f55e2037255cd02f3c",
+        "size_bytes": 1306691
+      },
+      {
+        "path": "figures/AAPL_distributions.png",
+        "sha256": "d32f655856fdfcc87dcc4f1ad4fecf930f252447dd642396f031da5f158efdb1",
+        "size_bytes": 87585
+      },
+      {
+        "path": "figures/MSFT_distributions.png",
+        "sha256": "344914e8cab192195863456232a2eda7199e00b8182db3f65533570ba88dbea5",
+        "size_bytes": 86137
+      },
+      {
+        "path": "raw/LOBSTER_SampleFile_AAPL_2012-06-21_5.zip",
+        "sha256": "46419dd0d6106be5fcf43600ccd08b2baa5d4cfb76284f1c58773537a3adac50",
+        "size_bytes": 4791006
+      },
+      {
+        "path": "raw/LOBSTER_SampleFile_MSFT_2012-06-21_5.zip",
+        "sha256": "94e65c07786b8d54712fe9a12aee29d51f418d402e96b6e21b4af1d0bd44131d",
+        "size_bytes": 7515038
+      },
+      {
+        "path": "reports/bucket_quality_10s.parquet",
+        "sha256": "139c4e90bab34283d9a75d83807933bf545d7dba2a70011dde828caa8bccc383",
+        "size_bytes": 227855
+      },
+      {
+        "path": "reports/event_quality.parquet",
+        "sha256": "fe0f0806b59f122c22bdcc74df01f4fbb85dc8e8a81a53fde5f1d1f51d230b13",
+        "size_bytes": 8137742
+      },
+      {
+        "path": "reports/quality_report.json",
+        "sha256": "4d1b148c7bbea2e924bc894a9d51cab37ce9dcf4f66f984a709facd9b293cb6a",
+        "size_bytes": 1427
+      },
+      {
+        "path": "reports/schema.json",
+        "sha256": "b31d084035c8f29aaae940417c369ed49bc714b7511083de3bbb898db602337b",
+        "size_bytes": 15093
+      },
+      {
+        "path": "reports/sources.json",
+        "sha256": "36285abafa7212584e9f6d60b0a73c3e6cde9bc666eb3e0fe998649305280efe",
+        "size_bytes": 471
+      },
+      {
+        "path": "reports/table1.csv",
+        "sha256": "2c63937e26ef9055f5bfc0188ee945f3ba76a9c5ba3cd0caec69cdaea3a8cd2b",
+        "size_bytes": 378
+      },
+      {
+        "path": "reports/table1.md",
+        "sha256": "b2b1858f357c2b77b8da3769b6dddbdadef32378a75cfb7563405d275aa6c58b",
+        "size_bytes": 1299
+      },
+      {
+        "path": "reports/verification.json",
+        "sha256": "c9bf46866d8075678494d5512c9e035fd414a82876143d34a688f22c70428166",
+        "size_bytes": 503
+      },
+      {
+        "path": "requirements.txt",
+        "sha256": "6f51c07d4dfc4a6a6f099642c72a9ff6fe2d10b966b767c90aa29db3040f786b",
+        "size_bytes": 62
+      },
+      {
+        "path": "src/prepare_sample.py",
+        "sha256": "c3665b4cb2b5fc9cd79c8b61702c836283d12729e2923a2b5bfa5710e2438ee3",
+        "size_bytes": 12261
+      },
+      {
+        "path": "src/quickstart.py",
+        "sha256": "1ae3d0e0603f5d1da1e71d77fdd618575ef2de7c04bd9759df315aedbfe815ed",
+        "size_bytes": 749
+      },
+      {
+        "path": "src/verify_sample.py",
+        "sha256": "0e2bcd6a212271695761352ffc2d9253bcb102ed457985a68ca7e25c09e0989f",
+        "size_bytes": 5078
+      }
+    ],
+    "raw_bundle_checks": [
+      {
+        "symbol": "AAPL",
+        "path": "/Users/daniilparfenov/Documents/my-obsidian-database/Git-sync/Study/RSS/order-book-impact-pipeline/data/order_book_sample/raw/LOBSTER_SampleFile_AAPL_2012-06-21_5.zip",
+        "sha256": "46419dd0d6106be5fcf43600ccd08b2baa5d4cfb76284f1c58773537a3adac50",
+        "size_bytes": 4791006,
+        "csv_member_rows": {
+          "AAPL_2012-06-21_34200000_57600000_orderbook_5.csv": 301587,
+          "AAPL_2012-06-21_34200000_57600000_message_5.csv": 301587
+        }
+      },
+      {
+        "symbol": "MSFT",
+        "path": "/Users/daniilparfenov/Documents/my-obsidian-database/Git-sync/Study/RSS/order-book-impact-pipeline/data/order_book_sample/raw/LOBSTER_SampleFile_MSFT_2012-06-21_5.zip",
+        "sha256": "94e65c07786b8d54712fe9a12aee29d51f418d402e96b6e21b4af1d0bd44131d",
+        "size_bytes": 7515038,
+        "csv_member_rows": {
+          "MSFT_2012-06-21_34200000_57600000_orderbook_5.csv": 595800,
+          "MSFT_2012-06-21_34200000_57600000_message_5.csv": 595800
+        }
+      }
+    ],
+    "delivered_table_counts": {
+      "data/events_clean.parquet": 887810,
+      "data/trades_clean.parquet": 68404,
+      "reports/event_quality.parquet": 897387,
+      "reports/bucket_quality_10s.parquet": 4680,
+      "data/features_10s.parquet": 4390
+    },
+    "real_sample_reconciliation": {
+      "10": {
+        "missing_keys": [],
+        "extra_keys": [],
+        "max_abs_error": {
+          "ofi_l1": 0,
+          "ofi_l2": 0,
+          "ofi_l3": 0,
+          "ofi_l4": 0,
+          "ofi_l5": 0,
+          "trade_imbalance": 0,
+          "volume": 0,
+          "event_count": 0,
+          "quote_update_count": 0,
+          "mid_price_change": 2.0008994461306884e-13,
+          "mid_price_change_ticks": 2.000888343900442e-11,
+          "avg_depth": 0.0
+        },
+        "mismatches": {
+          "ofi_l1": {
+            "count": 0,
+            "first": []
+          },
+          "ofi_l2": {
+            "count": 0,
+            "first": []
+          },
+          "ofi_l3": {
+            "count": 0,
+            "first": []
+          },
+          "ofi_l4": {
+            "count": 0,
+            "first": []
+          },
+          "ofi_l5": {
+            "count": 0,
+            "first": []
+          },
+          "trade_imbalance": {
+            "count": 0,
+            "first": []
+          },
+          "volume": {
+            "count": 0,
+            "first": []
+          },
+          "event_count": {
+            "count": 0,
+            "first": []
+          },
+          "quote_update_count": {
+            "count": 0,
+            "first": []
+          },
+          "mid_price_change": {
+            "count": 0,
+            "first": []
+          },
+          "mid_price_change_ticks": {
+            "count": 0,
+            "first": []
+          },
+          "avg_depth": {
+            "count": 0,
+            "first": []
+          }
+        },
+        "quality_mismatches": [],
+        "partitions": [
+          {
+            "symbol": "AAPL",
+            "original_rows": 301587,
+            "clean_events": 292337,
+            "feature_rows": 2060,
+            "rejected_buckets": 280,
+            "rounded_event_timestamps": 0
+          },
+          {
+            "symbol": "MSFT",
+            "original_rows": 595800,
+            "clean_events": 595473,
+            "feature_rows": 2330,
+            "rejected_buckets": 10,
+            "rounded_event_timestamps": 3
+          }
+        ],
+        "float_tolerances": {
+          "mid_price_change": 1e-10,
+          "mid_price_change_ticks": 1e-08,
+          "avg_depth": 1e-10
+        },
+        "log_path": "/Users/daniilparfenov/Documents/my-obsidian-database/Git-sync/Study/RSS/order-book-impact-pipeline/outputs/features/performance-experiments/final-python-tests/test_exact_delivered_10s0/reconciliation-10s.json",
+        "report_sha256": "6e6a2186d299556bfbc3ffe6289d7147a04151d7188993a940627aac011f3e77",
+        "bucket_seconds": 10,
+        "accepted_rows": 4390,
+        "all_integer_columns_exact": true,
+        "avg_depth_exact": true,
+        "all_quality_flags_equal": true
+      },
+      "1": {
+        "missing_keys": [],
+        "extra_keys": [],
+        "max_abs_error": {
+          "ofi_l1": 0,
+          "ofi_l2": 0,
+          "ofi_l3": 0,
+          "ofi_l4": 0,
+          "ofi_l5": 0,
+          "trade_imbalance": 0,
+          "volume": 0,
+          "event_count": 0,
+          "quote_update_count": 0,
+          "mid_price_change": 2.1827852025868566e-13,
+          "mid_price_change_ticks": 2.1827872842550278e-11,
+          "avg_depth": 0.0
+        },
+        "mismatches": {
+          "ofi_l1": {
+            "count": 0,
+            "first": []
+          },
+          "ofi_l2": {
+            "count": 0,
+            "first": []
+          },
+          "ofi_l3": {
+            "count": 0,
+            "first": []
+          },
+          "ofi_l4": {
+            "count": 0,
+            "first": []
+          },
+          "ofi_l5": {
+            "count": 0,
+            "first": []
+          },
+          "trade_imbalance": {
+            "count": 0,
+            "first": []
+          },
+          "volume": {
+            "count": 0,
+            "first": []
+          },
+          "event_count": {
+            "count": 0,
+            "first": []
+          },
+          "quote_update_count": {
+            "count": 0,
+            "first": []
+          },
+          "mid_price_change": {
+            "count": 0,
+            "first": []
+          },
+          "mid_price_change_ticks": {
+            "count": 0,
+            "first": []
+          },
+          "avg_depth": {
+            "count": 0,
+            "first": []
+          }
+        },
+        "quality_equal": true,
+        "accepted_rows": 45966,
+        "log_path": "/Users/daniilparfenov/Documents/my-obsidian-database/Git-sync/Study/RSS/order-book-impact-pipeline/outputs/features/performance-experiments/final-python-tests/test_independently_rebuilt_oth0/reconciliation-1s.json",
+        "report_sha256": "5855de7cd2aa446fa0e31d3194a2f561f6bcc59c73c40918af4cd44406c2e20e",
+        "bucket_seconds": 1,
+        "float_tolerances": {
+          "mid_price_change": 1e-10,
+          "mid_price_change_ticks": 1e-08,
+          "avg_depth": 1e-10
+        },
+        "all_integer_columns_exact": true,
+        "avg_depth_exact": true,
+        "all_quality_flags_equal": true
+      },
+      "5": {
+        "missing_keys": [],
+        "extra_keys": [],
+        "max_abs_error": {
+          "ofi_l1": 0,
+          "ofi_l2": 0,
+          "ofi_l3": 0,
+          "ofi_l4": 0,
+          "ofi_l5": 0,
+          "trade_imbalance": 0,
+          "volume": 0,
+          "event_count": 0,
+          "quote_update_count": 0,
+          "mid_price_change": 2.0008994461306884e-13,
+          "mid_price_change_ticks": 2.000888343900442e-11,
+          "avg_depth": 0.0
+        },
+        "mismatches": {
+          "ofi_l1": {
+            "count": 0,
+            "first": []
+          },
+          "ofi_l2": {
+            "count": 0,
+            "first": []
+          },
+          "ofi_l3": {
+            "count": 0,
+            "first": []
+          },
+          "ofi_l4": {
+            "count": 0,
+            "first": []
+          },
+          "ofi_l5": {
+            "count": 0,
+            "first": []
+          },
+          "trade_imbalance": {
+            "count": 0,
+            "first": []
+          },
+          "volume": {
+            "count": 0,
+            "first": []
+          },
+          "event_count": {
+            "count": 0,
+            "first": []
+          },
+          "quote_update_count": {
+            "count": 0,
+            "first": []
+          },
+          "mid_price_change": {
+            "count": 0,
+            "first": []
+          },
+          "mid_price_change_ticks": {
+            "count": 0,
+            "first": []
+          },
+          "avg_depth": {
+            "count": 0,
+            "first": []
+          }
+        },
+        "quality_equal": true,
+        "accepted_rows": 8985,
+        "log_path": "/Users/daniilparfenov/Documents/my-obsidian-database/Git-sync/Study/RSS/order-book-impact-pipeline/outputs/features/performance-experiments/final-python-tests/test_independently_rebuilt_oth1/reconciliation-5s.json",
+        "report_sha256": "c9ccbfae4073be044558a594a94e46a7afe83dc13df6d3db8aaa231228d8a4e4",
+        "bucket_seconds": 5,
+        "float_tolerances": {
+          "mid_price_change": 1e-10,
+          "mid_price_change_ticks": 1e-08,
+          "avg_depth": 1e-10
+        },
+        "all_integer_columns_exact": true,
+        "avg_depth_exact": true,
+        "all_quality_flags_equal": true
+      },
+      "30": {
+        "missing_keys": [],
+        "extra_keys": [],
+        "max_abs_error": {
+          "ofi_l1": 0,
+          "ofi_l2": 0,
+          "ofi_l3": 0,
+          "ofi_l4": 0,
+          "ofi_l5": 0,
+          "trade_imbalance": 0,
+          "volume": 0,
+          "event_count": 0,
+          "quote_update_count": 0,
+          "mid_price_change": 2.0919377341499512e-13,
+          "mid_price_change_ticks": 2.091837814077735e-11,
+          "avg_depth": 0.0
+        },
+        "mismatches": {
+          "ofi_l1": {
+            "count": 0,
+            "first": []
+          },
+          "ofi_l2": {
+            "count": 0,
+            "first": []
+          },
+          "ofi_l3": {
+            "count": 0,
+            "first": []
+          },
+          "ofi_l4": {
+            "count": 0,
+            "first": []
+          },
+          "ofi_l5": {
+            "count": 0,
+            "first": []
+          },
+          "trade_imbalance": {
+            "count": 0,
+            "first": []
+          },
+          "volume": {
+            "count": 0,
+            "first": []
+          },
+          "event_count": {
+            "count": 0,
+            "first": []
+          },
+          "quote_update_count": {
+            "count": 0,
+            "first": []
+          },
+          "mid_price_change": {
+            "count": 0,
+            "first": []
+          },
+          "mid_price_change_ticks": {
+            "count": 0,
+            "first": []
+          },
+          "avg_depth": {
+            "count": 0,
+            "first": []
+          }
+        },
+        "quality_equal": true,
+        "accepted_rows": 1382,
+        "log_path": "/Users/daniilparfenov/Documents/my-obsidian-database/Git-sync/Study/RSS/order-book-impact-pipeline/outputs/features/performance-experiments/final-python-tests/test_independently_rebuilt_oth2/reconciliation-30s.json",
+        "report_sha256": "d3577145f51c6ec6f2b8f385fb0e6baad0b96b1e8edb079f8628d28863cfd5eb",
+        "bucket_seconds": 30,
+        "float_tolerances": {
+          "mid_price_change": 1e-10,
+          "mid_price_change_ticks": 1e-08,
+          "avg_depth": 1e-10
+        },
+        "all_integer_columns_exact": true,
+        "avg_depth_exact": true,
+        "all_quality_flags_equal": true
+      },
+      "60": {
+        "missing_keys": [],
+        "extra_keys": [],
+        "max_abs_error": {
+          "ofi_l1": 0,
+          "ofi_l2": 0,
+          "ofi_l3": 0,
+          "ofi_l4": 0,
+          "ofi_l5": 0,
+          "trade_imbalance": 0,
+          "volume": 0,
+          "event_count": 0,
+          "quote_update_count": 0,
+          "mid_price_change": 1.6370932387488324e-13,
+          "mid_price_change_ticks": 1.6370904631912708e-11,
+          "avg_depth": 0.0
+        },
+        "mismatches": {
+          "ofi_l1": {
+            "count": 0,
+            "first": []
+          },
+          "ofi_l2": {
+            "count": 0,
+            "first": []
+          },
+          "ofi_l3": {
+            "count": 0,
+            "first": []
+          },
+          "ofi_l4": {
+            "count": 0,
+            "first": []
+          },
+          "ofi_l5": {
+            "count": 0,
+            "first": []
+          },
+          "trade_imbalance": {
+            "count": 0,
+            "first": []
+          },
+          "volume": {
+            "count": 0,
+            "first": []
+          },
+          "event_count": {
+            "count": 0,
+            "first": []
+          },
+          "quote_update_count": {
+            "count": 0,
+            "first": []
+          },
+          "mid_price_change": {
+            "count": 0,
+            "first": []
+          },
+          "mid_price_change_ticks": {
+            "count": 0,
+            "first": []
+          },
+          "avg_depth": {
+            "count": 0,
+            "first": []
+          }
+        },
+        "quality_equal": true,
+        "accepted_rows": 650,
+        "log_path": "/Users/daniilparfenov/Documents/my-obsidian-database/Git-sync/Study/RSS/order-book-impact-pipeline/outputs/features/performance-experiments/final-python-tests/test_independently_rebuilt_oth3/reconciliation-60s.json",
+        "report_sha256": "c49dda46b06d0b97da94c0f9a7b473d12ca054af5ac2edb1e045ef634208780d",
+        "bucket_seconds": 60,
+        "float_tolerances": {
+          "mid_price_change": 1e-10,
+          "mid_price_change_ticks": 1e-08,
+          "avg_depth": 1e-10
+        },
+        "all_integer_columns_exact": true,
+        "avg_depth_exact": true,
+        "all_quality_flags_equal": true
+      }
+    },
+    "wheel": {
+      "path": "/Users/daniilparfenov/Documents/my-obsidian-database/Git-sync/Study/RSS/order-book-impact-pipeline/dist/ofi_pipeline-0.1.0-cp310-abi3-macosx_11_0_arm64.whl",
+      "sha256": "65b361b9380cf2b81b4195407c4e544143620eba3f66e46bb91eb1747c44b351",
+      "native_member": "ofi_pipeline/_native.abi3.so",
+      "native_member_sha256": "a4bbe9c69622920b9e6f589ea73ff66f0ac8f497cb5993f54789eeba15507d35",
+      "isolated_smoke": {
+        "status": "passed",
+        "loaded_extension": "/private/var/folders/r8/bdxc_03151n7n18p7634gvgr0000gn/T/ofi-wheel-check-x4eanhxb/environment/lib/python3.12/site-packages/ofi_pipeline/_native.abi3.so",
+        "python": "3.12.0 (v3.12.0:0fb18b02c8, Oct  2 2023, 09:45:56) [Clang 13.0.0 (clang-1300.0.29.30)]",
+        "accepted_rows": 2
+      },
+      "installed_binary_replaced": false
+    },
+    "tracked_working_tree_clean": true,
+    "no_tracked_edits": true,
+    "no_push": true,
+    "report_text": "Final acceptance passed on local main at 8e2b70b, with production change 2b53b01 retained. Rust formatting, Clippy with warnings denied, 42 Rust workspace tests, the explicitly enabled real-sample ingestion test, and the same 42 workspace tests on Rust 1.90.0 passed. The standard workspace and MSRV commands each leave only the externally supplied sample test ignored; that test passed separately with the delivered sample. All 114 Python API, native integration, research, real-sample and benchmark tests passed without skips. Ruff, strict mypy over seven source files, git diff --check, locked offline release-wheel construction and a fresh isolated wheel installation outside the checkout passed. The isolated smoke exercised native Parquet I/O, typed error mapping, package typing files, CLI and installed research helpers. At 1, 5, 10, 30 and 60 seconds, accepted row counts were respectively 45,966, 8,985, 4,390, 1,382 and 650. Keys, all nine integer columns, average depth and quality flags matched exactly. Maximum absolute price-change errors across all widths were 2.1827852025868566e-13 dollars and 2.1827872842550278e-11 ticks, below tolerances 1e-10 and 1e-8; average-depth error was zero against tolerance 1e-10. All 24 delivery hashes, both raw ZIP archive hashes and sizes, paired raw CSV counts of 301,587 AAPL and 595,800 MSFT rows, and the delivered 887,810 clean-event/68,404 trade/897,387 quality-row counts were verified. The installed compiled native extension remained a4bbe9c69622920b9e6f589ea73ff66f0ac8f497cb5993f54789eeba15507d35 before and after acceptance; all 39 source hashes remained identical to the regular, full warm and cold evidence. The wheel build did not replace the installed extension. The tracked working tree remained clean, and this validation created only ignored evidence files. No implementation commits were pushed. The first isolated-wheel attempt failed because the sandbox could not reach the package index; the unchanged helper passed after network escalation."
+  },
+  "exact_artifact_audit": {
+    "status": "passed",
+    "calls": 48,
+    "parquet_tables": 96
+  },
+  "limitations": [
+    "Host/cache activity uncontrolled; no universal performance guarantee.",
+    "Cold means independently verified zero input-page residency before worker setup; physical-device cache is unverified and timed source hashing warms inputs.",
+    "Final warm RSS medians and maximum increased; no stable overall memory reduction.",
+    "t1-c4096 and t4-c65536 change both thread cap and chunk size."
+  ],
+  "rejected_experiments": [
+    "compact worker payload",
+    "early consumed Arrow batch release"
+  ]
+}

@@ -1371,3 +1371,76 @@ Baseline to final (B → F); time variability is median absolute deviation; proc
   The compiled Quote Test/parallel/pipeline command above with --basetemp
   outputs/features/batch-restored-checks passed 36 tests in 2.44s. This local
   administrative commit includes only CHANGELOG; retained production is unchanged.
+
+## Supervised Rust optimization — final acceptance and report (2026-10-14)
+
+- Retained production is `2b53b01` (canonical column indices, owned key/book reuse,
+  raw CSV record reuse, validated-depth reserve, borrowed partition comparison,
+  and exhausted-reader release). Public signatures, configuration/defaults,
+  schemas/units/nulls/order/errors, Python/PyO3/research layers, operational bounds,
+  dependencies, lockfile, build profiles and existing benchmark sources remain
+  unchanged. Both rejected candidates were restored and preserved only as ignored
+  patches, with evidence in `b8ff8f6` and `8e2b70b`.
+- Root supervised zero-context optimization, measurement and independent-review
+  agents. Serial exclusive heavy slots prevented task-owned measurements from
+  overlapping with builds/tests/profiles or large-data inspection. Host activity
+  remains uncontrolled. Independent fresh-context final read-only review of
+  `a662211..8e2b70b` found no actionable compatibility issues; review did not claim
+  unexecuted tests.
+- Final retained regular series: one warmup plus five measured fresh children per
+  case, 30 outputs verified. Compare current-task baseline measurements at
+  `a662211`, not the older P0 fields embedded in historical summaries. Direction
+  family 1.601x, real Quote Test 1.809x, authored family 1.466x; equal-family
+  geometric speedup **1.619304397x** (38.2% less time under that weighting).
+- Root ran the complete unchanged warm suite, 24 verified calls/18 measured, at
+  `benchmarks/results/high-load/optimized-20261014`. Equal-case geometric speedup
+  **2.128977695x** versus the preserved full baseline. Warm t4-c65536 medians:
+  10M 25.988424s -> 10.995942s (2.363x), 20M 51.378437s -> 22.864259s (2.247x).
+- The fresh cold measurement agent ran the complete frozen wrapper with the
+  completed warm reference and original cold baseline, 24 verified calls/18
+  measured, at `benchmarks/results/high-load/optimized-cold-20261014`. Every one
+  of 72 child and 72 parent post-preparation file observations was nonresident;
+  all comparison/source/native/helper/input/output guards passed. Equal-case
+  geometric speedup **2.179318991x**. Cold t4-c65536 medians: 10M 25.990904s ->
+  11.195504s (2.322x), 20M 51.591414s -> 23.822834s (2.166x). Cold summary SHA-256
+  `2988d33650ed29e14afccb5aa1660f9538b25a208dc8fe53a791950de39a0bf3`.
+- Time-first retention has a material memory tradeoff: all six warm RSS medians
+  increased, and five of six cold medians increased. Largest measured warm peak
+  292.86 -> 609.48 MiB; cold 364.94 -> 615.14 MiB. Memory reduction was not achieved
+  overall. All ranges/outliers are retained; no causal explanation or memory-bound
+  guarantee is asserted. Cold means independently verified zero input-page
+  residency before worker setup, not physical-device cold cache; timed source
+  hashing can warm decoding. t1/t4 change both chunk size and thread cap.
+- Final serial acceptance passed: fmt, Clippy with warnings denied, 42 workspace
+  Rust tests, one separately enabled real-sample test, the same 42 workspace
+  tests on Rust 1.90.0, **114 Python/API/native/research/real/benchmark tests with
+  no skips**, Ruff, strict mypy (seven files), diff checks, locked offline release
+  wheel, and unchanged isolated wheel smoke outside the checkout. The first
+  isolated-wheel attempt failed at sandbox DNS dependency fetch; an authorized
+  network retry passed. No helper or dependency policy was weakened.
+- Real acceptance verified all 24 delivery hashes/raw ZIP identities and paired
+  CSV counts; delivered clean events/trades/quality counts 887810/68404/897387.
+  Widths 1/5/10/30/60s produced 45966/8985/4390/1382/650 accepted features; keys,
+  integer columns, average depth and quality flags match exactly. Maximum price
+  errors 2.182785e-13 USD and 2.182787e-11 ticks are below existing tolerances.
+- Root independently audited all **48 full final warm/cold calls, 96 Parquet
+  tables**, exact ordered values/dtypes/schema metadata, manifests and stable
+  full QC. Only output paths, time and observed peak workers are excluded from
+  QC equality. All 39 source hashes and native identity match the retained
+  regular/full warm/full cold measurements after acceptance. Native SHA-256
+  `a4bbe9c69622920b9e6f589ea73ff66f0ac8f497cb5993f54789eeba15507d35`.
+- Added the English `docs/high_load/optimization-20261014.md` report and explicit
+  compact `optimization-results-20261014.json` evidence; linked from the main
+  README and baseline index. Source/result provenance, all cases/ranges/MAD/RSS,
+  rejected candidates, exact commands, checks and limitations are recorded.
+  Full measurement logs, RSS traces, final-acceptance/equivalence JSON, generated
+  native outputs, static comparison PNG/SVG and rejected patches remain ignored
+  under existing result/output directories. Root inspected the exported plot.
+- This final evidence commit changes documentation only; measured production,
+  installed binary, fixtures and harness stay unchanged. No push, PR, package
+  upload, remote change, deployment or history rewrite. Owner reviews/pushes.
+- A separate zero-context read-only report audit recomputed all three aggregates,
+  checked every table/range/MAD/RSS against artifacts, verified cache observations,
+  acceptance counts/log hashes and the 39-source/native closure, and found no
+  actionable inaccuracies. Root rechecked reference-summary/helper hashes and
+  diff whitespace before the explicit-path documentation commit.
