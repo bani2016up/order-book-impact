@@ -19,6 +19,72 @@ const EVENT: &str = "symbol,date,event_id,timestamp,time_ns,segment_id,prev_stat
 const TRADE: &str = "symbol,date,event_id,timestamp,time_ns,event_type,event_size,event_price,direction,quote_accepted,aggressor_side,signed_volume\nA,2012-06-21,0,2012-06-21T13:30:00.000000001Z,34200000000001,4,10,1.01,-1,False,1,10\n";
 
 #[test]
+fn every_depth_resolves_reordered_columns_and_checks_prices() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("events.csv");
+    for levels in 1..=5 {
+        let mut columns: Vec<String> = EVENT
+            .lines()
+            .next()
+            .unwrap()
+            .split(',')
+            .map(str::to_owned)
+            .collect();
+        let mut values: Vec<String> = EVENT
+            .lines()
+            .nth(1)
+            .unwrap()
+            .split(',')
+            .map(str::to_owned)
+            .collect();
+        for level in 2..=levels {
+            columns.extend([
+                format!("bid_price_{level}"),
+                format!("ask_price_{level}"),
+                format!("bid_size_{level}"),
+                format!("ask_size_{level}"),
+            ]);
+            values.extend([
+                format!("{:.2}", 1.0 - (level - 1) as f64 * 0.01),
+                format!("{:.2}", 1.01 + (level - 1) as f64 * 0.01),
+                (100 + level).to_string(),
+                (120 + level).to_string(),
+            ]);
+        }
+        columns.reverse();
+        values.reverse();
+        let csv = |values: &[String]| format!("{}\n{}\n", columns.join(","), values.join(","));
+        fs::write(&path, csv(&values)).unwrap();
+        for chunk in [1, 2] {
+            let event = TableReader::open(&path, Kind::Events, levels, chunk)
+                .unwrap()
+                .next_event()
+                .unwrap()
+                .unwrap();
+            assert_eq!(event.book.0.len(), levels);
+            for (rank, level) in event.book.0.iter().enumerate() {
+                assert_eq!(level.bid, 10000 - rank as i64 * 100);
+                assert_eq!(level.ask, 10100 + rank as i64 * 100);
+            }
+        }
+        let last_bid = columns
+            .iter()
+            .position(|c| c == &format!("bid_price_{levels}"))
+            .unwrap();
+        values[last_bid] = "0.00001".into();
+        fs::write(&path, csv(&values)).unwrap();
+        assert_eq!(
+            TableReader::open(&path, Kind::Events, levels, 1)
+                .unwrap()
+                .next_event()
+                .unwrap_err()
+                .code,
+            ErrorCode::Malformed
+        );
+    }
+}
+
+#[test]
 fn csv_gzip_ties_signs_levels_and_eof() {
     let dir = tempfile::tempdir().unwrap();
     let q = dir.path().join("quality.csv.gz");

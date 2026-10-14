@@ -58,6 +58,14 @@ fn malformed(error: impl std::fmt::Display) -> Error {
     Error::new(ErrorCode::Malformed, error.to_string())
 }
 
+const BOOK_COLUMNS: [[&str; 4]; 5] = [
+    ["bid_price_1", "ask_price_1", "bid_size_1", "ask_size_1"],
+    ["bid_price_2", "ask_price_2", "bid_size_2", "ask_size_2"],
+    ["bid_price_3", "ask_price_3", "bid_size_3", "ask_size_3"],
+    ["bid_price_4", "ask_price_4", "bid_size_4", "ask_size_4"],
+    ["bid_price_5", "ask_price_5", "bid_size_5", "ask_size_5"],
+];
+
 impl Row<'_> {
     fn index(&self, name: &str) -> Result<usize> {
         let columns = match self {
@@ -83,10 +91,9 @@ impl Row<'_> {
         Ok((array, *row))
     }
     fn text(&self, name: &str) -> Result<&str> {
-        let index = self.index(name)?;
         match self {
             Self::Csv(record, _) => record
-                .get(index)
+                .get(self.index(name)?)
                 .ok_or_else(|| malformed(format!("missing CSV field {name}"))),
             Self::Parquet(_, _, _) => {
                 let (array, row) = self.array(name)?;
@@ -147,8 +154,7 @@ impl Row<'_> {
             Self::Csv(_, _) => timestamp_from_text(self.text("timestamp")?),
             Self::Parquet(_, _, _) => {
                 let (array, row) = self.array("timestamp")?;
-                if array.data_type()
-                    != &DataType::Timestamp(TimeUnit::Nanosecond, Some("UTC".into()))
+                if !matches!(array.data_type(), DataType::Timestamp(TimeUnit::Nanosecond, Some(tz)) if tz.as_ref() == "UTC")
                 {
                     return Err(schema("timestamp requires nanoseconds and UTC timezone"));
                 }
@@ -369,12 +375,12 @@ impl TableReader {
         let event = self.next(|r| {
             let (key, timestamp) = r.key_time(false)?;
             let mut book = Vec::with_capacity(levels);
-            for i in 1..=levels {
+            for [bid, ask, bid_size, ask_size] in &BOOK_COLUMNS[..levels] {
                 book.push(Level {
-                    bid: r.price(&format!("bid_price_{i}"))?,
-                    ask: r.price(&format!("ask_price_{i}"))?,
-                    bid_size: r.integer(&format!("bid_size_{i}"))?,
-                    ask_size: r.integer(&format!("ask_size_{i}"))?,
+                    bid: r.price(bid)?,
+                    ask: r.price(ask)?,
+                    bid_size: r.integer(bid_size)?,
+                    ask_size: r.integer(ask_size)?,
                 });
             }
             let book = Book(book);
