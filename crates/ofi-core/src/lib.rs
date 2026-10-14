@@ -17,5 +17,7 @@ pub mod config;
 pub mod domain;
 pub mod error;
 pub mod ofi;
+pub mod output;
+pub mod pipeline;
 pub mod time;
 pub mod trades;

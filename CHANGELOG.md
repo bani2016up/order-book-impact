@@ -182,3 +182,34 @@ commit hashes are authoritative in Git history, not self-referential log entries
 - Real feature parity and file-level chunk invariance await the M7 runner/output.
 - Intended commit: `feat(core): aggregate original boundaries on right-closed grids`.
 - Remaining: M7–M11 including atomic Parquet publication and full integration.
+
+## M7a — file-set core and atomic output
+
+- Added Rust `pipeline.rs`, `output.rs`, core file-set integration tests and
+  SHA-256 provenance. Merges quality/events/trades by original IDs, with one-row
+  lookahead per stream and one active session engine. Bounded Parquet buffers
+  write accepted-only features plus the full quality grid, manifest and QC.
+- A new output directory is staged beside its destination and renamed after all
+  computation/writes succeed. Overwrite is explicit and limited to owned output
+  directories with no other user data. Collision checks resolve symlinks and
+  protect inputs. Failed computation leaves existing results intact; if publication
+  restoration fails, the old directory is preserved and its location reported.
+- Source hashing is one explicit streaming pass, followed by one ordered compute
+  pass; no reference feature/mask reads occur. Deterministic manifest provenance
+  excludes runtime timing; QC records elapsed time separately. Output signed
+  values/counts use int64, unavailable excluded features use Arrow nulls.
+- Checks passed: `cargo test -p ofi-core --offline` (19 units + 3 adapter tests;
+  external ingestion test explicitly ignored), `cargo test -p ofi-core --test pipeline --offline`
+  (2), `cargo clippy --workspace --all-targets --offline -- -D warnings`, `cargo fmt --all`.
+  A fixture timestamp literal inferred as i32 was corrected to i64 before commit.
+- First real native 10-second run via the in-progress compiled Python API passed:
+  `run_pipeline('order_book_sample','outputs/m7-real-10s',PipelineConfig(threads=1,chunk_rows=4096))`.
+  Debug runtime 21.205259375 s; AAPL 2,060 accepted/280 rejected; MSFT 2,330/10.
+  Compared actual computed output with reference **after** computation: 4,390 keys,
+  no missing/extra keys; all 4,680 quality flags match; exact L1–L5 OFI, TI, volume,
+  event/L1-update counts; max absolute USD delta error 2.0008994461306884e-13,
+  tick delta error 2.000888343900442e-11, depth error 0. This preliminary evidence
+  will become a repeatable M9 acceptance report/test.
+- Intended commit: `feat(core): publish streamed Parquet features and provenance atomically`.
+- Remaining: finish/stage Python API/CLI separately; Quote Test and bounded
+  concurrency currently fail/warn explicitly; coverage/packaging/CI pending.
