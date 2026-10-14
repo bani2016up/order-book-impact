@@ -1,5 +1,33 @@
 # Implementation work log
 
+## High-load benchmark — authorized plan
+
+- Implement benchmark tooling only; keep the Rust engine, public Python API,
+  schemas, model layer and existing benchmark workloads unchanged.
+- M1: bounded deterministic synthetic Lev-v1 generation with 10M/20M original
+  rows, full-session timestamps, five changing levels, trades, quality gaps and
+  optional paired raw CSV for Quote Test. Validate small authored fixtures.
+- M2: serial fresh-process benchmark suite, release-build/source/binary/input
+  provenance, RSS snapshots, repeated-run summaries, decoded-output equivalence
+  and conservation checks. Test the orchestration on a small compiled workload.
+- M3: execute and retain actual large-workload baseline evidence where practical,
+  publish a compact report, document reruns and the later optimization protocol.
+  Generated datasets, snapshots and full outputs remain ignored; commits stay local.
+
+### M1 — bounded authored workload
+
+- Added a row-indexed synthetic generator with bounded NumPy/Arrow batches and
+  streamed ZSTD Parquet writers. Exact original-row counts are split across
+  independent symbol/session partitions and cover a valid configurable session.
+- Included all five changing ranks, type-4/type-5 executions, both known signs,
+  deliberate supplied-quality gaps, segment/previous-state/L1-update markers and
+  optional original paired CSVs. Generation records source hashes, expected
+  original/accepted/rejected/trade counts and volume/sign conservation totals.
+- Small fixture checks passed: 4 tests, including decoded batch-size invariance,
+  timestamps within session, existing-directory protection, invalid parameters,
+  and actual compiled Rust calls with both signing modes and gaps. Ruff passed
+  for generator/tests. This evidence is synthetic; no large-run result yet.
+
 ## Implementation diagrams — detailed views and completion
 
 - Added four detailed editable scenes and SVG previews: the Python/PyO3/Rust
