@@ -94,3 +94,52 @@ def test_zip_discovery_and_missing_pair(bundle, tmp_path):
     archive.unlink()
     with pytest.raises(QualityEvidenceError, match="exactly one"):
         run_pipeline(bundle, tmp_path / "missing", c)
+
+
+@pytest.mark.parametrize(
+    "case",
+    ["invalid_post", "different_post", "invalid_integer", "unequal_fields", "bad_zip", "empty_zip"],
+)
+def test_raw_corruption_fails_without_publishing(bundle, tmp_path, case):
+    from ofi_pipeline import PipelineError
+
+    m, b = raw_fixture(bundle)
+    if case in ("bad_zip", "empty_zip"):
+        archive = tmp_path / "raw.zip"
+        if case == "bad_zip":
+            archive.write_bytes(b"malformed archive")
+        else:
+            with ZipFile(archive, "w"):
+                pass
+        raw = RawInput("TEST", "2012-06-21", archive=archive)
+    else:
+        lines = b.splitlines()
+        first = lines[0].split(",")
+        if case == "invalid_post":
+            first[0] = "0"
+        elif case == "different_post":
+            first[3] = "101"
+        elif case == "invalid_integer":
+            first[0] = "not-an-integer"
+        else:
+            lines[1] = "1,2,3"
+        lines[0] = ",".join(first)
+        message, book = tmp_path / "m.csv", tmp_path / "b.csv"
+        message.write_text(m)
+        book.write_text("\n".join(lines) + "\n")
+        raw = RawInput("TEST", "2012-06-21", message=message, orderbook=book)
+    inputs = InputPaths(
+        bundle / "data/events_clean.parquet",
+        bundle / "data/trades_clean.parquet",
+        bundle / "reports/event_quality.parquet",
+        (raw,),
+    )
+    with pytest.raises(PipelineError):
+        run_pipeline(
+            output_dir=tmp_path / "failed",
+            inputs=inputs,
+            config=PipelineConfig(
+                trade_signing="quote_test", session_close="09:31:00", chunk_rows=1
+            ),
+        )
+    assert not (tmp_path / "failed").exists()

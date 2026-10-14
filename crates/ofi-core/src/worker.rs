@@ -154,7 +154,15 @@ impl Worker {
                             } else {
                                 Some(known)
                             };
-                            report.signing.add(t, sign)?;
+                            report.signing.add(t, sign).map_err(|error| {
+                                Error::new(
+                                    error.code,
+                                    format!(
+                                        "{} at {:?}, UTC ns {}",
+                                        error.message, q.key, q.timestamp
+                                    ),
+                                )
+                            })?;
                             sign
                         } else {
                             None

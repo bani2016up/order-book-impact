@@ -173,4 +173,13 @@ mod tests {
         assert!(validate_local_ns("2012-06-21", stamp, 0).is_err());
         assert!(validate_local_ns("2012-06-21", stamp, -1).is_err());
     }
+    #[test]
+    fn local_day_overflow_is_reported() {
+        assert_eq!(
+            validate_local_ns("2262-04-11", i64::MAX, 86_399 * NS)
+                .unwrap_err()
+                .code,
+            ErrorCode::Overflow
+        );
+    }
 }

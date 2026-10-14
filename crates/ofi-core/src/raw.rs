@@ -332,4 +332,20 @@ mod tests {
         let mut r = RawReader::open(&input, dir.path()).unwrap();
         assert!(r.finish().is_err());
     }
+    #[test]
+    fn raw_utc_addition_overflow_is_reported() {
+        let dir = tempfile::tempdir().unwrap();
+        let input = input(dir.path());
+        fs::write(
+            input.message.as_ref().unwrap(),
+            "9223372036.854775807,1,1,1,10000,1\n",
+        )
+        .unwrap();
+        fs::write(input.orderbook.as_ref().unwrap(), "10100,120,10000,100\n").unwrap();
+        let mut reader = RawReader::open(&input, dir.path()).unwrap();
+        assert_eq!(
+            reader.observe(&q(0, 0)).err().unwrap().code,
+            ErrorCode::Overflow
+        );
+    }
 }

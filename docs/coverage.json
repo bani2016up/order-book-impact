@@ -1,0 +1,148 @@
+{
+  "toolchain": "1.90.0",
+  "instrumentation": "Rust LLVM instrumentation in unit executables and real shared library, runtime profiles merged",
+  "production_scope": "authored source lines with LLVM counters before inline cfg(test); no blanket production exclusions",
+  "source_sha256": {
+    "crates/ofi-core/src/adapter.rs": "241b5ffc0fb6fa26e5f639364b145485190268793d545d61005870444f10e314",
+    "crates/ofi-core/src/buckets.rs": "55d4f275558e91fa4f197820d8b584c0e4c8f4a4a19b4c67b99a58408fcf5248",
+    "crates/ofi-core/src/config.rs": "5e1ea3f89d5f2398495d4dcb725bdd77507b64045ecf0d5077552b6695c6d20c",
+    "crates/ofi-core/src/domain.rs": "9121588bc42f340270a3d05487b8577b09e1a4a82a68c8e560266e4a5bce279f",
+    "crates/ofi-core/src/error.rs": "d94c39bc6c4ffb41955b348fbef8951f456ea48c5b76f7297e41336a39e75d44",
+    "crates/ofi-core/src/lib.rs": "b0bd4c584d625b5f74ec25ea89be339884f2f2a528fa2f412d4e4943dc68245f",
+    "crates/ofi-core/src/ofi.rs": "a864f15deb5f7506d566d618ec4999bab58e03eb3613f3009b72ef999d25e732",
+    "crates/ofi-core/src/output.rs": "0f09c09242cd349f11fc5c1074105a43a6e6e708c66a80898536cd8e3f95c626",
+    "crates/ofi-core/src/pipeline.rs": "f3a9df3e7eadc1aa6cc769b8e6c563afed2266cb586e286fcbf2d84f7852fce1",
+    "crates/ofi-core/src/raw.rs": "aa9376e343b09783f910fbb4e267341b57b2c8d3a71afc3160e4878f4b09ccd8",
+    "crates/ofi-core/src/time.rs": "f95a395c3aa6e7ef17ae4c4af6e7c53ff0750463e6e7a1eb91004bd9b62e50a5",
+    "crates/ofi-core/src/trades.rs": "c09ec552021a1510fd0f3751a1f8e4b46d59d52ef0755b7ee88220d3064b0e9f",
+    "crates/ofi-core/src/worker.rs": "522cfcffe96ba63989bbd89c74c247be59bdc2dfb66af1c2e1400c45c68b0b54",
+    "crates/ofi-python/src/lib.rs": "1d4c14681c37391f54e2e9ad2dedb337e122353405baa88fb60c634dc80e1de7",
+    "python/ofi_pipeline/__init__.py": "40173c8d560a5baa3e2868ce44b34c04d0e159c74aead866709216104aeae334",
+    "python/ofi_pipeline/__main__.py": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+    "python/ofi_pipeline/api.py": "923ea7104f148652240528c9164a87c53158917e2c747a849c95c4c335853c00",
+    "python/ofi_pipeline/cli.py": "28a5c51171c282b25913266b845dbfc72c0f1fc1557fe538f3a6aa8a8fdab855",
+    "python/ofi_pipeline/errors.py": "e4322914f4b213ef999bc2d01ae95e53603130caf4cdbc14b7220eb2f69b39a2"
+  },
+  "commands": [
+    ".venv/bin/python scripts/coverage.py --toolchain 1.90.0"
+  ],
+  "files": {
+    "crates/ofi-core/src/adapter.rs": {
+      "measured_lines": 387,
+      "covered_lines": 385,
+      "missed_lines": [
+        77,
+        153
+      ]
+    },
+    "crates/ofi-core/src/buckets.rs": {
+      "measured_lines": 157,
+      "covered_lines": 155,
+      "missed_lines": [
+        74,
+        217
+      ]
+    },
+    "crates/ofi-core/src/config.rs": {
+      "measured_lines": 63,
+      "covered_lines": 63,
+      "missed_lines": []
+    },
+    "crates/ofi-core/src/domain.rs": {
+      "measured_lines": 84,
+      "covered_lines": 84,
+      "missed_lines": []
+    },
+    "crates/ofi-core/src/error.rs": {
+      "measured_lines": 15,
+      "covered_lines": 15,
+      "missed_lines": []
+    },
+    "crates/ofi-core/src/lib.rs": {
+      "measured_lines": 0,
+      "covered_lines": 0,
+      "missed_lines": []
+    },
+    "crates/ofi-core/src/ofi.rs": {
+      "measured_lines": 104,
+      "covered_lines": 104,
+      "missed_lines": []
+    },
+    "crates/ofi-core/src/output.rs": {
+      "measured_lines": 285,
+      "covered_lines": 283,
+      "missed_lines": [
+        359,
+        369
+      ]
+    },
+    "crates/ofi-core/src/pipeline.rs": {
+      "measured_lines": 185,
+      "covered_lines": 183,
+      "missed_lines": [
+        175,
+        262
+      ]
+    },
+    "crates/ofi-core/src/raw.rs": {
+      "measured_lines": 169,
+      "covered_lines": 169,
+      "missed_lines": []
+    },
+    "crates/ofi-core/src/time.rs": {
+      "measured_lines": 95,
+      "covered_lines": 95,
+      "missed_lines": []
+    },
+    "crates/ofi-core/src/trades.rs": {
+      "measured_lines": 56,
+      "covered_lines": 56,
+      "missed_lines": []
+    },
+    "crates/ofi-core/src/worker.rs": {
+      "measured_lines": 164,
+      "covered_lines": 164,
+      "missed_lines": []
+    },
+    "crates/ofi-python/src/lib.rs": {
+      "measured_lines": 42,
+      "covered_lines": 42,
+      "missed_lines": []
+    }
+  },
+  "rust_core": {
+    "lines": 1764,
+    "covered": 1756,
+    "percent": 99.54648526077098
+  },
+  "native_binding": {
+    "lines": 42,
+    "covered": 42,
+    "percent": 100.0
+  },
+  "python": {
+    "covered_lines": 187,
+    "num_statements": 187,
+    "percent_covered": 100.0,
+    "percent_covered_display": "100",
+    "missing_lines": 0,
+    "excluded_lines": 0,
+    "percent_statements_covered": 100.0,
+    "percent_statements_covered_display": "100",
+    "num_branches": 30,
+    "num_partial_branches": 0,
+    "covered_branches": 30,
+    "missing_branches": 0,
+    "percent_branches_covered": 100.0,
+    "percent_branches_covered_display": "100"
+  },
+  "measured_date": "2026-10-14",
+  "test_results": {
+    "rust_core_unit": 28,
+    "rust_adapter_integration": 3,
+    "rust_pipeline_integration": 2,
+    "python_and_compiled_integration": 74,
+    "external_rust_ingestion": "ignored in coverage; executed separately at final acceptance"
+  },
+  "raw_evidence": "target/coverage-report/{cargo-artifacts.txt,rust.json,rust.txt,rust.profdata,python.json,profiles/}; ignored build artifacts, reproducible with scripts/coverage.py"
+}

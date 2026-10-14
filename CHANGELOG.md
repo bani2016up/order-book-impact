@@ -425,3 +425,30 @@ commit hashes are authoritative in Git history, not self-referential log entries
 - Remaining: coverage gap audit, clean wheel/CI, refreshed real acceptance and
   performance, English final handoff. External `.gitignore` edit is preserved;
   Cargo.lock remains tracked and committed despite its added ignore rule.
+
+## M11c — final measured coverage and error evidence
+
+- Added `scripts/coverage.py`, `docs/coverage.{md,json}`. Matched Rust 1.90/LLVM
+  instrumentation covers test executables plus the real Python-loaded native
+  library; source SHA256 is frozen before/after. Raw reports remain in ignored
+  target output, with a portable per-module summary committed. No blanket
+  production exclusions; inline test bodies are outside the production scope.
+- Added overflow tests in core time/raw modules; compiled error tests cover
+  corrupt/unpaired original ZIP/CSV evidence, uneven CSV, invalid integer fields,
+  missing original quality, and checked partition-volume overflow. Worker volume
+  errors now retain original event/symbol/date/UTC ns context.
+- Exact check passed: `.venv/bin/python scripts/coverage.py --toolchain 1.90.0`
+  (28 Rust unit + 3 adapter + 2 pipeline; 74 Python/compiled integration tests).
+  Core: 1756/1764 lines (99.5465%); binding 42/42 (100%); Python 187/187 and
+  30/30 branches (100%). Eight missed core counters remain visible: six internal
+  invariant guards, OS thread-spawn failure, and final QC-write device failure.
+  Their precise limitations are documented, not reported as measured 100%.
+- Additional checks passed: `cargo fmt --all -- --check`,
+  `PYO3_PYTHON="$PWD/.venv/bin/python" cargo clippy --workspace --all-targets --locked --offline -- -D warnings`,
+  `.venv/bin/ruff check python tests scripts benchmarks`, `.venv/bin/mypy`,
+  `git diff --check`.
+- Real data remain available and unchanged. Coverage uses authored fixtures;
+  final release real-sample acceptance is separate and next.
+- Intended commit: `test: measure core native and Python coverage with error evidence`.
+- Remaining: rebuild final release/wheel, complete distribution CI docs,
+  final all-width parity/performance refresh and English handoff audit.

@@ -292,3 +292,36 @@ def test_unknown_quality_reason_and_optional_sign_dtype(bundle, tmp_path):
     )
     with pytest.raises(SchemaError, match="int64"):
         run_pipeline(bundle, tmp_path / "dtype", config())
+
+
+@pytest.mark.parametrize("table_name", ["events_clean", "trades_clean"])
+def test_rows_before_original_quality_are_rejected(bundle, tmp_path, table_name):
+    path = bundle / "data" / f"{table_name}.parquet"
+    table = pq.read_table(path)
+    pq.write_table(
+        table.set_column(
+            table.schema.get_field_index("symbol"), "symbol", pa.array(["AAA"] * table.num_rows)
+        ),
+        path,
+    )
+    with pytest.raises(QualityEvidenceError, match="lacks original quality evidence"):
+        run_pipeline(bundle, tmp_path / "unmatched", config(chunk_rows=1))
+
+
+def test_native_volume_overflow_has_event_context(bundle, tmp_path):
+    from ofi_pipeline import ArithmeticOverflowError
+
+    path = bundle / "data/trades_clean.parquet"
+    table = pq.read_table(path)
+    table = table.set_column(
+        table.schema.get_field_index("event_size"), "event_size", pa.array([7, 2**63 - 1, 3])
+    )
+    table = table.set_column(
+        table.schema.get_field_index("signed_volume"),
+        "signed_volume",
+        pa.array([7, -(2**63 - 1), -3]),
+    )
+    pq.write_table(table, path)
+    with pytest.raises(ArithmeticOverflowError, match="event_id: 5"):
+        run_pipeline(bundle, tmp_path / "overflow", config(chunk_rows=1))
+    assert not (tmp_path / "overflow").exists()
