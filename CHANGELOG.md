@@ -1168,3 +1168,103 @@ Baseline to final (B → F); time variability is median absolute deviation; proc
   speedup was 1.619x. Reader release was not measured separately; no isolated
   speed or RSS benefit is claimed. This local commit includes only pipeline.rs
   and this coordinated evidence entry. No push or history rewrite was performed.
+
+## Rust optimization P7 — compact private worker payload (2026-10-14, candidate)
+
+- Replace the private worker row's separate event/trade slots with an inline
+  payload: an owned event plus stored execution-agreement flag, or an independent
+  eventless trade. The producer compares complete Option<Trade> values only after
+  the existing event/trade lookahead advances. Independent table parsing, order
+  checks and validation remain intact. Eventless trades, including rejected-quote
+  executions, remain owned and reach all existing signing/bucket checks.
+- Disagreement still raises the same error at the same worker point after raw
+  observation and before event timestamp accounting or clean/raw book checks.
+  Downstream borrowing of the event's execution starts after agreement is checked.
+  Public domain types/signatures, configuration/defaults, chunk capacities, bounded
+  queues/workers, manifest, state/error/publication semantics and benchmark/helper
+  sources are unchanged. No lazy chunk reservation is included.
+- Actual arm64 inline size, measured by the focused private regression, is 312
+  bytes versus the prior 408 bytes: 96 bytes less per reserved row slot (23.53%).
+  At capacity 65536 this is 19.5 MiB of slot storage versus 25.5 MiB, excluding
+  row-owned strings/books and allocator overhead. This is a layout observation,
+  not measured process RSS or execution improvement. Equality and duplicate-trade
+  destruction move to the producer, so scheduling/time effects require measurement.
+- Added six private regressions: all event/execution/trade Option combinations,
+  every equality field, smaller inline layout, eventless rejected type-4/type-5
+  signing conservation, unchanged disagreement errors before quality/event defects,
+  and raw alignment/parse errors before disagreement while disagreement still
+  precedes invalid clean/raw book validation. Authored synthetic rows only.
+- `cargo test -p ofi-core worker::tests --locked --offline -- --nocapture`: seven
+  passed, including the preexisting dependency panic/join test. Final
+  `cargo test -p ofi-core --locked --offline`: 40 units, six adapters and two
+  pipeline tests passed; the external-sample test remains explicitly ignored in
+  this focused command. Initial Clippy failures were test-only type-complexity and
+  err/expect style; a local alias and expect_err resolved them. Final
+  `cargo clippy -p ofi-core --all-targets --locked --offline -- -D warnings` passed.
+  `rustfmt --edition 2024 --check` on the two owned Rust files and
+  `git diff --check` passed.
+- Explicit repository-venv VIRTUAL_ENV/PYO3_PYTHON release rebuild via
+  `.venv/bin/maturin develop --release --locked --offline` passed. Installed native
+  SHA-256: `f054f44ec4b9e7630e970ea42eadb9b6b8bd6a7094406542eeb52c59756334f2`.
+  `.venv/bin/python -m pytest -q tests/integration/test_quote_test.py
+  tests/integration/test_parallel.py tests/integration/test_pipeline.py --basetemp
+  outputs/features/payload-checks`: 36 passed in 2.34s through that extension.
+- Root-owned independent review and guarded serial measurements are pending;
+  no benchmark, performance-retention decision or implementation commit is claimed.
+
+## Rust optimization P7 — compact payload rejected after measurement (2026-10-14)
+
+- Root and independent review cleared the candidate's validation/error ordering.
+  Unchanged regular helper command compared payload-highload-20261014 against
+  io-highload-20261014: one warmup plus five measured repeats per case. All 30
+  complete outputs passed exact table/schema/order/float/null, full QC/manifest,
+  chunk/thread invariance and Quote Test conservation checks. Current-task
+  comparisons below use highload-before-20261014, not the helper's older P0 base.
+
+| Regular case | Payload median s (min–max; MAD) | Peak MiB median (min–max) | Incremental / current-task speedup |
+| --- | --- | --- | ---: |
+| real-t1-c4096 | 1.213284 (1.124710–1.366689; 0.059560) | 103.83 (98.88–110.47) | 1.011692x / 1.959285x |
+| real-t2-c65536 | 1.133985 (1.096385–1.299669; 0.037599) | 266.31 (203.91–279.78) | 1.008728x / 2.052619x |
+| real-t4-c1 | 30.521220 (29.555661–33.017941; 0.965559) | 51.14 (48.11–52.16) | 0.934805x / 0.972710x |
+| quote-t2-c4096 | 1.962442 (1.623797–2.540954; 0.299680) | 103.80 (92.61–108.22) | 0.860865x / 1.557558x |
+| fixture-t2-c4096 | 0.046690 (0.044163–0.074979; 0.002527) | 63.56 (56.95–66.08) | 1.055432x / 1.547478x |
+
+- Family-balanced incremental speedup was 0.963494x; current-task balanced
+  speedup was 1.560189x versus retained I/O's 1.619x. Every tiny-chunk measured
+  result was slower than I/O's 28.359381–28.926279s range. Quote Test's median
+  increased about 16.2% from 1.689398s, with broader variability. Unfavorable
+  results were preserved rather than dismissed as host noise.
+- Unchanged 1M warm and verified low-residency pilots each completed eight
+  verified calls. Derived references explicitly select the original baselines'
+  two 1M cases with parent SHA provenance. Source/native/helper guards remained
+  unchanged, and all 24 parent plus 24 child cold input observations had zero
+  resident pages. These pilots do not replace required final full-size suites.
+
+| 1M pilot | Payload median s (min–max; MAD) | Peak MiB median (min–max) | Incremental / current-task speedup |
+| --- | --- | --- | ---: |
+| warm t1/c4096 | 1.391063 (1.257309–1.480458; 0.089395) | 123.22 (122.92–127.28) | 1.059580x / 1.909510x |
+| warm t4/c65536 | 1.111411 (1.108790–1.139261; 0.002621) | 272.97 (225.08–332.03) | 1.027383x / 2.295214x |
+| cold t1/c4096 | 1.356273 (1.319605–1.360244; 0.003971) | 132.31 (131.69–139.41) | 0.965356x / 1.974008x |
+| cold t4/c65536 | 1.107718 (1.067563–1.109881; 0.002162) | 273.69 (255.89–303.61) | 1.085472x / 2.324288x |
+
+- RSS remained mixed: regular t2/authored medians rose about 8.3%/8.4%; warm
+  t1/t4 fell about 5.0%/6.8%; cold t1/t4 rose about 1.7%/5.9% versus I/O.
+  The 312-byte candidate layout was confirmed but not retained. No process RSS
+  improvement is claimed. Root rejected the candidate under execution-time-first
+  priority because the regular regressions outweighed the current evidence.
+- Preserved the exact two-Rust-file diff, including private regressions, under
+  ignored outputs/features/performance-experiments/compact-payload.patch (13544
+  bytes); reverse-apply verification passed before restoring only worker.rs and
+  pipeline.rs to verified HEAD 2b53b01, and forward-apply verification passed
+  afterward. Full evidence remains under optimization/payload-highload-20261014
+  and high-load/payload-1m-20261014 plus payload-cold-1m-20261014 in ignored
+  benchmarks/results. No rejected implementation commit was created; no lazy
+  reservation, benchmark/helper change, push or history rewrite was performed.
+- Restoration checks: explicit repository-venv VIRTUAL_ENV/PYO3_PYTHON release
+  rebuild passed; retained native SHA-256 again matches
+  `a4bbe9c69622920b9e6f589ea73ff66f0ac8f497cb5993f54789eeba15507d35`.
+  `cargo test -p ofi-core --locked --offline`: 34 units, six adapters and two
+  pipeline tests passed (external sample explicitly ignored in this focused run).
+  Compiled Quote Test/parallel/pipeline command above with --basetemp
+  outputs/features/payload-restored-checks: 36 passed in 2.70s. This administrative
+  commit includes only CHANGELOG; the retained production source is unchanged.
