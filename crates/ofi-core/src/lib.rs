@@ -10,3 +10,8 @@ mod tests {
         assert_eq!(super::VERSION, "0.1.0");
     }
 }
+
+pub mod config;
+pub mod domain;
+pub mod error;
+pub mod time;

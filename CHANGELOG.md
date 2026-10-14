@@ -9,7 +9,7 @@ the owner-provided attachment; `docs/DATASET_CONTRACT.md` remains normative.
 
 - [x] M0: inspect repository, delivery integrity, physical schemas, preparation code.
 - [x] M1: pure Rust workspace, compiled PyO3 extension, typed Python package.
-- [ ] M2: checked domain types, sessions, decimal time, configuration and ordering.
+- [x] M2: checked domain types, sessions, decimal time, configuration and ordering.
 - [ ] M3: streaming Parquet/gzip CSV and original quality alignment.
 - [ ] M4: gap-aware rank OFI, persistent state and L1 update classification.
 - [ ] M5: independent executions, known-direction signing and conservation.
@@ -78,3 +78,25 @@ commit hashes are authoritative in Git history, not self-referential log entries
   inspection uses integer timestamp values (no lossy Python datetime conversion).
 - Intended commit: `feat(bindings): bootstrap compiled Rust and Python workspace`.
 - Remaining: M2–M11; the extension currently exposes version metadata only.
+
+## M2 — domain, time and configuration
+
+- Added Rust `config`, `domain`, `error`, `time` modules; native owned JSON
+  configuration validation; typed frozen Python `PipelineConfig` and eight
+  actionable exception categories. Updated manifests/lock, stubs/exports, and
+  focused Python tests. No production numerical computation moved to Python.
+- Prices use checked USD/10000 integers, preserve half-tick mids and reject
+  nonfinite/overprecision values. Time uses UTC int64 ns, New York DST sessions,
+  deterministic decimal half-up parsing, and delivered local-ns consistency.
+  Ordering permits tied times with distinct IDs and rejects duplicates, decreasing
+  time, partition reversal, and missing contiguous original-quality IDs.
+- Checks passed: `PYO3_PYTHON="$PWD/.venv/bin/python" cargo test --workspace --offline`
+  (8 Rust tests), `VIRTUAL_ENV="$PWD/.venv" .venv/bin/maturin develop --offline`,
+  `.venv/bin/python -m pytest -q tests/python/test_config.py tests/integration/test_native.py`
+  (30 passed), `.venv/bin/ruff check python tests/python tests/integration`,
+  `.venv/bin/mypy`, `cargo clippy --workspace --all-targets --offline -- -D warnings`.
+  Final defensive session-width guard: `cargo fmt --all && cargo test -p ofi-core config --offline`
+  passed. Direct invalid widths cannot divide by zero or overflow before validation.
+- Real sample schemas/hashes are verified; feature parity remains unrun.
+- Intended commit: `feat(core): add checked domain and exact session configuration`.
+- Remaining: M3–M11; input adapters and feature computation are next.
