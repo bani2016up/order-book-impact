@@ -2,7 +2,7 @@
 
 ## Objective and scope
 
-Implement the complete specification in `docs/IMPLEMENTATION_TASK.md`, using `docs/DATASET_CONTRACT.md` as the sample contract. The data pipeline runs in Rust; Python exposes a library and CLI interface through a compiled PyO3 extension. Python must actually invoke the Rust engine in integration tests.
+Implement the complete owner-provided attachment specification recorded in `CHANGELOG.md`, using `docs/DATASET_CONTRACT.md` as the sample contract. The data pipeline runs in Rust; Python exposes a library and CLI interface through a compiled PyO3 extension. Python must actually invoke the Rust engine in integration tests.
 
 Work only in this repository. This checkout is nested inside a separate Obsidian Git checkout. Before any Git mutation, verify that `git rev-parse --show-toplevel` resolves to this repository. Never stage or commit files from the enclosing repository.
 
@@ -13,7 +13,7 @@ Use English for every implementation-agent response, plan, code identifier, code
 ## Git workflow
 
 - Work on local `main`, as requested by the owner. Inspect the working tree before starting and preserve unrelated changes.
-- Break work into small, independently reviewable subtasks. Record the plan in `docs/WORK_LOG.md`.
+- Break work into small, independently reviewable subtasks. Record the plan and all changes/check evidence in `CHANGELOG.md` (the owner requested keeping the previous task/work-log documents deleted).
 - For each subtask: implement, run the relevant focused checks, inspect the diff, update the work log with evidence, and create a local commit with an English message.
 - Commit only explicit paths belonging to the completed subtask. Do not use blanket staging when unrelated changes exist.
 - Do not push, upload releases or packages, create pull requests, change remote settings, or deploy anything. The owner will review and push accumulated commits.
@@ -34,7 +34,7 @@ Use English for every implementation-agent response, plan, code identifier, code
 
 ## Missing input or ambiguity
 
-Inspect actual schemas and Lev's reference preparation code before asserting real-data parity. The repository currently contains the supplied contract, not the actual dataset bundle. If the bundle is unavailable, continue useful work using authored fixtures and flag the real-data acceptance step as unverified. Ask for the dataset path when necessary; do not substitute invented data or silently download a different sample.
+Inspect actual schemas and Lev's reference preparation code before asserting real-data parity. The owner supplied the ignored local `order_book_sample/` bundle. If that bundle is unavailable in another checkout, continue useful work using authored fixtures and flag the real-data acceptance step as unverified. Ask for the dataset path when necessary; do not substitute invented data or silently download a different sample.
 
 Document decisions and any disagreement between source code, metadata, and written description. Preserve the supplied contract unless evidence justifies a documented correction. Do not change semantics just to match an expected row count.
 

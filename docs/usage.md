@@ -46,8 +46,9 @@ Timestamp columns are UTC nanoseconds; date is the New York session date. Prices
 are USD, price changes also include ticks, and OFI/TI/volume/depth are shares.
 Signed values are int64. With unclassified Quote Test executions, full
 `trade_imbalance` is null; `classified_trade_imbalance` keeps the observed partial
-sum and `trade_signing_complete` is false. SigningCoverage.trade_imbalance is the
-classified sum, while `complete_trade_imbalance` returns None when incomplete. Excluded intervals are only in `bucket_quality.parquet`,
+sum and `trade_signing_complete` is false. `SigningCoverage.trade_imbalance` is the
+classified sum, while `complete_trade_imbalance` returns None when incomplete.
+Excluded intervals are only in `bucket_quality.parquet`,
 with reasons and null computed features. Verify actual temporal adjacency and
 session before creating lags from sparse accepted rows. Deep OFI is a rank-based
 research extension. The data is single-venue NASDAQ, not consolidated NBBO.
@@ -78,3 +79,44 @@ rejection reasons are `outside_session`, `invalid_book`, `invalid_event`, and
 unsupported schema/reason conventions fail explicitly. In excluded quality
 rows, `quote_update_count` counts accepted L1 updates whose supplied markers are
 available; valid feature rows have complete original L1-update counts.
+
+
+## Configuration and errors
+
+| Setting | Default and supported values |
+| --- | --- |
+| `bucket_seconds` | 10; one of 1, 5, 10, 30, 60. |
+| `levels` | 5; 1..5, with required physical levels present. |
+| `trade_signing` | `lobster_direction`; alternatively `quote_test` with original paired input. |
+| `chunk_rows`, `threads` | 65536 and 2; ranges 1..1048576 and 1..64. |
+| `max_partitions` | 1024; 1..16384. |
+| `session_timezone`, `session_date` | `America/New_York`; optional date constrains every input partition. |
+| `session_open`, `session_close` | `09:30:00`, `16:00:00`; increasing local clocks with duration divisible by width. |
+| `tick_size` | 0.01 USD; positive value exactly representable in USD/10000 units. |
+| `adapter_version`, `quality_policy` | `lev-v1`, `supplied-clean`. |
+| `overwrite` | False; explicit replacement of owned result directories only. |
+
+`RunReport` exposes four output paths, immutable configuration, per-partition
+counts/signing/precision summaries, schema/algorithm versions, warnings, elapsed
+seconds and observed peak workers. See [output_contract.md](output_contract.md)
+for the full Parquet schema and examples of boundary/lag semantics.
+
+All public errors derive from `PipelineError`: `ConfigurationError`,
+`SchemaError`, `OrderingError`, `QualityEvidenceError`, `MissingInputError`,
+`MalformedDataError`, `ArithmeticOverflowError`, and `PipelineIOError`.
+Messages include source rows and symbol/event/session/bucket context when
+available. CLI failures print an error and return a nonzero status. Fix the input
+or configuration indicated by the exception; computation never silently sorts,
+repairs or fills unavailable evidence.
+
+To install a compatible local wheel without a compiler:
+
+```sh
+python -m pip install /path/to/ofi_pipeline-0.1.0-compatible-platform.whl
+ofi-pipeline --sample-dir /path/to/order_book_sample --output-dir /new/result \
+  --bucket-seconds 10 --levels 5 --threads 2 --chunk-rows 65536
+```
+
+Use the actual platform-specific filename from the release build. Local testing
+covers macOS arm64/Python 3.12; the committed CI matrix builds Linux/macOS/Windows
+on Python 3.10/3.12 after the owner pushes. Those hosted builds are unrun here.

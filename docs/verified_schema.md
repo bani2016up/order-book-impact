@@ -7,7 +7,7 @@ be bounded independently of row-group size.
 
 | Input | Verified rows | Required physical columns / types |
 | --- | ---: | --- |
-| `data/events_clean.parquet` | 887,810 | `symbol`, `date`: string; `event_id`, `time_ns`, `event_type`, `event_size`, `direction`, `segment_id`: int64; `timestamp`: timestamp[ns, UTC]; `bid_price_N`, `ask_price_N`: float64 USD; sizes: int64 shares; `prev_state_available`, `is_quote_update`, `timestamp_subnanosecond_rounded`: bool |
+| `data/events_clean.parquet` | 887,810 | `symbol`, `date`: string; `event_id`, `time_ns`, `event_type`, `event_size`, `direction`, `segment_id`: int64; `timestamp`: timestamp[ns, UTC]; `event_price`, `bid_price_N`, `ask_price_N`: float64 USD; sizes: int64 shares; `prev_state_available`, `is_quote_update`, `timestamp_subnanosecond_rounded`: bool |
 | `data/trades_clean.parquet` | 68,404 | symbol/date strings; event_id/time_ns/type/size/direction/aggressor_side/signed_volume int64; timestamp[ns, UTC]; event_price float64 USD; quote_accepted bool |
 | `reports/event_quality.parquet` | 897,387 | symbol string; event_id/time_ns int64; timestamp[ns, UTC]; quote_accepted bool; reject_reason string; **no date, book, or L1-update marker** |
 | `reports/bucket_quality_10s.parquet` | 4,680 | symbol/date; timestamp and bucket_start [ns, UTC]; valid_for_regression bool; rejected_events/event_count int64; reference features |
@@ -36,5 +36,7 @@ No production reader may read the reference features table or the reference
 
 Observed sample: AAPL's first accepted event ID is 14, after rejected original
 rows. The quality table starts at ID 0. This proves why accepted-only shifting
-or boundary searches would be unsafe. These observations verify schemas and
-integrity; they do not yet prove independently computed feature parity.
+or boundary searches would be unsafe. These observations establish schemas and integrity. Subsequent independent
+feature parity at all five widths is recorded in [reconciliation.json](reconciliation.json).
+The delivered precision flags are validated when present; explicit-layout inputs
+without them retain exact integer timestamps and emit a QC warning.

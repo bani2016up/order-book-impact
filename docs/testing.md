@@ -10,7 +10,7 @@ cargo fmt --all -- --check
 cargo clippy --workspace --all-targets --locked -- -D warnings
 VIRTUAL_ENV="$PWD/.venv" .venv/bin/maturin develop --locked
 .venv/bin/python -m pytest -q tests/python tests/integration
-.venv/bin/ruff check python tests
+.venv/bin/ruff check python tests benchmarks scripts
 .venv/bin/mypy
 ```
 
@@ -44,4 +44,37 @@ reports retain missing/extra keys, counts, first mismatches and max errors.
 actual real-data evidence, not a count inferred from the description. Default
 self-contained tests do not substitute for external acceptance.
 
-Coverage, isolated-wheel checks and platform CI commands are being added in M11.
+Measured per-layer coverage and exact uncovered-path limitations are in
+[coverage.md](coverage.md) and [coverage.json](coverage.json).
+
+## Coverage and isolated distribution
+
+```sh
+rustup toolchain install 1.90.0 --profile minimal --component llvm-tools-preview
+.venv/bin/python scripts/coverage.py
+.venv/bin/maturin build --release --locked --out dist
+.venv/bin/python scripts/wheel_check.py 'dist/*.whl'
+```
+
+The coverage runner builds unit executables and an instrumented shared library
+with the same Rust/LLVM toolchain, runs Python against that actual library, merges
+runtime `.profraw` files, and retains raw LLVM/Python reports in
+`target/coverage-report`. It checks production-source SHA256 values before/after
+measurement and identifies executable objects from Cargo's artifact JSON.
+Its summary omits inline `cfg(test)` code from the production denominator and
+retains every measured production line, including uncovered error paths. Python
+coverage is never substituted for native coverage. Type stubs/markers and Rust
+constants have no executable lines; mypy and wheel contents verify them instead.
+
+The wheel checker creates a fresh environment and working directory outside the
+checkout. It installs the local wheel plus inspection-only PyArrow, asserts the
+loaded native extension belongs to that environment, generates an authored CSV
+fixture, invokes API/CLI, reads native Parquet and checks hand-calculated OFI,
+TI/volume/depth, quality, manifest, error mapping, and bundled stubs/type markers.
+It never builds Rust in that fresh environment. A compatible wheel's production
+API does not require Rust or PyArrow on coworkers' computers.
+
+CI defines Linux/macOS/Windows Python 3.10/3.12 wheel/import matrices, Rust 1.90,
+formatting, Clippy, Python tests/type/lint checks, an isolated wheel check, and a
+separate instrumented Linux coverage job. CI is committed for the owner to run
+after pushing; no hosted run has been triggered or claimed successful locally.

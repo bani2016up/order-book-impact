@@ -1,0 +1,62 @@
+name: Native pipeline checks
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  native-and-wheel:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ['3.10', '3.12']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.90.0'
+          components: rustfmt, clippy
+      - name: Install pinned build and inspection tools
+        run: python -m pip install maturin==1.9.6 pytest==8.4.2 pytest-cov==6.3.0 pyarrow==18.1.0 ruff==0.14.0 mypy==1.18.2
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - run: cargo test --workspace --locked
+      - run: maturin build --release --locked --out dist
+      - name: Install current built wheel for the full compiled suite
+        run: python -c "import glob,subprocess,sys; subprocess.check_call([sys.executable,'-m','pip','install','--force-reinstall',glob.glob('dist/*.whl')[0]])"
+      - run: python -m pytest -q tests/python tests/integration
+      - run: ruff check python tests benchmarks scripts
+      - run: mypy
+      - name: Fresh wheel environment outside checkout
+        run: python scripts/wheel_check.py "dist/*.whl"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheel-${{ matrix.os }}-${{ matrix.python }}
+          path: dist/*.whl
+
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.90.0'
+          components: llvm-tools-preview
+      - name: Create isolated coverage environment
+        run: |
+          python -m venv .venv
+          .venv/bin/python -m pip install maturin==1.9.6 pytest==8.4.2 pytest-cov==6.3.0 pyarrow==18.1.0
+      - name: Measure core, actual native library and Python separately
+        run: .venv/bin/python scripts/coverage.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-evidence
+          path: target/coverage-report/

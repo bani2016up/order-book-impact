@@ -452,3 +452,35 @@ commit hashes are authoritative in Git history, not self-referential log entries
 - Intended commit: `test: measure core native and Python coverage with error evidence`.
 - Remaining: rebuild final release/wheel, complete distribution CI docs,
   final all-width parity/performance refresh and English handoff audit.
+
+## M11d — isolated wheel, CI and public contracts
+
+- Added `scripts/wheel_check.py` and `.github/workflows/ci.yml`: isolated wheel
+  API/CLI/error/Parquet/type-marker checks plus Linux/macOS/Windows Python
+  3.10/3.12 build/import/test matrix and separate Linux instrumented coverage.
+  Workflow YAML parses with both expected jobs. Hosted CI is unrun because
+  commits remain local; no remote execution or publication was requested.
+- Added English architecture and full output schema/interval contract;
+  expanded usage/configuration/error/installation docs and reproducible checks.
+  Updated verified schema with required execution price, precision-flag behavior
+  and link to measured parity. Corrected AGENTS.md's obsolete deleted-document
+  references to the owner-authorized attachment/CHANGELOG workflow.
+- Final release checks passed:
+  `VIRTUAL_ENV="$PWD/.venv" .venv/bin/maturin develop --release --locked --offline`
+  (22.30 s compilation), `.venv/bin/maturin build --release --locked --offline --out dist`
+  (21.71 s compilation; deployment target causes a separate artifact).
+  `.venv/bin/python scripts/wheel_check.py 'dist/*.whl'` passed in a fresh temp
+  Python 3.12 environment outside checkout; loaded native belongs to that venv.
+  Hand fixture produced OFI [30,0], TI/volume [7,0], depth [125,125], quality
+  [false,true,true]; installed CLI and typed missing-input error also passed.
+- Wheel contains native shared library, Python API/CLI, _native.pyi and py.typed.
+  No Rust compiler is used by the isolated installed-wheel test. Dependency
+  download was limited to pinned inspection-only PyArrow in that temp venv.
+- Checks passed: `ruby -e 'require "yaml"; p YAML.load_file(".github/workflows/ci.yml").fetch("jobs").keys'`,
+  `.venv/bin/ruff check python tests benchmarks scripts`, `git diff --check`.
+  Production source SHA256 still matches the committed coverage snapshot.
+- Real data are unchanged and available. Final all-width acceptance is running
+  against the current release. Removed only the task-generated stray profraw;
+  canonical raw coverage evidence remains under ignored target output.
+- Intended commit: `build: verify isolated wheels and define platform CI checks`.
+- Remaining: final real acceptance, refreshed release metrics, handoff/status audit.
