@@ -28,6 +28,36 @@
   and actual compiled Rust calls with both signing modes and gaps. Ruff passed
   for generator/tests. This evidence is synthetic; no large-run result yet.
 
+### M2 — isolated measured runs, snapshots and comparison
+
+- Added a serial suite with fresh native-backed Python children, one warmup and
+  three repeats per case by default, release compilation before measurements,
+  source/binary/host/input provenance and source/binary stability checks.
+- Added self-process RSS snapshots: Linux /proc/self/status and macOS public
+  MACH_TASK_BASIC_INFO, read by a small thread while Rust detaches from Python.
+  OS high-water RSS, CPU time and page faults are recorded separately. The fixed
+  sampling cost is included consistently. No third-party runtime dependency was
+  added. Load RSS instrumentation is macOS/Linux; Windows native support stays intact.
+- Post-run checks enforce partition/event/trade/sign/volume conservation, full
+  grid/key/schema/source identities and canonical decoded feature/quality equality
+  across repeats/chunk/thread cases. Baseline comparison rejects mismatched
+  protocols, inputs, harness hashes, build provenance and host/runtime.
+- Added failure/timeout evidence retention, unique output namespaces, CSV/JSON/MD
+  summaries and optional scaling/RSS plots. Documented default and single/many/raw
+  scenarios. CI now runs small benchmark-tool checks, never the multi-million suite.
+- Focused checks: 10 benchmark tests passed (including both signing modes, empty
+  feature output, actual child measurements/reuse/comparison and timeout failure);
+  Ruff passed across all Python/research/tests/benchmarks/scripts. A separate release
+  build smoke suite of 2,000 original rows completed both cases with verified output;
+  plots rendered and were inspected. Small smoke timings are not load evidence.
+- Full newly built native/Python/integration/research/real-data/benchmark suite:
+  106 passed in 51.37s, no skips. Real-width reference acceptance remains unchanged.
+  No production engine, binding, package dependency or public API source changed.
+- During development, checks caught empty-Parquet iteration and result namespace
+  edge cases, which were fixed. Parent process-list RSS was unavailable in the
+  sandbox; self-process sampling replaced it and passed. No external approval is
+  needed for the implemented method. Large baseline measurements remain M3.
+
 ## Implementation diagrams — detailed views and completion
 
 - Added four detailed editable scenes and SVG previews: the Python/PyO3/Rust

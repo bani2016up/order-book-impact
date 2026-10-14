@@ -1,5 +1,10 @@
 # Release measurements
 
+For bounded 1M/10M/20M workloads, repeatable fresh-process measurements, RSS
+snapshots and baseline comparison, use the [high-load protocol](HIGH_LOAD.md).
+The original small fixture below keeps its existing workload unchanged and
+is not intended for multi-million-row generation.
+
 Build/install the current release extension first; exclude build/install from run
 measurements. Run each command in a fresh Python process with no simultaneous
 project compilation. Hardware and cache assumptions are in `docs/performance.json`.
