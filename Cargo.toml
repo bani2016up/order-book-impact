@@ -1,0 +1,23 @@
+[workspace]
+members = ["crates/ofi-core", "crates/ofi-python"]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.90"
+license = "MIT"
+
+[workspace.dependencies]
+serde = { version = "=1.0.228", features = ["derive"] }
+serde_json = "=1.0.145"
+thiserror = "=2.0.17"
+pyo3 = { version = "=0.27.2", features = ["abi3-py310"] }
+
+[profile.dev]
+debug = 0
+incremental = false
+
+[profile.test]
+debug = 0
+incremental = false

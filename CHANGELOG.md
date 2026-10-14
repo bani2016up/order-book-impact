@@ -7,8 +7,8 @@ the owner-provided attachment; `docs/DATASET_CONTRACT.md` remains normative.
 
 ## Checklist
 
-- [ ] M0: inspect repository, delivery integrity, physical schemas, preparation code.
-- [ ] M1: pure Rust workspace, compiled PyO3 extension, typed Python package.
+- [x] M0: inspect repository, delivery integrity, physical schemas, preparation code.
+- [x] M1: pure Rust workspace, compiled PyO3 extension, typed Python package.
 - [ ] M2: checked domain types, sessions, decimal time, configuration and ordering.
 - [ ] M3: streaming Parquet/gzip CSV and original quality alignment.
 - [ ] M4: gap-aware rank OFI, persistent state and L1 update classification.
@@ -49,3 +49,32 @@ commit hashes are authoritative in Git history, not self-referential log entries
   Python lacked PyArrow; creating a dedicated environment resolves this next.
 - Intended commit: `docs: record implementation checklist and repository inventory`.
 - Remaining: verify delivery, implement M1–M11, test and measure coverage/performance.
+
+## M0 completion and M1 — native skeleton
+
+- Files: workspace/core/binding Cargo manifests and sources, `Cargo.lock`,
+  `pyproject.toml`, `python/ofi_pipeline/{__init__.py,_native.pyi,py.typed}`,
+  `tests/integration/test_native.py`, `docs/verified_schema.md`, this log.
+- Pinned PyO3 0.27.2 with Python >=3.10 stable ABI; Rust >=1.90. Pure core has
+  no Python dependency. A native smoke operation runs with `Python::detach`.
+  Maturin mixed layout exposes `ofi_pipeline._native` and retains type markers.
+- Native test checks the loaded filename against extension suffixes and invokes
+  the actual compiled function. No fallback or subprocess implementation exists.
+- Checks passed: `PYO3_PYTHON="$PWD/.venv/bin/python" cargo test --workspace --offline`
+  (one core test), `cargo fmt --all -- --check`,
+  `VIRTUAL_ENV="$PWD/.venv" .venv/bin/maturin develop --offline`,
+  `.venv/bin/python -m pytest -q tests/integration/test_native.py` (one passed),
+  `.venv/bin/ruff check python tests/integration/test_native.py`, `.venv/bin/mypy`.
+- Delivery inspection: 24/24 SHA256SUMS entries verified from file bytes; physical
+  Parquet counts 887,810 events, 68,404 trades, 897,387 original-quality rows,
+  4,680 reference quality intervals, 4,390 accepted reference rows. Schema map
+  records verified Arrow dtypes and missing fields. Real feature parity is unrun.
+- Environment failures resolved: sandbox networking required authorized dependency
+  downloads; uv crashed in macOS system configuration, so Python venv/pip was used.
+  Disk exhaustion interrupted first build/install; removed only this task's build
+  and download caches, disabled dev/test debug symbols and incremental artifacts.
+  Free space subsequently increased to ~2.4 GiB. Relative PYO3_PYTHON failed from
+  crate build directories; the absolute interpreter path fixed it. Arrow scalar
+  inspection uses integer timestamp values (no lossy Python datetime conversion).
+- Intended commit: `feat(bindings): bootstrap compiled Rust and Python workspace`.
+- Remaining: M2–M11; the extension currently exposes version metadata only.

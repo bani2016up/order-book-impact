@@ -1,0 +1,29 @@
+[build-system]
+requires = ["maturin==1.9.6"]
+build-backend = "maturin"
+
+[project]
+name = "ofi-pipeline"
+version = "0.1.0"
+requires-python = ">=3.10"
+description = "Streaming Rust LOBSTER OFI engine with a typed Python API"
+
+[project.optional-dependencies]
+test = ["pytest==8.4.2", "pytest-cov==6.3.0", "pyarrow==18.1.0"]
+dev = ["maturin==1.9.6", "ruff==0.14.0", "mypy==1.18.2"]
+
+[tool.maturin]
+manifest-path = "crates/ofi-python/Cargo.toml"
+python-source = "python"
+module-name = "ofi_pipeline._native"
+features = ["extension-module"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.mypy]
+strict = true
+files = ["python/ofi_pipeline"]
