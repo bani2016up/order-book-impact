@@ -17,3 +17,4 @@ pub mod domain;
 pub mod error;
 pub mod ofi;
 pub mod time;
+pub mod trades;

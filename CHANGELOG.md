@@ -12,7 +12,7 @@ the owner-provided attachment; `docs/DATASET_CONTRACT.md` remains normative.
 - [x] M2: checked domain types, sessions, decimal time, configuration and ordering.
 - [x] M3: streaming Parquet/gzip CSV and original quality alignment.
 - [x] M4: gap-aware rank OFI, persistent state and L1 update classification.
-- [ ] M5: independent executions, known-direction signing and conservation.
+- [x] M5: independent executions, known-direction signing and conservation.
 - [ ] M6: right-closed grids, original boundaries, depth and exclusions.
 - [ ] M7: atomic output, provenance/QC, typed errors, Python CLI.
 - [ ] M8: paired raw adapter and pre-execution Quote Test.
@@ -145,3 +145,19 @@ commit hashes are authoritative in Git history, not self-referential log entries
   bucket output is still under implementation.
 - Intended commit: `feat(core): compute checked rank OFI across original quality rows`.
 - Remaining: M5–M11; file-level merge/aggregation/output and Quote Test are pending.
+
+## M5 — independent execution signing
+
+- Added `trades.rs`: known LOBSTER aggressor sign is `-direction`, independent
+  of post-execution quote acceptance. Trade sequence rejects duplicate or
+  reversed original IDs, while tied times remain valid.
+- Checked volume/TI/counts, classified and unclassified volume/counts; unknown
+  signs remain explicit. Failed single-trade arithmetic leaves the accumulator
+  intact. Separate trades input is the only source of execution volume.
+- Checks passed: `cargo fmt --all`, `cargo test -p ofi-core trades:: --offline`
+  (2 tests exercising both types/signs, rejected quotes, duplicate prevention,
+  conservation and accumulation overflows),
+  `cargo clippy -p ofi-core --all-targets --offline -- -D warnings`.
+- Actual input integrity and ingestion are verified; TI/output parity is pending.
+- Intended commit: `feat(core): sign independent executions and conserve volume`.
+- Remaining: M6–M11; Quote Test matching will use the original pre-state adapter.
