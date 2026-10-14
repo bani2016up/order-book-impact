@@ -17,7 +17,7 @@ the owner-provided attachment; `docs/DATASET_CONTRACT.md` remains normative.
 - [x] M7: atomic output, provenance/QC, typed errors, Python CLI.
 - [x] M8: paired raw adapter and pre-execution Quote Test.
 - [x] M9: full real sample integrity/parity and independently rebuilt other widths.
-- [ ] M10: bounded partition concurrency, chunk/thread invariance and benchmarks.
+- [x] M10: bounded partition concurrency, chunk/thread invariance and benchmarks.
 - [ ] M11: isolated wheel, coverage, CI, complete English handoff documentation.
 
 Each completed subtask records files/design decisions, exact focused commands,
@@ -341,3 +341,31 @@ commit hashes are authoritative in Git history, not self-referential log entries
   determinism/performance and final acceptance will validate the new runner next.
 - Intended commit: `perf(core): bound partition workers and assemble deterministic output`.
 - Remaining: M10b measured release performance; M11 coverage/distribution/CI/audit.
+
+## M10b — release measurements and real chunk/thread invariance
+
+- Added POSIX benchmark runner, authored 20,000-event/two-symbol generator,
+  reproduction README and `docs/performance.json` with hardware, versions,
+  formats/compression, cache/timing/RSS scopes and explicit limitations.
+- Release build check passed:
+  `VIRTUAL_ENV="$PWD/.venv" .venv/bin/maturin develop --release --offline`
+  (53.96 seconds compile; excluded from run metrics). Initial measurements
+  overlapped an MSRV compile and were discarded; final fresh-process measurements
+  ran after that build ended. OS cache/other host activity remain uncontrolled.
+- Commands passed: `benchmarks/run.py` under `.venv/bin/python` with real sample
+  and configs threads/chunks 1/4096, 2/65536, 4/1, Quote Test 2/4096, and authored
+  fixture 2/4096. Exact decoded `features.parquet` and `bucket_quality.parquet`
+  equality across real known-direction runs; Quote Test accepted keys/quality
+  match. No synthetic data is labeled real.
+- Recorded M2 Pro/10 cores/16 GiB release real known-direction wall times:
+  5.3354 s (~168k original events/s; 95.59 MiB peak process RSS), 4.5565 s
+  (~197k/s; 155.05 MiB), 48.8275 s (~18k/s; 50.19 MiB) for those configs.
+  Real Quote Test: 5.7227 s, 79.27 MiB; synthetic 20k: 0.1131 s, 63.41 MiB.
+  Whole-process RSS includes Python/native runtime. Actual peak workers 1/2/2;
+  only two real partitions exist, so threads=4 cannot invent more parallel work.
+- Minimum-version check also passed:
+  `CARGO_TARGET_DIR=target/msrv PYO3_PYTHON="$PWD/.venv/bin/python" /Users/daniilparfenov/.cargo/bin/cargo +1.90.0 test --workspace --locked --offline`
+  (21 core units + 3 adapter + 2 pipeline; external ingestion explicitly ignored).
+- Intended commit: `perf: record release sample throughput memory and determinism`.
+- Remaining: M11 comprehensive coverage, clean wheel smoke, CI, English handoff
+  and final requirement audit. Neither implementation nor CI has been pushed.
