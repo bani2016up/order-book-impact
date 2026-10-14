@@ -96,15 +96,19 @@ pub fn decimal_seconds_ns(text: &str) -> Result<(i64, bool)> {
     ))
 }
 
-pub fn validate_local_ns(date: &str, timestamp: i64, time_ns: i64) -> Result<()> {
+fn validate_day_ns(time_ns: i64) -> Result<()> {
     if !(0..86_400 * NS).contains(&time_ns) {
         return Err(Error::new(
             ErrorCode::Malformed,
             "time_ns is outside local day",
         ));
     }
+    Ok(())
+}
+
+fn validate_midnight_ns(date: &str, timestamp: i64, time_ns: i64, midnight: i64) -> Result<()> {
     let expected = checked_i64(
-        i128::from(local_timestamp(date, "00:00:00")?) + i128::from(time_ns),
+        i128::from(midnight) + i128::from(time_ns),
         "local timestamp overflow",
     )?;
     if expected != timestamp {
@@ -114,6 +118,50 @@ pub fn validate_local_ns(date: &str, timestamp: i64, time_ns: i64) -> Result<()>
         ));
     }
     Ok(())
+}
+
+pub fn validate_local_ns(date: &str, timestamp: i64, time_ns: i64) -> Result<()> {
+    validate_day_ns(time_ns)?;
+    validate_midnight_ns(date, timestamp, time_ns, local_timestamp(date, "00:00:00")?)
+}
+
+/// One entry per reader, independent of event count and partition count.
+/// Only calendar metadata is reused; each row still checks its integer time.
+#[derive(Default)]
+pub(crate) struct LocalTimeValidator {
+    midnight: Option<(String, i64)>,
+    quality_date: Option<(NaiveDate, String)>,
+}
+
+impl LocalTimeValidator {
+    pub(crate) fn date_for_timestamp(&mut self, timestamp: i64) -> String {
+        // Derive the local date on every row, including DST transitions. A fixed
+        // 24-hour UTC window would not preserve local-day membership.
+        let date = DateTime::from_timestamp_nanos(timestamp)
+            .with_timezone(&New_York)
+            .date_naive();
+        if let Some((previous, text)) = &self.quality_date
+            && *previous == date
+        {
+            return text.clone();
+        }
+        let text = date.format("%Y-%m-%d").to_string();
+        self.quality_date = Some((date, text.clone()));
+        text
+    }
+
+    pub(crate) fn validate(&mut self, date: &str, timestamp: i64, time_ns: i64) -> Result<()> {
+        validate_day_ns(time_ns)?;
+        let midnight = match &self.midnight {
+            Some((previous, midnight)) if previous == date => *midnight,
+            _ => {
+                let midnight = local_timestamp(date, "00:00:00")?;
+                self.midnight = Some((date.to_owned(), midnight));
+                midnight
+            }
+        };
+        validate_midnight_ns(date, timestamp, time_ns, midnight)
+    }
 }
 
 #[cfg(test)]
@@ -181,5 +229,64 @@ mod tests {
                 .code,
             ErrorCode::Overflow
         );
+    }
+
+    #[test]
+    fn reader_calendar_reuse_preserves_dates_and_all_row_checks() {
+        let mut validator = LocalTimeValidator::default();
+        for date in [
+            "2012-06-21",
+            "2012-01-03",
+            "2012-03-11",
+            "2012-11-04",
+            "2012-06-21",
+            "2262-04-11",
+        ] {
+            let midnight = local_timestamp(date, "00:00:00").unwrap();
+            for ns in [-1, 0, NS, 34_200 * NS, 86_399 * NS, 86_400 * NS] {
+                for timestamp in [midnight.saturating_add(ns), midnight] {
+                    let expected = validate_local_ns(date, timestamp, ns);
+                    let actual = validator.validate(date, timestamp, ns);
+                    match (expected, actual) {
+                        (Ok(()), Ok(())) => {}
+                        (Err(expected), Err(actual)) => {
+                            assert_eq!(actual.code, expected.code);
+                            assert_eq!(actual.message, expected.message);
+                        }
+                        pair => panic!("validation differed: {pair:?}"),
+                    }
+                    assert_eq!(
+                        validator.date_for_timestamp(timestamp),
+                        date_for_timestamp(timestamp)
+                    );
+                }
+            }
+        }
+        for date in ["bad", "2500-01-01", "1677-09-20"] {
+            for ns in [-1, 0] {
+                let expected = validate_local_ns(date, 0, ns).unwrap_err();
+                let actual = validator.validate(date, 0, ns).unwrap_err();
+                assert_eq!(actual.code, expected.code);
+                assert_eq!(actual.message, expected.message);
+            }
+        }
+        for timestamp in [
+            i64::MIN,
+            i64::MAX,
+            0,
+            -1,
+            1,
+            local_timestamp("2012-03-11", "03:00:00").unwrap(),
+            local_timestamp("2012-11-04", "02:00:00").unwrap(),
+        ] {
+            assert_eq!(
+                validator.date_for_timestamp(timestamp),
+                date_for_timestamp(timestamp)
+            );
+            assert_eq!(
+                validator.date_for_timestamp(timestamp),
+                date_for_timestamp(timestamp)
+            );
+        }
     }
 }

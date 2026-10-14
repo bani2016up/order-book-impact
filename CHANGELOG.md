@@ -675,3 +675,23 @@ commit hashes are authoritative in Git history, not self-referential log entries
 Family speedups: {"real-direction": 1.2557329911622168, "authored": 1.2167305691766097, "real-quote": 1.2819172856587175} balanced: 1.2511726503903464
 
 - Decision: retain. Balanced family-weighted speedup 1.251x; all case median times improved. Next: remove repeated calendar parsing/formatting while retaining per-row validation.
+
+## Rust optimization P2 — reuse bounded calendar metadata
+
+- Hypothesis from P0 profiling: repeated date/clock parsing and formatting wastes producer CPU even though the parsed local midnight repeats across adjacent rows. Added one-entry calendar metadata per TableReader: parsed midnight and formatted quality date. Local New York date is still derived per quality row (no fixed 24-hour DST assumption); every row checks local-day range, checked midnight-plus-nanoseconds arithmetic and exact timestamp agreement. Date changes replace the entry; invalid/overflowing dates preserve existing errors. No event/output result caching, sorting or validation removal. Memory state stays constant per reader, independent of rows/partitions; all batch/queue/worker bounds remain unchanged.
+- Added Rust regression coverage for date replacement/return, winter/summer and DST transition dates, repeated dates, invalid dates, nonrepresentable midnight, time range, timestamp mismatch and int64 extrema. Public time functions/signatures and Row enum remain unchanged.
+- Passed `cargo fmt --all`; `PYO3_PYTHON="$PWD/.venv/bin/python" cargo test -p ofi-core --locked --offline` (29 units + 4 adapters + 2 pipeline; external ingestion explicitly ignored pending final explicit run); rebuilt release via P0 command (4.87s excluded); `.venv/bin/python -m pytest -q tests/integration/test_pipeline.py tests/integration/test_parallel.py tests/integration/test_native.py tests/integration/test_quote_test.py` (37 passed). Inspected diff and passed `git diff --check`.
+- Same complete benchmark protocol: `.venv/bin/python benchmarks/results/optimization_measure.py calendar`; `.venv/bin/python benchmarks/results/optimization_verify.py calendar` passed source identity plus all 30 complete outputs exactly, chunk/thread invariance and Quote Test conservation. `calendar/metadata.json` additionally records Rust source SHA256, lockfile SHA256 and working-tree changes; loaded extension hash is captured. These are final-source suite measurements if no further production edits are retained.
+- Comparison below includes baseline and incremental P1 speedups. Normal real-input improvements are clearly beyond noise; incremental tiny-chunk and authored-fixture gains are less certain because ranges overlap. Every final case time range is below its baseline range. All median times improved; no execution regression was observed.
+- RSS remains inconclusive: t1 median is +5.6% vs baseline, t2 -4.4%, tiny +0.7%, Quote Test +1.6%, fixture +0.1%; ranges overlap and t2 has a larger maximum. No memory reduction is claimed. Reviewed allocations/state/buffering: two small one-entry metadata values per reader are added; no larger input/output buffer, batch, queue or worker count. Faster producer/consumer scheduling can change occupancy/allocator peaks, which is an inference rather than a demonstrated cause. Prioritize measured execution gains while retaining the existing operational bounds.
+
+| Case | Median s (min–max; MAD) | Rows/s | Peak MiB (min–max) | Speedup vs baseline / previous |
+| --- | --- | ---: | --- | --- |
+| real-t1-c4096 | 2.487382 (2.413924–2.512182; 0.024800) | 360,776 | 100.11 (94.33–101.06) | 1.610x / 1.201x |
+| real-t2-c65536 | 2.422396 (2.371252–2.460587; 0.029998) | 370,454 | 231.53 (198.98–334.84) | 1.758x / 1.264x |
+| real-t4-c1 | 30.477616 (30.403882–30.970772; 0.073734) | 29,444 | 52.27 (50.25–55.59) | 1.087x / 1.024x |
+| quote-t2-c4096 | 3.162698 (3.118882–3.249435; 0.012279) | 283,741 | 99.83 (91.52–109.59) | 1.378x / 1.075x |
+| fixture-t2-c4096 | 0.079602 (0.072534–0.090688; 0.006802) | 251,250 | 63.89 (59.16–66.91) | 1.388x / 1.140x |
+Family speedups: {"authored": 1.387565515394952, "real-quote": 1.3781811460777311, "real-direction": 1.4545901845478582} balanced: 1.4063718069161835
+
+- Decision: retain. Baseline-to-final balanced family-weighted speedup 1.406x. Remaining: complete workspace/compiled/research/real-width acceptance, explicit Rust real ingestion, isolated final wheel, final profiling and handoff audit.

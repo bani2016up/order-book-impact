@@ -2,7 +2,7 @@
 use crate::{
     domain::{Book, Event, Key, Level, OrderGuard, Quality, Trade, price_units},
     error::{Error, ErrorCode, Result},
-    time::{date_for_timestamp, decimal_seconds_ns, timestamp_from_text, validate_local_ns},
+    time::{LocalTimeValidator, decimal_seconds_ns, timestamp_from_text},
 };
 use arrow_array::{
     Array, BooleanArray, Float64Array, Int64Array, RecordBatch, StringArray,
@@ -44,6 +44,7 @@ pub struct TableReader {
     rows: u64,
     order: OrderGuard,
     levels: usize,
+    local_time: LocalTimeValidator,
 }
 
 pub enum Row<'a> {
@@ -166,14 +167,14 @@ impl Row<'_> {
             }
         }
     }
-    fn key_time(&self, quality: bool) -> Result<(Key, i64)> {
+    fn key_time(&self, quality: bool, local_time: &mut LocalTimeValidator) -> Result<(Key, i64)> {
         let timestamp = self.timestamp()?;
         let date = if quality {
-            date_for_timestamp(timestamp)
+            local_time.date_for_timestamp(timestamp)
         } else {
             self.text("date")?.to_owned()
         };
-        validate_local_ns(&date, timestamp, self.integer("time_ns")?)?;
+        local_time.validate(&date, timestamp, self.integer("time_ns")?)?;
         Ok((
             Key {
                 symbol: self.text("symbol")?.to_owned(),
@@ -331,9 +332,13 @@ impl TableReader {
             rows: 0,
             order: OrderGuard::default(),
             levels,
+            local_time: LocalTimeValidator::default(),
         })
     }
-    fn next<T>(&mut self, parse: impl FnOnce(&Row<'_>) -> Result<T>) -> Result<Option<T>> {
+    fn next<T>(
+        &mut self,
+        parse: impl FnOnce(&Row<'_>, &mut LocalTimeValidator) -> Result<T>,
+    ) -> Result<Option<T>> {
         let row = match &mut self.source {
             Source::Csv { reader, record } => {
                 if !reader.read_record(record).map_err(malformed)? {
@@ -363,7 +368,7 @@ impl TableReader {
             }
         };
         self.rows += 1;
-        parse(&row).map(Some).map_err(|e| {
+        parse(&row, &mut self.local_time).map(Some).map_err(|e| {
             Error::new(
                 e.code,
                 format!("{} row {}: {}", self.path.display(), self.rows, e.message),
@@ -372,8 +377,8 @@ impl TableReader {
     }
     pub fn next_event(&mut self) -> Result<Option<Event>> {
         let levels = self.levels;
-        let event = self.next(|r| {
-            let (key, timestamp) = r.key_time(false)?;
+        let event = self.next(|r, local_time| {
+            let (key, timestamp) = r.key_time(false, local_time)?;
             let mut book = Vec::with_capacity(levels);
             for [bid, ask, bid_size, ask_size] in &BOOK_COLUMNS[..levels] {
                 book.push(Level {
@@ -446,8 +451,8 @@ impl TableReader {
         Ok(event)
     }
     pub fn next_quality(&mut self) -> Result<Option<Quality>> {
-        let q = self.next(|r| {
-            let (key, timestamp) = r.key_time(true)?;
+        let q = self.next(|r, local_time| {
+            let (key, timestamp) = r.key_time(true, local_time)?;
             let accepted = r.boolean("quote_accepted")?;
             let reason = r.text("reject_reason")?.to_owned();
             if !matches!(
@@ -477,8 +482,8 @@ impl TableReader {
         Ok(q)
     }
     pub fn next_trade(&mut self) -> Result<Option<Trade>> {
-        let trade = self.next(|r| {
-            let (key, timestamp) = r.key_time(false)?;
+        let trade = self.next(|r, local_time| {
+            let (key, timestamp) = r.key_time(false, local_time)?;
             let t = Trade {
                 key,
                 timestamp,
