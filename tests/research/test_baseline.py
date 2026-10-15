@@ -34,8 +34,8 @@ def test_known_relationship_and_common_complete_cases():
     data = observations()
     data.loc[0, "trade_imbalance"] = np.nan
     metrics, coefficients = fit_models(data, BaselineConfig())
-    assert metrics["observations"].tolist() == [23, 23, 23]
-    assert metrics["dropped_incomplete_rows"].tolist() == [1, 1, 1]
+    assert metrics["observations"].tolist() == [23, 23, 23, 23]
+    assert metrics["dropped_incomplete_rows"].tolist() == [1, 1, 1, 1]
     combined = coefficients[coefficients["model"] == "ofi_and_ti"].set_index("term")
     assert combined.loc["ofi_l1", "estimate"] == pytest.approx(0.3, abs=0.002)
     assert combined.loc["trade_imbalance", "estimate"] == pytest.approx(0.2, abs=0.002)
@@ -95,9 +95,10 @@ def test_quadratic_model_recovers_known_curvature_and_keeps_input_unchanged():
 def test_f_statistics_match_statsmodels_and_unfitted_windows_stay_empty():
     data = observations()
     metrics, _ = fit_models(data, BaselineConfig())
+    derived = add_signed_squares(data, {"ofi_l1_signed_square"})
     for _, row in metrics.iterrows():
         columns = BaselineConfig().models[row["model"]]
-        design = sm.add_constant(data[columns], has_constant="add")
+        design = sm.add_constant(derived[columns], has_constant="add")
         classical = sm.OLS(data["mid_price_change_ticks"], design).fit()
         robust = sm.OLS(data["mid_price_change_ticks"], design).fit(cov_type="HC0", use_t=False)
         assert row["f_statistic"] == pytest.approx(classical.fvalue)
@@ -132,7 +133,7 @@ def test_model_cli_saves_results_and_does_not_overwrite(tmp_path):
     args = ["--features", str(source), "--config", str(config), "--output-dir", str(output)]
     assert main(args) == 0
     report = json.loads((output / "run.json").read_text())
-    assert report["fitted_windows"] == 3 and report["common_complete_cases"]
+    assert report["fitted_windows"] == 4 and report["common_complete_cases"]
     assert len(report["feature_sha256"]) == 64
     assert set(report["software_versions"]) == {"ofi-pipeline", "numpy", "pandas", "statsmodels"}
     assert pd.read_csv(output / "metrics.csv")["in_sample_r2"].notna().all()

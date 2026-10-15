@@ -13,6 +13,12 @@ import pandas as pd
 import statsmodels.api as sm
 
 from ofi_pipeline.research import load_features
+from research.baseline.tables import (
+    SIGNIFICANCE_LEVEL,
+    paper_tables,
+    summarize_models,
+    summarize_terms,
+)
 
 
 @dataclass(frozen=True)
@@ -25,6 +31,7 @@ class BaselineConfig:
             "ofi_l1": ["ofi_l1"],
             "trade_imbalance": ["trade_imbalance"],
             "ofi_and_ti": ["ofi_l1", "trade_imbalance"],
+            "ofi_quadratic": ["ofi_l1", "ofi_l1_signed_square"],
         }
     )
 
@@ -179,6 +186,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         output.mkdir(parents=True, exist_ok=False)
         metrics.to_csv(output / "metrics.csv", index=False)
         coefficients.to_csv(output / "coefficients.csv", index=False)
+        summarize_models(metrics).to_csv(output / "summary_models.csv", index=False)
+        summarize_terms(coefficients).to_csv(output / "summary_terms.csv", index=False)
+        tables = paper_tables(metrics, coefficients)
+        for name, table in tables.items():
+            table.to_csv(output / f"{name}.csv", index=False)
         source = Path(args.features)
         source = source / "features.parquet" if source.is_dir() else source
         digest = hashlib.sha256()
@@ -190,6 +202,12 @@ def main(argv: Sequence[str] | None = None) -> int:
             "feature_sha256": digest.hexdigest(),
             "config": asdict(config),
             "covariance": "HC0",
+            "significance": {
+                "level": SIGNIFICANCE_LEVEL,
+                "test": "two-sided z-test on HC0 standard errors",
+            },
+            "paper_tables": sorted(tables),
+            "paper_table_f_statistic": "classical homoskedastic overall F",
             "common_complete_cases": True,
             "interpretation": "contemporaneous in-sample explanation; no OOS claim",
             "fitted_windows": int(metrics["status"].eq("ok").sum()),
