@@ -60,6 +60,26 @@
   Hosted jobs were not triggered or claimed successful. Full Python 3.12 real
   tests and coverage/high-load manager paths are the remaining local checks.
 
+## uv migration — wheel-to-editable benchmark bootstrap (2026-10-15)
+
+- An actual build-enabled smoke in pip-free Python 3.13 exposed a wheel-to-editable
+  transition issue: maturin successfully installed the editable .pth, but the
+  already running benchmark parent could not import the new package path.
+  The failed smoke and its build logs remain retained, not overwritten.
+- Refresh installed purelib paths immediately after the untimed build and before
+  snapshot/import. This uses the interpreter's installed metadata rather than a
+  repository import override; workload, native computation and timers are unchanged.
+- Added a regression test that simulates an installer creating an editable .pth
+  after interpreter startup and requires the snapshot import to see that module.
+  All 14 focused bootstrap/runner tests and Ruff passed. The real retry first
+  reinstalled the wheel, verified its native library was in the Python 3.13 venv
+  and pip was absent, then completed an offline uv-backed editable rebuild and
+  four verified 303-row runs (both signings, two chunk/thread cases). Both the
+  lock/pin identities and release-build provenance were recorded.
+- Failed/successful smoke roots: benchmarks/results/uv-migration-smoke-20261015
+  and uv-migration-smoke-fixed-20261015. This is build/workflow validation, not a
+  replacement 1M/10M/20M performance baseline or a speedup claim. No push.
+
 ## High-load benchmark — M3 measured baseline and completion
 
 - Executed the complete default suite on the owner's Mac: exact 1M/10M/20M

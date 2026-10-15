@@ -2,6 +2,7 @@
 
 import copy
 from dataclasses import asdict
+import importlib
 import json
 from pathlib import Path
 import platform
@@ -15,6 +16,39 @@ from benchmarks.high_load_fixture import FixtureSpec, generate
 from ofi_pipeline import PipelineConfig, run_pipeline
 
 ROOT = Path(__file__).resolve().parents[2]
+
+
+def test_build_refreshes_new_editable_paths_before_snapshot(tmp_path, monkeypatch):
+    from benchmarks import high_load
+
+    installed = tmp_path / "installed"
+    installed.mkdir()
+    editable = tmp_path / "editable"
+    editable.mkdir()
+    module = "ofi_bootstrap_probe"
+    (editable / f"{module}.py").write_text("INSTALLED = True\n")
+    monkeypatch.setattr(sys, "path", sys.path.copy())
+    monkeypatch.setattr(sys, "argv", ["high_load", "--root", str(tmp_path / "result")])
+    monkeypatch.setattr(high_load.sysconfig, "get_path", lambda name: str(installed))
+
+    def build(*args, **kwargs):
+        # The installer creates the editable .pth after the interpreter starts.
+        (installed / "ofi_pipeline.pth").write_text(str(editable) + "\n")
+
+    class SnapshotVerified(RuntimeError):
+        pass
+
+    def snapshot():
+        assert importlib.import_module(module).INSTALLED
+        raise SnapshotVerified("editable path loaded before snapshot")
+
+    monkeypatch.setattr(high_load.subprocess, "run", build)
+    monkeypatch.setattr(high_load, "snapshot", snapshot)
+    try:
+        with pytest.raises(SnapshotVerified):
+            high_load.main()
+    finally:
+        sys.modules.pop(module, None)
 
 
 def test_empty_accepted_features_remain_valid_verification_evidence(tmp_path):

@@ -9,10 +9,12 @@ import math
 import os
 from pathlib import Path
 import platform
+import site
 import shutil
 import statistics
 import subprocess
 import sys
+import sysconfig
 import time
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -339,6 +341,9 @@ def main(argv=None):
                 subprocess.run(command, cwd=ROOT, env=environment, stdout=log,
                                stderr=subprocess.STDOUT, check=True)
             summary["build"] = {"profile": "release", "command": command, "log": str(root / "build.log")}
+            # A wheel-to-editable switch creates a .pth after this process started.
+            # Refresh installed paths before importing the rebuilt extension.
+            site.addsitedir(sysconfig.get_path("purelib"))
         else:
             summary["build"] = {"profile": "unverified-installed-extension", "command": None}
         before = snapshot()
