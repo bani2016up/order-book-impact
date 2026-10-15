@@ -44,6 +44,22 @@
 - Full Python 3.12/3.13 real acceptance, compiler-free bootstrap, actual benchmark
   build smoke, coverage-manager path and final CI/docs checks follow separately.
 
+## uv migration — CI and Python 3.13 wheel validation (2026-10-15)
+
+- Migrated both CI jobs to setup-uv with pinned uv 0.9.13, locked all-extras sync,
+  uv wheel builds and actual wheel installation before compiled tests. The matrix
+  now covers Python 3.12/3.13 on Linux/macOS/Windows; PyO3 uses the explicit project
+  interpreter. Tests use python -m pytest and --no-sync to preserve the artifact.
+- CI YAML parsed successfully and its 3.12/3.13 matrix was checked locally.
+  The cp312-abi3 wheel passed all **121 tests on Python 3.13.15 without skips** in a
+  fresh uv environment where pip is absent. This includes five real-data widths,
+  exact integer/depth/quality reconciliation and accepted row counts
+  45966/8985/4390/1382/650; max USD error 2.182785e-13 remains below tolerance.
+- Actual wheel bootstrap also passed with cargo/rustc absent from its PATH;
+  no project build occurred. Isolated Python 3.12 wheel smoke passed separately.
+  Hosted jobs were not triggered or claimed successful. Full Python 3.12 real
+  tests and coverage/high-load manager paths are the remaining local checks.
+
 ## High-load benchmark — M3 measured baseline and completion
 
 - Executed the complete default suite on the owner's Mac: exact 1M/10M/20M

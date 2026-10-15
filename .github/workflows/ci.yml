@@ -10,30 +10,35 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python: ['3.10', '3.12']
+        python: ['3.12', '3.13']
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@v9
         with:
+          version: '0.9.13'
           python-version: ${{ matrix.python }}
+          enable-cache: true
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: '1.90.0'
           components: rustfmt, clippy
-      - name: Install pinned build and inspection tools
-        run: python -m pip install maturin==1.9.6 pytest==8.4.2 pytest-cov==6.3.0 pyarrow==18.1.0 ruff==0.14.0 mypy==1.18.2
+      - name: Sync locked tools and research dependencies
+        run: uv sync --locked --all-extras --no-install-project
+      - name: Select the project interpreter for PyO3
+        shell: bash
+        run: echo "PYO3_PYTHON=$(uv run --no-sync python -c 'import sys; print(sys.executable)')" >> "$GITHUB_ENV"
       - run: cargo fmt --all -- --check
       - run: cargo clippy --workspace --all-targets --locked -- -D warnings
       - run: cargo test --workspace --locked
-      - run: maturin build --release --locked --out dist
+      - run: uv build --wheel --out-dir dist
       - name: Install current built wheel for the full compiled suite
-        run: python -c "import glob,subprocess,sys; subprocess.check_call([sys.executable,'-m','pip','install','--force-reinstall',glob.glob('dist/*.whl')[0]+'[research]'])"
-      - run: python -m pytest -q tests/python tests/integration tests/research tests/benchmarks
-      - run: ruff check python research tests benchmarks scripts
-      - run: mypy
+        run: uv run --no-sync python -c "import glob,subprocess,sys; subprocess.check_call(['uv','pip','install','--python',sys.executable,'--reinstall','--no-deps',glob.glob('dist/*.whl')[0]])"
+      - run: uv run --no-sync python -m pytest -q tests/python tests/integration tests/research tests/benchmarks
+      - run: uv run --no-sync ruff check python research tests benchmarks scripts
+      - run: uv run --no-sync mypy
       - name: Fresh wheel environment outside checkout
-        run: python scripts/wheel_check.py "dist/*.whl"
+        run: uv run --no-sync python scripts/wheel_check.py "dist/*.whl"
       - uses: actions/upload-artifact@v4
         with:
           name: wheel-${{ matrix.os }}-${{ matrix.python }}
@@ -43,20 +48,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@v9
         with:
+          version: '0.9.13'
           python-version: '3.12'
+          enable-cache: true
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: '1.90.0'
           components: llvm-tools-preview
-      - name: Create isolated coverage environment
-        run: |
-          python -m venv .venv
-          .venv/bin/python -m pip install maturin==1.9.6 pytest==8.4.2 pytest-cov==6.3.0 pyarrow==18.1.0
-          .venv/bin/python -m pip install '.[research]'
+      - name: Sync locked coverage environment
+        run: uv sync --locked --all-extras
       - name: Measure core, actual native library and Python separately
-        run: .venv/bin/python scripts/coverage.py
+        run: uv run --no-sync python scripts/coverage.py
       - uses: actions/upload-artifact@v4
         with:
           name: coverage-evidence
