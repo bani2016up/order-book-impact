@@ -1,5 +1,26 @@
 # Implementation work log
 
+## Final dataset publication — 2026-10-15
+
+- The owner explicitly authorized publication to this repository. Preserve all
+  source history and use GitHub Release assets for the real data, keeping large
+  archives and generated features out of Git history.
+- Added `docs/FINAL_DATASET.md` and a README download section for the ready model
+  bundle and complete dataset. Documented the chronological splits, unknown TI,
+  sparse five-level coverage, source provenance and current engine requirement.
+- Updated the delivered reproduction instructions to use the already integrated
+  hidden-side support rather than reapplying the compatibility patch.
+- Dataset checks: 7,297,682 clean events, 363,815 executions and 111,456 accepted
+  10-second features; 234,000 interval masks and 564 scalar calculations checked.
+  Independent reconstruction checked 5,091 sampled states from a complete day.
+  Model-loader/gap-safe-lag smoke covered all delivered 10-second rows.
+- Both archive packages passed full ZIP CRC and per-member SHA-256 verification
+  after the documentation update. Publication changes no numerical data or
+  production code; existing compiled-engine acceptance is recorded below.
+- Local documentation checks: download paths, split totals, nullable TI counts,
+  source/release links, and `git diff --check`. Release assets include external
+  archive checksums as well as the internal file checksums.
+
 ## Public ITCH hidden-side support plan — 2026-10-15
 
 - Prepare a free multi-session NASDAQ BX dataset outside this source checkout.

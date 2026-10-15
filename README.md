@@ -46,9 +46,16 @@ helpers belong in `ofi_pipeline.research`; do not duplicate event-level feature
 computation in notebooks. Generated artifacts, real data and environments stay
 out of Git. Standard build/cache directories remain local and ignored.
 
-Work from the checkout containing the reviewed research-layer commits. Current
-changes are local; the initial GitHub README alone does not contain this work.
-Do not push until the owner authorizes it.
+## Final dataset
+
+[Download the final dataset](https://github.com/bani2016up/order-book-impact/releases/tag/dataset-2026-10-15):
+10 stocks, 10 separate NASDAQ BX trading dates, 7,297,682 cleaned events and
+111,456 accepted 10-second feature rows. Use `order_book_final_models.zip`
+(about 19 MB) for Fedya's and Timur's models; the full archive (about 791 MB)
+also contains cleaned events, trades, reconstructed raw inputs and all five
+feature widths. See [the dataset guide](docs/FINAL_DATASET.md) for download
+commands, chronological splits, checksums and coverage limitations. Data stays
+in release assets rather than Git history.
 
 ## Quick start
 
