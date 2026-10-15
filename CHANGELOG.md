@@ -1,5 +1,36 @@
 # Implementation work log
 
+## Public ITCH hidden-side support plan — 2026-10-15
+
+- Prepare a free multi-session NASDAQ BX dataset outside this source checkout.
+- Preserve unknown hidden-execution passive sides as zero rather than inventing
+  a sign. Extend input validation only for type-5 zero-side rows; require Quote
+  Test for those trades and reject supplied signed-volume evidence.
+- Verify the extension with focused Rust/native tests, rebuild the actual PyO3
+  engine, and run the self-contained suite before a local explicit-path commit.
+- Keep all existing signed LOBSTER semantics and output schemas unchanged.
+
+### Completed evidence
+
+- Allowed zero passive side only for type-5 hidden executions. Unknown-side
+  signed-volume evidence and known-direction execution mode fail explicitly.
+  Quote Test preserves total volume and existing nullable complete-TI output.
+- Native fixture covers accepted and rejected post-quotes, unknown-side hidden
+  executions, inside-spread incompleteness, unsafe known-side mode, and supplied
+  fabricated sign evidence. Documentation is in `docs/ITCH_INPUT.md`.
+- Rebuilt the actual release PyO3 extension with locked dependencies. Focused
+  Quote Test integration: 12 passed. Rust core: 34 unit + 6 adapter + 2 pipeline
+  tests passed; external-sample Rust test remains explicitly ignored by default.
+- Full Python/native/research suite: 130 passed, 4 optional rebuild checks skipped.
+  Then explicitly ran original delivered-data acceptance with
+  OFI_SAMPLE_DIR and OFI_REBUILD_REFERENCE=1: all five widths passed (5 tests).
+  Ruff, strict mypy (7 files), and diff whitespace checks passed.
+- On reconstructed BX pilot inputs the reviewed engine computed 23,992 accepted
+  10-second intervals for 20 symbol/date sessions. This pilot count is not the
+  final dataset size. No source data or generated outputs are committed.
+- Local commit only; no push, PR, package upload, or remote modification.
+
+
 ## Merge resolution — uv migration and baseline tables (2026-10-15)
 
 - Resolved the single CHANGELOG conflict by preserving both complete additions:

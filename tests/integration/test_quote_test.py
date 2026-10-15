@@ -96,6 +96,61 @@ def test_zip_discovery_and_missing_pair(bundle, tmp_path):
         run_pipeline(bundle, tmp_path / "missing", c)
 
 
+def test_public_itch_unknown_hidden_side_uses_quote_test(bundle, tmp_path):
+    import pyarrow as pa
+    from ofi_pipeline import ConfigurationError
+
+    m, b = raw_fixture(bundle)
+    # ID 9 is accepted and inside its pre-spread. ID 5 has a rejected post-quote.
+    m = m.replace(",5,0,9,10100,1", ",5,0,9,10100,0")
+    m = m.replace(",4,0,3,10100,1", ",5,0,3,10100,0")
+    for filename in ["events_clean", "trades_clean"]:
+        path = bundle / "data" / f"{filename}.parquet"
+        table = pq.read_table(path)
+        rows = table.drop(["timestamp"]).to_pylist()
+        for row in rows:
+            if row["event_id"] in [5, 9]:
+                row["event_type"], row["direction"] = 5, 0
+            row.pop("aggressor_side", None)
+            row.pop("signed_volume", None)
+        revised = pa.Table.from_pylist(rows)
+        revised = revised.add_column(3, table.schema.field("timestamp"), table["timestamp"])
+        pq.write_table(revised, path)
+    message, book = tmp_path / "m.csv", tmp_path / "b.csv"
+    message.write_text(m)
+    book.write_text(b)
+    inputs = InputPaths(
+        bundle / "data/events_clean.parquet",
+        bundle / "data/trades_clean.parquet",
+        bundle / "reports/event_quality.parquet",
+        (RawInput("TEST", "2012-06-21", message=message, orderbook=book),),
+    )
+    result = run_pipeline(
+        inputs=inputs, output_dir=tmp_path / "quoted",
+        config=PipelineConfig(trade_signing="quote_test", session_close="09:31:00"),
+    )
+    assert result.partitions[0].signing.volume == 19
+    assert result.partitions[0].signing.unclassified_volume == 3
+    assert records(result.features_path)[-1]["trade_imbalance"] is None
+    with pytest.raises(ConfigurationError, match="requires quote_test"):
+        run_pipeline(
+            inputs=inputs, output_dir=tmp_path / "unsafe-known",
+            config=PipelineConfig(session_close="09:31:00"),
+        )
+    from ofi_pipeline import PipelineError
+
+    trades = pq.read_table(inputs.trades)
+    trades = trades.append_column(
+        "aggressor_side", pa.array([-v for v in trades["direction"].to_pylist()])
+    )
+    pq.write_table(trades, inputs.trades)
+    with pytest.raises(PipelineError, match="unknown passive side cannot supply"):
+        run_pipeline(
+            inputs=inputs, output_dir=tmp_path / "fabricated-sign",
+            config=PipelineConfig(trade_signing="quote_test", session_close="09:31:00"),
+        )
+
+
 @pytest.mark.parametrize(
     "case",
     ["invalid_post", "different_post", "invalid_integer", "unequal_fields", "bad_zip", "empty_zip"],

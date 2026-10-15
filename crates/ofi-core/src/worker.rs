@@ -152,6 +152,12 @@ impl Worker {
                             let sign = if let Some((row, pre)) = &raw_row {
                                 quote_test(t, row, pre.as_ref())?
                             } else {
+                                if known == 0 {
+                                    return Err(Error::new(
+                                        ErrorCode::Config,
+                                        "hidden execution with unknown passive side requires quote_test signing",
+                                    ));
+                                }
                                 Some(known)
                             };
                             report.signing.add(t, sign).map_err(|error| {

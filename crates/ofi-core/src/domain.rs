@@ -109,7 +109,8 @@ pub struct Trade {
 impl Trade {
     pub fn validate(&self) -> Result<()> {
         if ![4, 5].contains(&self.event_type)
-            || ![-1, 1].contains(&self.direction)
+            || (![-1, 1].contains(&self.direction)
+                && !(self.event_type == 5 && self.direction == 0))
             || self.size <= 0
             || self.price <= 0
         {
@@ -296,6 +297,13 @@ mod tests {
             quote_accepted: false,
         };
         t.validate().unwrap();
+        Trade {
+            event_type: 5,
+            direction: 0,
+            ..t.clone()
+        }
+        .validate()
+        .unwrap();
         for bad in [
             Trade {
                 size: 0,

@@ -517,7 +517,10 @@ impl TableReader {
             let event_size = r.integer(Column::EventSize)?;
             let event_price = r.price(Column::EventPrice)?;
             let direction = r.integer(Column::Direction)?;
-            if !(1..=5).contains(&event_type) || event_size <= 0 || ![-1, 1].contains(&direction) {
+            if !(1..=5).contains(&event_type)
+                || event_size <= 0
+                || (![-1, 1].contains(&direction) && !(event_type == 5 && direction == 0))
+            {
                 return Err(malformed(format!("invalid accepted message {key:?}")));
             }
             if r.has(Column::EventPriceRaw) && r.integer(Column::EventPriceRaw)? != event_price {
@@ -598,6 +601,11 @@ impl TableReader {
                 quote_accepted: r.boolean(Column::QuoteAccepted)?,
             };
             t.validate()?;
+            if t.direction == 0
+                && (r.has(Column::AggressorSide) || r.has(Column::SignedVolume))
+            {
+                return Err(malformed("unknown passive side cannot supply aggressor/signed-volume evidence"));
+            }
             if (r.has(Column::AggressorSide) && r.integer(Column::AggressorSide)? != -t.direction)
                 || (r.has(Column::SignedVolume)
                     && r.integer(Column::SignedVolume)? != t.size * -t.direction)
