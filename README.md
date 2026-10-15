@@ -20,7 +20,7 @@ research/
   notebooks/                   Exploratory notebooks
 configs/baseline.json          Reproducible model settings
 scripts/
-  setup.py                     Create/reuse .venv; install/build the environment
+  setup.py                     Sync uv.lock; build Rust or install a current wheel
   prepare_features.py          Compute reusable features once in Rust
   wheel_check.py               Verify a built wheel outside the checkout
   coverage.py                  Measure implementation-layer coverage
@@ -35,6 +35,8 @@ outputs/features/<name>/       Rust feature datasets and QC
 outputs/baseline/<run>/        Baseline metrics, coefficients and figures
 outputs/extensions/<run>/      Extension models, metrics and figures
 dist/, target/                 Wheels/build artifacts, ignored by Git
+pyproject.toml, uv.lock         Python dependency declarations and locked resolution
+.python-version                Default Python 3.12 interpreter
 ```
 
 Danya maintains the Rust engine and pipeline API. Fedya and Timur work in Python
@@ -49,37 +51,52 @@ Do not push until the owner authorizes it.
 
 ## Quick start
 
-Run commands from the repository root. Source builds need Python >=3.10 and
-Rust >=1.90. Setup creates/reuses `.venv`, installs research/dev/test dependencies,
-builds Rust/PyO3 in release mode with the lockfile and checks the imports.
+Run commands from the repository root. Use **Python >=3.12**, **uv >=0.9.13** and
+Rust >=1.90 for source builds. Install [uv](https://docs.astral.sh/uv/getting-started/installation/)
+first. uv creates/reuses `.venv`, installs the locked research/dev/test dependencies
+and builds the editable Rust/PyO3 package in release mode with Cargo.lock enforced.
+The default interpreter is Python 3.12; Python 3.13 is also in the CI matrix.
 
 ### 1. Install
 
-macOS/Linux:
+macOS/Linux and Windows PowerShell use the same installation command:
 
 ```sh
-python3 scripts/setup.py
-source .venv/bin/activate
+uv sync --locked --all-extras
+uv run --no-sync python -c "from ofi_pipeline import version; print(version())"
 ```
 
-Windows PowerShell:
+Run commands with `uv run --no-sync` to use the already synced environment.
+The existing examples also work after activation:
 
-```powershell
-py scripts/setup.py
-.venv\Scripts\Activate.ps1
+```sh
+source .venv/bin/activate          # macOS/Linux
+# .venv\Scripts\Activate.ps1     # Windows PowerShell
 ```
 
 With a current compatible wheel, no Rust compiler is needed:
 
 ```sh
-python3 scripts/setup.py --wheel /path/to/current-compatible.whl
-source .venv/bin/activate
+uv run --no-project --python 3.12 python scripts/setup.py --wheel /path/to/current-compatible.whl
 ```
 
-Use `py` and Windows activation on Windows. Wheels are OS/CPU-specific; the
+The wheel setup syncs locked dependencies without building the project, then
+installs the supplied wheel with uv. Keep `--no-project` in that bootstrap command
+so uv does not attempt a source build before the script can select the wheel.
+Wheels are OS/CPU-specific; the
 macOS ARM64 wheel is not a Windows/Linux wheel. A current wheel must contain
 the `research` extra and shared helper. Model entry points/notebooks come from
 this repository; the shared helper comes from the installed package.
+
+`uv sync` without extras installs only the production package, which has no
+Python runtime dependencies. Use `--all-extras` for this shared research workspace.
+Use `uv run --no-sync` after syncing all extras: an implicit sync without extras
+can remove optional research/test packages or replace a wheel installation with
+an editable source build. After Rust changes, `uv sync --locked --all-extras`
+detects Rust-source cache keys and rebuilds the extension. Review dependency
+updates through `uv lock`, commit both pyproject.toml and uv.lock, and use
+`uv lock --check` to verify consistency. Use `uv add --optional research NAME`
+for model dependencies and `uv add --optional dev NAME` for developer tools.
 
 ### 2. Locate the data
 
@@ -205,10 +222,11 @@ no Rust rebuild; a notebook kernel may need restarting after imported code edits
 ## Checks and builds
 
 ```sh
-python -m pytest -q tests/research
-python -m pytest -q tests/python tests/integration
+uv run --no-sync python -m pytest -q tests/research
+uv run --no-sync python -m pytest -q tests/python tests/integration tests/benchmarks
 cargo test --workspace --locked
-maturin build --release --locked --out dist
+uv build --wheel --out-dir dist/uv-py312
+uv run --no-sync python scripts/wheel_check.py 'dist/uv-py312/*.whl'
 ```
 
 Use focused tests for your change, then broader tests when cross-layer behavior

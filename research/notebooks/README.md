@@ -1,7 +1,9 @@
 # Exploratory notebooks
 
 Store English-named notebooks here. Install the research environment first;
-Jupyter itself is optional (`python -m pip install jupyterlab`).
+Jupyter itself is optional (`uv add --optional research jupyterlab`, then
+`uv sync --locked --all-extras` and `uv run --no-sync jupyter lab`). Commit the
+reviewed pyproject.toml and uv.lock change when sharing that dependency.
 
 In a notebook, shared helpers are imported from the installed package rather
 than from a repository-relative import hack:

@@ -1,5 +1,11 @@
 # Verified low-residency input benchmark
 
+The recorded 2026-10-14 baselines predate the uv/Python >=3.12 packaging migration.
+For the current checkout, sync with `uv sync --locked --all-extras`, record a new
+full warm reference, then use a new cold result root with that reference. Archived
+source/native identities are intentionally incompatible; keep comparison guards
+strict. The cache-state protocol and historical measurements below are unchanged.
+
 `scripts/benchmark_cold.py` adds a separate macOS protocol around the unchanged
 `benchmarks.high_load_worker` and `benchmarks.high_load.measure` APIs. Existing
 normal benchmark sources and baselines, including ignored Python files recursively

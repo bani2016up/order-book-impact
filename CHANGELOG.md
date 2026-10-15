@@ -80,6 +80,45 @@
   and uv-migration-smoke-fixed-20261015. This is build/workflow validation, not a
   replacement 1M/10M/20M performance baseline or a speedup claim. No push.
 
+## uv migration — final acceptance and documentation (2026-10-15)
+
+- Final complete suites passed **122 tests on Python 3.12.0 and 122 on Python
+  3.13.15, no skips**, including the editable-path regression and all five real
+  aggregation widths. Both versions retain exact keys, integer/depth/quality
+  values and 45966/8985/4390/1382/650 accepted rows; maximum USD/tick errors remain
+  2.182785e-13 / 2.182787e-11 under existing tolerances. Final logs/reconciliation
+  identities are recorded in ignored outputs/features/uv-migration-20261015/validation.json.
+- One concurrent final 3.13 run had 121 passes and one strict cold cache-gate
+  rejection: all input pages were resident in a child after parent preparation.
+  Its logs/cache state are retained. The complete serial 3.13 repeat passed all
+  122 with unchanged gates; no retry logic, skipped test or relaxed cache claim
+  was introduced. Parent preparation does not guarantee later cache residency.
+- Final checks: 42 Rust workspace tests, explicit real ingestion (one), Rust
+  1.90 workspace (42), formatting, warnings-denied Clippy, Ruff/mypy on both
+  Pythons, uv lock --check, dependency integrity for both environments, CI YAML,
+  source bootstrap, compiler-free wheel bootstrap, isolated native wheel smoke
+  and four-case build-enabled benchmark smoke all passed.
+- Actual coverage runner completed with maturin develop --locked --uv. Measured
+  Rust core 1830/1849 lines (98.9724%), native binding 42/42 (100%), Python 253/260
+  statements and 69/76 branches (95.8333% combined). Its 98 focused Python tests
+  passed. Raw instrumented evidence stays in target/coverage-report; historical
+  committed coverage reports were not rewritten as current measurements.
+- Restored the main environment to an editable optimized release after coverage;
+  its native SHA-256 matches the built cp312-abi3 wheel:
+  cec453d9ecaf0c5a95871956e83fd714f866ce0920696d627e6a0cbc4e7fcce3.
+  Wheel SHA-256: 68e9de1f33dfca079bd54a7baefd77da30e567daf1d79609bab2c068ab2da618.
+  Git comparison confirms Rust core, Cargo.lock and production Python API source
+  are unchanged from pre-migration 4e2217c. No performance remeasurement claim.
+- Updated README, usage/tests/notebook setup and benchmark build instructions.
+  Documented --all-extras/--no-sync, dependency updates, Rust rebuild cache keys,
+  compiler-free bootstrap and new wheel output folder. Historical handoff and
+  warm/cold evidence are marked with current setup links and require a fresh
+  performance baseline after packaging/harness identity changes.
+- Source/test changes are in 48ccf2c, CI in 19a1eac, benchmark transition fix in
+  d988725. This final local documentation commit completes the migration. No
+  push, hosted CI trigger, PR, release/package upload, remote change, history
+  rewrite or enclosing-repository mutation was performed. Owner reviews/pushes.
+
 ## High-load benchmark — M3 measured baseline and completion
 
 - Executed the complete default suite on the owner's Mac: exact 1M/10M/20M

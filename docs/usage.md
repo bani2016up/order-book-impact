@@ -6,15 +6,17 @@ Shared model data helpers are installed as `ofi_pipeline.research` with the opti
 `research` dependency extra. Model entry points live in `research/baseline/` and
 `research/extensions/` in the source checkout.
 
-Supported: Python >=3.10, Rust >=1.90 for source builds. The extension uses the
-stable Python ABI. A compatible prebuilt wheel needs no Rust installation.
+Supported: Python >=3.12, uv >=0.9.13, Rust >=1.90 for source builds. The extension
+uses the stable Python ABI with a Python 3.12 minimum (`cp312-abi3`). A compatible
+prebuilt wheel needs no Rust installation.
 Production dependencies are compiled into the native library; Python does not
 need PyArrow or pandas to compute features.
 
-For development, create a Python environment, install maturin, then:
+For development, sync the checked-in uv.lock from the repository root:
 
 ```sh
-VIRTUAL_ENV="$PWD/.venv" .venv/bin/maturin develop --locked
+uv sync --locked --all-extras
+uv run --no-sync python -c "from ofi_pipeline import version; print(version())"
 ```
 
 ```python
@@ -118,11 +120,11 @@ repairs or fills unavailable evidence.
 To install a compatible local wheel without a compiler:
 
 ```sh
-python -m pip install /path/to/ofi_pipeline-0.1.0-compatible-platform.whl
-ofi-pipeline --sample-dir /path/to/order_book_sample --output-dir /new/result \
+uv run --no-project --python 3.12 python scripts/setup.py --wheel /path/to/ofi_pipeline-0.1.0-compatible-platform.whl
+uv run --no-sync ofi-pipeline --sample-dir /path/to/order_book_sample --output-dir /new/result \
   --bucket-seconds 10 --levels 5 --threads 2 --chunk-rows 65536
 ```
 
 Use the actual platform-specific filename from the release build. Local testing
-covers macOS arm64/Python 3.12; the committed CI matrix builds Linux/macOS/Windows
-on Python 3.10/3.12 after the owner pushes. Those hosted builds are unrun here.
+covers macOS arm64/Python 3.12 and 3.13; the committed CI matrix builds Linux/macOS/Windows
+on Python 3.12/3.13 after the owner pushes. Those hosted builds are unrun here.

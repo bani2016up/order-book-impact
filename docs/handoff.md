@@ -1,5 +1,9 @@
 # Implementation handoff — 2026-10-14
 
+Historical handoff: its commands, Python 3.10 ABI wheel and platform matrix describe
+the original delivery. Current installations require Python >=3.12 and uv;
+follow the [current README](../README.md) and [installation guide](usage.md).
+
 All required local implementation milestones M0–M11 are complete. The pure Rust
 engine owns streaming ingestion, validation, original-event sequencing, checked
 L1–L5 rank OFI, independent execution signing, original-boundary right-closed

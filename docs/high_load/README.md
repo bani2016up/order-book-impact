@@ -1,5 +1,10 @@
 # High-load baseline · 1M / 10M / 20M original events
 
+Historical evidence: the 2026-10-15 uv/Python >=3.12 packaging migration changed
+build/source identities. Current runs require a fresh baseline; do not relax
+comparison guards to compare this archived reference with the migrated harness.
+See [current setup](../../README.md) and [checks](../testing.md).
+
 Measured on 2026-10-14 using the release native extension and benchmark source
 commit `ecdaa97`. This is the baseline for a later Rust
 optimization task; no production Rust code or public interfaces changed here.

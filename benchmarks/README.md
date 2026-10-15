@@ -10,7 +10,7 @@ measurements. Run each command in a fresh Python process with no simultaneous
 project compilation. Hardware and cache assumptions are in `docs/performance.json`.
 
 ```sh
-VIRTUAL_ENV="$PWD/.venv" .venv/bin/maturin develop --release --locked
+uv sync --locked --all-extras
 .venv/bin/python benchmarks/run.py --sample-dir /path/to/order_book_sample \
   --output-dir /new/results --threads 2 --chunk-rows 65536 --label real-delivered
 .venv/bin/python benchmarks/make_fixture.py /new/authored-fixture --rows-per-symbol 10000

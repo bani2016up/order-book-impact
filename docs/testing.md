@@ -1,19 +1,20 @@
 # Reproducible checks
 
-Run from the repository with a Python 3.10+ environment. `python3 scripts/setup.py`
-installs the `test`, `dev` and `research` extras and builds the native package.
+Run from the repository with Python >=3.12 and uv >=0.9.13. `uv sync --locked --all-extras`
+installs the locked `test`, `dev`, `real-test` and `research` extras and builds the
+native package in release mode. `uv lock --check` verifies lock consistency.
 Production event computation has no Python data-library dependencies; the optional
 research layer uses pandas/statsmodels. Build a fresh extension whenever native
-contracts change. Run `python -m pytest -q tests/research` for research changes.
+contracts change. Run `uv run --no-sync python -m pytest -q tests/research` for research changes.
 
 ```sh
 PYO3_PYTHON="$PWD/.venv/bin/python" cargo test --workspace --locked
 cargo fmt --all -- --check
 cargo clippy --workspace --all-targets --locked -- -D warnings
-VIRTUAL_ENV="$PWD/.venv" .venv/bin/maturin develop --locked
-.venv/bin/python -m pytest -q tests/python tests/integration
-.venv/bin/ruff check python research tests benchmarks scripts
-.venv/bin/mypy
+uv sync --locked --all-extras
+uv run --no-sync python -m pytest -q tests/python tests/integration tests/research tests/benchmarks
+uv run --no-sync ruff check python research tests benchmarks scripts
+uv run --no-sync mypy
 ```
 
 Fixtures are authored and synthetic; their provenance and independent numerical
@@ -32,7 +33,7 @@ OFI_SAMPLE_DIR=/path/to/order_book_sample \
   cargo test -p ofi-core --test sample_ingestion -- --ignored
 ```
 
-Install `real-test` extras for the rebuilt references. The sample fixture verifies
+The all-extras sync includes `real-test` for rebuilt references. The sample fixture verifies
 all delivery hashes, archive source hashes/sizes, actual row counts/types/nulls
 before acceptance. Production recomputation precedes reading feature/mask oracles.
 Reference preparation is imported in tests only, never production. The inspected
@@ -53,9 +54,9 @@ Measured per-layer coverage and exact uncovered-path limitations are in
 
 ```sh
 rustup toolchain install 1.90.0 --profile minimal --component llvm-tools-preview
-.venv/bin/python scripts/coverage.py
-.venv/bin/maturin build --release --locked --out dist
-.venv/bin/python scripts/wheel_check.py 'dist/*.whl'
+uv run --no-sync python scripts/coverage.py
+uv build --wheel --out-dir dist/uv-py312
+uv run --no-sync python scripts/wheel_check.py 'dist/uv-py312/*.whl'
 ```
 
 The coverage runner builds unit executables and an instrumented shared library
@@ -69,14 +70,24 @@ coverage is never substituted for native coverage. Type stubs/markers and Rust
 constants have no executable lines; mypy and wheel contents verify them instead.
 
 The wheel checker creates a fresh environment and working directory outside the
-checkout. It installs the local wheel plus inspection-only PyArrow, asserts the
+checkout. It syncs locked research/inspection dependencies without building the
+project, installs the local wheel with `uv pip --no-deps`, and asserts the
 loaded native extension belongs to that environment, generates an authored CSV
 fixture, invokes API/CLI, reads native Parquet and checks hand-calculated OFI,
 TI/volume/depth, quality, manifest, error mapping, and bundled stubs/type markers.
 It never builds Rust in that fresh environment. A compatible wheel's production
 API does not require Rust or PyArrow on coworkers' computers.
 
-CI defines Linux/macOS/Windows Python 3.10/3.12 wheel/import matrices, Rust 1.90,
+CI uses uv 0.9.13 and the committed lock for Linux/macOS/Windows Python 3.12/3.13
+wheel/import matrices, Rust 1.90,
 formatting, Clippy, Python tests/type/lint checks, an isolated wheel check, and a
 separate instrumented Linux coverage job. CI is committed for the owner to run
 after pushing; no hosted run has been triggered or claimed successful locally.
+
+`--no-sync` is intentional: it preserves all extras and the exact installed
+native artifact, especially after installing a wheel or instrumented coverage
+build. Re-sync explicitly when changing dependencies or Rust sources. Coverage
+and high-load rebuilds use `maturin develop --uv` so fresh uv environments need no
+pip installation. Packaging/benchmark build-source changes invalidate archived
+performance comparison identities; establish a new baseline rather than relaxing
+comparison guards.

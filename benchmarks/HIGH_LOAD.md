@@ -34,7 +34,7 @@ one warmup and three measured fresh processes per case:
 ```
 
 Use a new result root for every invocation. Existing outputs are never replaced.
-The suite builds/installs with `maturin develop --release --locked` before fixture
+The suite builds/installs with `maturin develop --release --locked --uv` before fixture
 generation and timing. Add `--offline` when dependencies are already cached.
 `--no-build` is available for an installed wheel or smoke tests, but its build
 profile is recorded as **unverified**, not assumed to be release.
