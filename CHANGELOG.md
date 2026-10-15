@@ -1,5 +1,49 @@
 # Implementation work log
 
+## uv and Python 3.12 migration plan — 2026-10-15
+
+- Owner requested uv as the Python package/environment manager and Python >=3.12.
+  Preserve production interfaces, Rust algorithms and all existing local commits.
+- Add a checked-in universal uv.lock and default Python pin; retain the existing
+  optional dependency extras. Build the native extension with maturin through uv,
+  in release mode with Cargo.lock enforced, including Rust-source cache keys.
+- Migrate source/wheel setup, isolated wheel checks, CI, coverage/benchmark build
+  bootstrapping and current documentation. Raise the PyO3 ABI floor consistently.
+- Validate source and compiler-free wheel setup, bootstrap failure paths, lock
+  consistency, full Rust/Python/real-sample tests, Python 3.13 compatibility,
+  lint/types, release wheel and isolated compiled smoke. Create small local
+  commits after checks; no push. Historical benchmark evidence stays unchanged;
+  packaging/harness identity changes require a fresh performance baseline.
+
+## uv migration — locked native/bootstrap implementation (2026-10-15)
+
+- Raised requires-python and PyO3 ABI to Python 3.12; added .python-version and
+  universal uv.lock (37 resolved packages). Existing extras/direct constraints
+  remain available; the initial lock selected transitive versions, including
+  fonttools 4.67.0 and pluggy 1.7.0 in place of the pre-migration environment.
+- uv owns source sync and compiler-free wheel setup. Maturin remains the pinned
+  PEP 517 backend with release profile, Cargo --locked and portable-wheel audit
+  options. Rust source/manifests are cache keys so native changes rebuild.
+- Isolated wheel checks sync locked research dependencies without installing
+  the project and install only the provided wheel. Coverage/high-load native
+  rebuilds use maturin --uv. High-load snapshots and comparison guards now include
+  uv.lock and .python-version; workload/timing/verification logic is unchanged.
+- Seven bootstrap tests cover old Python rejection, missing uv/wheel, foreign
+  environment isolation, no-Rust wheel setup and lock-failure propagation. Source
+  setup, 116 self-contained source/native/research/benchmark tests, 42 Rust tests,
+  explicit real ingestion, Rust 1.90 tests (42), fmt, strict Clippy, Ruff and mypy
+  passed. After lock-guard additions, 13 focused bootstrap/runner tests passed.
+- uv build produced cp312-abi3 with Requires-Python >=3.12 and an optimized release
+  build; isolated compiled API/CLI/research/Parquet/error/type-marker smoke passed
+  in a fresh uv environment outside checkout. Evidence remains ignored under
+  outputs/features/uv-migration-20261015; wheel is in dist/uv-py312.
+- Initial probes found macOS uv sandbox system-configuration panic (resolved by
+  authorized external execution), unsupported PEP 517 --release (corrected to
+  --profile release), and console pytest's missing repository import path
+  (documented/CI commands use python -m pytest). No failure was reported as a pass.
+- Full Python 3.12/3.13 real acceptance, compiler-free bootstrap, actual benchmark
+  build smoke, coverage-manager path and final CI/docs checks follow separately.
+
 ## High-load benchmark — M3 measured baseline and completion
 
 - Executed the complete default suite on the owner's Mac: exact 1M/10M/20M

@@ -5,9 +5,10 @@ import glob
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
+import sys
 import tempfile
-import venv
 
 parser = argparse.ArgumentParser()
 parser.add_argument("wheel", help="local wheel path or glob; exactly one wheel must match")
@@ -16,17 +17,29 @@ wheels = glob.glob(args.wheel)
 if len(wheels) != 1:
     parser.error("exactly one local wheel must match")
 wheel = Path(wheels[0]).resolve()
+uv = shutil.which("uv")
+if uv is None:
+    parser.error("uv >=0.9.13 is required")
+project = Path(__file__).resolve().parents[1]
 with tempfile.TemporaryDirectory(prefix="ofi-wheel-check-") as directory:
     root = Path(directory)
     environment = root / "environment"
-    venv.create(environment, with_pip=True)
     executable = environment / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
     env = dict(os.environ)
     env.pop("PYTHONPATH", None)
     env.pop("PYTHONHOME", None)
+    env.pop("VIRTUAL_ENV", None)
+    env["UV_PROJECT_ENVIRONMENT"] = str(environment)
+    subprocess.run(
+        [uv, "sync", "--project", str(project), "--locked", "--extra", "research",
+         "--no-install-project", "--python", sys.executable],
+        check=True,
+        cwd=root,
+        env=env,
+    )
     env["VIRTUAL_ENV"] = str(environment)
     subprocess.run(
-        [str(executable), "-m", "pip", "install", "--no-cache-dir", f"{wheel}[research]"],
+        [uv, "pip", "install", "--python", str(executable), "--no-deps", str(wheel)],
         check=True,
         cwd=root,
         env=env,

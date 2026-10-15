@@ -92,7 +92,7 @@ for line in result.stdout.splitlines():
     item = json.loads(line)
     if item.get("reason") == "compiler-artifact" and item.get("executable"):
         objects.append(item["executable"])
-run([sys.executable, "-m", "maturin", "develop", "--locked"])
+run([sys.executable, "-m", "maturin", "develop", "--locked", "--uv"])
 # Native shared-library counters require instrumented build AND Python runtime profiles.
 native = subprocess.check_output(
     [sys.executable, "-c", "from ofi_pipeline import _native; print(_native.__file__)"],

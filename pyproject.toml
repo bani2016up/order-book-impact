@@ -5,7 +5,7 @@ build-backend = "maturin"
 [project]
 name = "ofi-pipeline"
 version = "0.1.0"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 description = "Streaming Rust LOBSTER OFI engine with a typed Python API"
 
 [project.scripts]
@@ -22,6 +22,19 @@ manifest-path = "crates/ofi-python/Cargo.toml"
 python-source = "python"
 module-name = "ofi_pipeline._native"
 features = ["extension-module"]
+
+[tool.uv]
+required-version = ">=0.9.13"
+cache-keys = [
+    { file = "pyproject.toml" },
+    { file = "Cargo.toml" },
+    { file = "Cargo.lock" },
+    { file = "crates/**/Cargo.toml" },
+    { file = "crates/**/*.rs" },
+]
+
+[tool.uv.config-settings-package]
+ofi-pipeline = { build-args = "--profile release --locked --compatibility pypi" }
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

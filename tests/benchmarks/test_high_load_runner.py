@@ -74,6 +74,11 @@ def test_warmups_are_excluded_and_baseline_requires_decoded_equivalence(tmp_path
     mutated["source_before"]["host_id"] = "another host"
     with pytest.raises(ValueError, match="host/runtime"):
         compare_baseline(mutated, baseline)
+    for dependency in ("uv.lock", ".python-version"):
+        mutated = copy.deepcopy(summary)
+        mutated["source_before"]["source_hashes"][dependency] = "changed"
+        with pytest.raises(ValueError, match="harness hashes"):
+            compare_baseline(mutated, baseline)
 
 
 @pytest.mark.skipif(platform.system() not in ("Darwin", "Linux"), reason="POSIX load instrumentation")
@@ -96,6 +101,7 @@ def test_fresh_native_suite_records_snapshots_and_checks_all_outputs(tmp_path):
     assert all(row["repetitions"] == 2 for row in summary["aggregates"])
     assert summary["build"]["profile"] == "unverified-installed-extension"
     assert summary["source_before"]["native_sha256"] == summary["source_after"]["native_sha256"]
+    assert {"uv.lock", ".python-version"} <= summary["source_before"]["source_hashes"].keys()
     for row in summary["runs"]:
         assert row["original_rows"] == 303
         assert row["accepted_rows"] > 0

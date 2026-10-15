@@ -35,7 +35,8 @@ def write_json(path, value):
 
 
 def snapshot():
-    files = [ROOT / "Cargo.toml", ROOT / "Cargo.lock", ROOT / "pyproject.toml"]
+    files = [ROOT / name for name in
+             ("Cargo.toml", "Cargo.lock", "pyproject.toml", "uv.lock", ".python-version")]
     for folder, suffix in (("crates", "*.rs"), ("python/ofi_pipeline", "*.py"),
                            ("benchmarks", "*.py")):
         files.extend((ROOT / folder).rglob(suffix))
@@ -224,7 +225,7 @@ def compare_baseline(summary, path):
             raise ValueError(f"Baseline host/runtime differs: {field}")
     def tool_hashes(document):
         return {key: value for key, value in document["source_before"]["source_hashes"].items()
-                if key.startswith("benchmarks/")}
+                if key.startswith("benchmarks/") or key in {"uv.lock", ".python-version"}}
     if tool_hashes(baseline) != tool_hashes(summary) or baseline["build"]["profile"] != (
         summary["build"]["profile"]):
         raise ValueError("Baseline harness hashes or build-profile provenance differ")
@@ -328,7 +329,7 @@ def main(argv=None):
     write_json(root / "summary.json", summary)
     try:
         if not args.no_build:
-            command = [sys.executable, "-m", "maturin", "develop", "--release", "--locked"]
+            command = [sys.executable, "-m", "maturin", "develop", "--release", "--locked", "--uv"]
             if args.offline:
                 command.append("--offline")
             environment = {**os.environ, "PYO3_PYTHON": sys.executable}
