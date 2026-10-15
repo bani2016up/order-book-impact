@@ -16,6 +16,7 @@ python/ofi_pipeline/            Installed Python API and CLI
   research.py                  Installed shared loader and gap-safe lag helper
 research/
   baseline/run.py              Fedya: runnable starter OLS comparison
+  baseline/tables.py           Fedya: window summaries and paper Tables 2 and 4
   extensions/                  Timur: new model modules and entry points
   notebooks/                   Exploratory notebooks
 configs/baseline.json          Reproducible model settings
@@ -176,14 +177,22 @@ python -m research.baseline.run \
   --output-dir outputs/baseline/run01
 ```
 
-It fits OFI-only, TI-only and OFI+TI OLS per symbol and 30-minute window with an
-intercept and White HC0 covariance. Models share complete-case observations.
-Dropped rows and skipped windows (insufficient data, constant target or deficient
-rank) remain explicit.
+It fits OFI-only, TI-only, OFI+TI and OFI with the quadratic term OFI·|OFI| (a model
+column named `<x>_signed_square` is derived as `x * |x|`) by OLS per symbol and
+30-minute window, with an intercept and White HC0 covariance. Models share
+complete-case observations. Dropped rows and skipped windows (insufficient data,
+constant target or deficient rank) remain explicit.
 
-Outputs: `metrics.csv`, `coefficients.csv`, and `run.json` with the config and input
-hash. `in_sample_r2` describes contemporaneous explanatory fit, not OOS accuracy.
-This is a working starter, not a finished replication of every paper table.
+Outputs: `metrics.csv` (R² and two overall F statistics per window: classical
+`f_statistic` and HC0 Wald `f_statistic_hc0`), `coefficients.csv`, `summary_models.csv`
+and `summary_terms.csv` (means over fitted windows and the percent of windows significant
+at 5%), `table2.csv` and `table4.csv` in the paper's layout (written when the config holds
+the needed models), and `run.json` with the config and input hash. Significance is a
+two-sided z-test on HC0 standard errors; undefined p-values are ignored. Table F values
+are the classical F. Table rows are symbols plus a cross-symbol `Average` row.
+`in_sample_r2` describes contemporaneous explanatory fit, not OOS accuracy.
+This is a working starter, not a finished replication of every paper table: Table 3 and
+Figures 5-6 are not implemented yet, and one day of two stocks gives 13 windows per symbol.
 
 ## Where to put models
 

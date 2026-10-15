@@ -13,6 +13,12 @@ import pandas as pd
 import statsmodels.api as sm
 
 from ofi_pipeline.research import load_features
+from research.baseline.tables import (
+    SIGNIFICANCE_LEVEL,
+    paper_tables,
+    summarize_models,
+    summarize_terms,
+)
 
 
 @dataclass(frozen=True)
@@ -25,6 +31,7 @@ class BaselineConfig:
             "ofi_l1": ["ofi_l1"],
             "trade_imbalance": ["trade_imbalance"],
             "ofi_and_ti": ["ofi_l1", "trade_imbalance"],
+            "ofi_quadratic": ["ofi_l1", "ofi_l1_signed_square"],
         }
     )
 
@@ -50,18 +57,44 @@ class BaselineConfig:
                 raise ValueError("model columns must be unique and exclude the target/const")
 
 
+SIGNED_SQUARE = "_signed_square"
+
+
+def add_signed_squares(data: pd.DataFrame, columns) -> pd.DataFrame:
+    """Return a copy with ``<x>_signed_square = x * |x|`` for each requested derived column.
+
+    This is the paper's quadratic term OFI*|OFI|. A column that already exists is never
+    replaced, and a name whose base column is absent is left for the caller to report.
+    """
+    frame = data.copy()
+    for column in sorted(columns):
+        base = column.removesuffix(SIGNED_SQUARE)
+        if not column.endswith(SIGNED_SQUARE) or column in frame.columns or base not in frame:
+            continue
+        if not pd.api.types.is_numeric_dtype(frame[base]):
+            raise ValueError(f"Model column must be numeric: {base}")
+        values = frame[base].astype(float)
+        frame[column] = values * values.abs()
+    return frame
+
+
 def fit_models(data: pd.DataFrame, config: BaselineConfig):
-    """Compare models on common complete cases; skipped windows remain explicit."""
+    """Compare models on common complete cases; skipped windows remain explicit.
+
+    Besides ``in_sample_r2`` the metrics hold two overall F statistics: ``f_statistic`` is the
+    classical homoskedastic F and ``f_statistic_hc0`` is statsmodels' HC0 Wald F. A model column
+    named ``<x>_signed_square`` is derived as ``x * |x|`` when the data lack it.
+    """
     required = {config.target, *(c for columns in config.models.values() for c in columns)}
-    missing = required.difference(data.columns)
+    frame = add_signed_squares(data, required)
+    missing = required.difference(frame.columns)
     if missing:
         raise ValueError(f"Missing model columns: {', '.join(sorted(missing))}")
     for column in required:
-        if not pd.api.types.is_numeric_dtype(data[column]):
+        if not pd.api.types.is_numeric_dtype(frame[column]):
             raise ValueError(f"Model column must be numeric: {column}")
-        if not np.isfinite(data[column].dropna().to_numpy(dtype=float)).all():
+        if not np.isfinite(frame[column].dropna().to_numpy(dtype=float)).all():
             raise ValueError(f"Model column contains non-finite values: {column}")
-    frame = data.copy()
     # This starter follows the paper's regular-session :00/:30 half-hour grid.
     frame["window_start"] = frame["interval_start"].dt.floor(f"{config.window_minutes}min")
     metrics, coefficients = [], []
@@ -80,6 +113,8 @@ def fit_models(data: pd.DataFrame, config: BaselineConfig):
                 "dropped_incomplete_rows": len(group) - len(common),
                 "status": "ok",
                 "in_sample_r2": None,
+                "f_statistic": None,
+                "f_statistic_hc0": None,
             }
             if len(common) < max(config.min_observations, len(columns) + 2):
                 row["status"] = "insufficient_observations"
@@ -96,7 +131,13 @@ def fit_models(data: pd.DataFrame, config: BaselineConfig):
                         cov_type="HC0",
                         use_t=False,
                     )
-                    row["in_sample_r2"] = float(result.rsquared)
+                    r2 = float(result.rsquared)
+                    residual_share = (1.0 - r2) / (len(common) - len(columns) - 1)
+                    row["in_sample_r2"] = r2
+                    row["f_statistic"] = (
+                        (r2 / len(columns)) / residual_share if residual_share > 0 else float("inf")
+                    )
+                    row["f_statistic_hc0"] = float(result.fvalue)
                     for term in result.params.index:
                         coefficients.append(
                             {
@@ -145,6 +186,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         output.mkdir(parents=True, exist_ok=False)
         metrics.to_csv(output / "metrics.csv", index=False)
         coefficients.to_csv(output / "coefficients.csv", index=False)
+        summarize_models(metrics).to_csv(output / "summary_models.csv", index=False)
+        summarize_terms(coefficients).to_csv(output / "summary_terms.csv", index=False)
+        tables = paper_tables(metrics, coefficients)
+        for name, table in tables.items():
+            table.to_csv(output / f"{name}.csv", index=False)
         source = Path(args.features)
         source = source / "features.parquet" if source.is_dir() else source
         digest = hashlib.sha256()
@@ -156,6 +202,12 @@ def main(argv: Sequence[str] | None = None) -> int:
             "feature_sha256": digest.hexdigest(),
             "config": asdict(config),
             "covariance": "HC0",
+            "significance": {
+                "level": SIGNIFICANCE_LEVEL,
+                "test": "two-sided z-test on HC0 standard errors",
+            },
+            "paper_tables": sorted(tables),
+            "paper_table_f_statistic": "classical homoskedastic overall F",
             "common_complete_cases": True,
             "interpretation": "contemporaneous in-sample explanation; no OOS claim",
             "fitted_windows": int(metrics["status"].eq("ok").sum()),

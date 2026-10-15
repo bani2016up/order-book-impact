@@ -1,5 +1,16 @@
 # Implementation work log
 
+## Merge resolution — uv migration and baseline tables (2026-10-15)
+
+- Resolved the single CHANGELOG conflict by preserving both complete additions:
+  local uv/Python 3.12 migration and incoming baseline replication steps 1A/1B.
+  Kept the automatically merged README, model/configuration and research tests.
+- Combined self-contained Python/native/research/benchmark suite: 128 passed.
+  Ruff, strict mypy (seven source files), conflict-marker and diff checks passed.
+  Rust algorithms and package interfaces were unchanged by this resolution;
+  no new performance or external real-data measurement is claimed. Local merge
+  commit only; no push or history rewrite.
+
 ## uv and Python 3.12 migration plan — 2026-10-15
 
 - Owner requested uv as the Python package/environment manager and Python >=3.12.
@@ -118,6 +129,53 @@
   d988725. This final local documentation commit completes the migration. No
   push, hosted CI trigger, PR, release/package upload, remote change, history
   rewrite or enclosing-repository mutation was performed. Owner reviews/pushes.
+
+## Baseline replication step 1B — window summaries and paper Tables 2 and 4 (2026-10-15)
+
+- New `research/baseline/tables.py`: `summarize_terms`, `summarize_models`, `paper_table2`,
+  `paper_table4` and `paper_tables`. Means are over fitted windows; a coefficient is
+  significant when its two-sided z-test p-value (HC0) is below 0.05 (strict, undefined
+  p-values ignored). Rows are symbols plus a cross-symbol `Average` row. Table F values use
+  the classical F. A table is written only if its models exist in the config.
+- `research/baseline/run.py` writes `summary_models.csv`, `summary_terms.csv`, `table2.csv`
+  and `table4.csv` and records the significance rule in `run.json`. `ofi_quadratic` joins the
+  default models and `configs/baseline.json`, so existing default-model tests now expect
+  four models and four fitted windows.
+- Tests (`tests/research/test_tables.py`): exact boundary/NaN handling of significance;
+  column-to-model/term mapping on authored tables with unique values; missing models;
+  all-skipped windows; a synthetic replication where trade imbalance is correlated with OFI
+  but only OFI moves the price; CLI outputs. A first draft of the synthetic generator added
+  one scalar of noise instead of one value per row (R² = 1); inspecting the printed numbers
+  exposed it, it was fixed and a guard on R² was added.
+- Checks: `python -m pytest -q tests/research` — 28 passed; `ruff check python research tests
+  benchmarks scripts` and `ruff format` on the changed files passed. Rust, API and integration
+  suites were not rerun (no change there).
+- Real sample (`outputs/features/10s`, 4390 rows, 104 fits, no skipped window), preliminary:
+  mean in-sample R² of OFI/TI is 0.68/0.40 (paper: 0.65/0.32); with both regressors the
+  trade-imbalance mean z falls to 1.08 and is significant in 38% of windows (paper: 1.16, 31%).
+  The quadratic term is NOT insignificant here: significant in 92% of AAPL and 46% of MSFT
+  windows, negative in every AAPL window, adding 0.12 (AAPL) and 0.02 (MSFT) R² on average
+  (paper: 9% of windows, +0.03). One day of two NASDAQ stocks, 13 windows per symbol; the cause
+  (e.g. AAPL's wide spread and heavy-tailed OFI) is not investigated and no inference is drawn.
+
+## Baseline replication step 1A — quadratic term and F statistics (2026-10-15)
+
+Plan for step 1 (paper Tables 2 and 4, owner: Fedya): (A) quadratic term and F statistics in
+`fit_models`; (B) per-window summaries, paper-layout tables, CLI outputs and documentation.
+This entry records subtask A only.
+
+- `research/baseline/run.py`: a model column named `<x>_signed_square` is derived as
+  `x * |x|` (the paper's OFI*|OFI| term) when the data lack it; an existing column is never
+  replaced and a non-numeric base fails explicitly. The input frame is not mutated.
+- Metrics gain `f_statistic` (classical homoskedastic overall F) and `f_statistic_hc0`
+  (statsmodels HC0 Wald F). The paper does not state which F it reports, so both are kept.
+  A perfect fit yields an infinite classical F; skipped windows keep both columns empty.
+- Tests in `tests/research/test_baseline.py` use authored synthetic data with a known
+  answer: derived values, recovery of a known curvature coefficient, both F statistics
+  against statsmodels, empty values for skipped windows and the perfect-fit case.
+- Checks: `python -m pytest -q tests/research` — 20 passed; `ruff check research tests/research`
+  and `ruff format --check` on the two changed Python files passed. No Rust, API or real-data
+  step was touched, so the broader integration suites were not rerun.
 
 ## High-load benchmark — M3 measured baseline and completion
 
