@@ -1,5 +1,24 @@
 # Implementation work log
 
+## Baseline replication step 1A — quadratic term and F statistics (2026-10-15)
+
+Plan for step 1 (paper Tables 2 and 4, owner: Fedya): (A) quadratic term and F statistics in
+`fit_models`; (B) per-window summaries, paper-layout tables, CLI outputs and documentation.
+This entry records subtask A only.
+
+- `research/baseline/run.py`: a model column named `<x>_signed_square` is derived as
+  `x * |x|` (the paper's OFI*|OFI| term) when the data lack it; an existing column is never
+  replaced and a non-numeric base fails explicitly. The input frame is not mutated.
+- Metrics gain `f_statistic` (classical homoskedastic overall F) and `f_statistic_hc0`
+  (statsmodels HC0 Wald F). The paper does not state which F it reports, so both are kept.
+  A perfect fit yields an infinite classical F; skipped windows keep both columns empty.
+- Tests in `tests/research/test_baseline.py` use authored synthetic data with a known
+  answer: derived values, recovery of a known curvature coefficient, both F statistics
+  against statsmodels, empty values for skipped windows and the perfect-fit case.
+- Checks: `python -m pytest -q tests/research` — 20 passed; `ruff check research tests/research`
+  and `ruff format --check` on the two changed Python files passed. No Rust, API or real-data
+  step was touched, so the broader integration suites were not rerun.
+
 ## High-load benchmark — M3 measured baseline and completion
 
 - Executed the complete default suite on the owner's Mac: exact 1M/10M/20M

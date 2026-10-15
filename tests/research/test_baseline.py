@@ -5,8 +5,9 @@ import json
 import numpy as np
 import pandas as pd
 import pytest
+import statsmodels.api as sm
 
-from research.baseline.run import BaselineConfig, fit_models, main
+from research.baseline.run import BaselineConfig, add_signed_squares, fit_models, main
 
 
 def observations():
@@ -55,6 +56,57 @@ def test_small_constant_and_rank_deficient_windows_are_explicit():
     assert metrics.loc[metrics["model"] == "ofi_l1", "status"].iloc[0] == "rank_deficient"
     with pytest.raises(ValueError, match="Missing model columns"):
         fit_models(data.drop(columns="trade_imbalance"), BaselineConfig())
+
+
+def test_signed_square_is_ofi_times_absolute_ofi_and_never_replaces_columns():
+    data = observations()
+    derived = add_signed_squares(data, {"ofi_l1_signed_square", "ofi_l1", "no_base_signed_square"})
+    expected = data["ofi_l1"] * data["ofi_l1"].abs()
+    assert derived["ofi_l1_signed_square"].tolist() == expected.tolist()
+    assert (derived["ofi_l1_signed_square"][data["ofi_l1"] < 0] <= 0).all()
+    assert "ofi_l1_signed_square" not in data and "no_base_signed_square" not in derived
+    supplied = data.assign(ofi_l1_signed_square=7.0)
+    assert (
+        add_signed_squares(supplied, {"ofi_l1_signed_square"})["ofi_l1_signed_square"].eq(7).all()
+    )
+    with pytest.raises(ValueError, match="must be numeric: ofi_l1"):
+        add_signed_squares(data.assign(ofi_l1="text"), {"ofi_l1_signed_square"})
+
+
+def test_quadratic_model_recovers_known_curvature_and_keeps_input_unchanged():
+    data = observations()
+    x = data["ofi_l1"]
+    data["mid_price_change_ticks"] = 0.5 + 0.3 * x + 0.01 * x * x.abs() + 0.05 * np.sin(1.7 * x)
+    config = BaselineConfig(
+        models={"linear": ["ofi_l1"], "quadratic": ["ofi_l1", "ofi_l1_signed_square"]}
+    )
+    metrics, coefficients = fit_models(data, config)
+    assert "ofi_l1_signed_square" not in data
+    quadratic = coefficients[coefficients["model"] == "quadratic"].set_index("term")
+    assert quadratic.loc["ofi_l1_signed_square", "estimate"] == pytest.approx(0.01, abs=0.0015)
+    assert quadratic.loc["ofi_l1_signed_square", "p_value"] < 0.05
+    assert quadratic.loc["ofi_l1", "estimate"] == pytest.approx(0.3, abs=0.02)
+    r2 = metrics.set_index("model")["in_sample_r2"]
+    assert r2["quadratic"] > r2["linear"]
+    with pytest.raises(ValueError, match="Missing model columns"):
+        fit_models(data.drop(columns="ofi_l1"), config)
+
+
+def test_f_statistics_match_statsmodels_and_unfitted_windows_stay_empty():
+    data = observations()
+    metrics, _ = fit_models(data, BaselineConfig())
+    for _, row in metrics.iterrows():
+        columns = BaselineConfig().models[row["model"]]
+        design = sm.add_constant(data[columns], has_constant="add")
+        classical = sm.OLS(data["mid_price_change_ticks"], design).fit()
+        robust = sm.OLS(data["mid_price_change_ticks"], design).fit(cov_type="HC0", use_t=False)
+        assert row["f_statistic"] == pytest.approx(classical.fvalue)
+        assert row["f_statistic_hc0"] == pytest.approx(robust.fvalue)
+    skipped, _ = fit_models(data, BaselineConfig(min_observations=100))
+    assert skipped["f_statistic"].isna().all() and skipped["f_statistic_hc0"].isna().all()
+    perfect = data.assign(mid_price_change_ticks=1.0 + 2.0 * data["ofi_l1"])
+    exact, _ = fit_models(perfect, BaselineConfig(models={"ofi_l1": ["ofi_l1"]}))
+    assert exact["f_statistic"].iloc[0] > 1e12 or np.isinf(exact["f_statistic"].iloc[0])
 
 
 @pytest.mark.parametrize(
