@@ -1,5 +1,35 @@
 # Implementation work log
 
+## Baseline replication step 1C — HC3 and wild bootstrap-t (2026-10-16)
+
+Why: the quadratic-term investigation (five independent analyses under
+`outputs/baseline/quadratic_investigation/`, not tracked) found that the paper's HC0 z-test
+rejects a true null far too often in our windows (~180 buckets, heavy-tailed OFI·|OFI|).
+- New `research/baseline/inference.py`: `wild_bootstrap_p_values` (null imposed per
+  coefficient, Rademacher weights, HC3 t, `(1 + extreme) / (1 + B)`), stable per-test seeds
+  from a checksum of symbol/date/window/model, and `leverage_values`. HC3 and bootstrap are
+  declared undefined (NaN) when an observation has leverage within 1e-8 of one: otherwise the
+  HC3 weight divides one rounding error by another and returns a finite but meaningless value
+  (a first draft of the test expected NaN and found exactly that).
+- `fit_models` adds `hc3_standard_error`, `hc3_z_statistic`, `hc3_p_value` and
+  `bootstrap_p_value` to the coefficients; `BaselineConfig` gains `bootstrap_draws` (default 0,
+  `configs/baseline.json` uses 999) and `bootstrap_seed`.
+- `summarize_terms` and the paper tables take `inference` = `hc0` (default, the paper's test),
+  `hc3` or `bootstrap`. The CLI writes `table2/4.csv` (HC0) plus `_hc3` and, if enabled,
+  `_bootstrap` variants; `summary_terms.csv` gains an `inference` column; `run.json` lists the
+  tests. The numbers in tables 2 and 4 under HC0 are unchanged.
+- Checks: `ruff check python research tests benchmarks scripts` passed. `pytest tests/research`
+  passed (41 tests). The implementation matches statsmodels HC3 to 1e-15; in 400 simulated
+  windows with a true linear model and t(3) regressors the nominal 5% test rejects 34.5%
+  (HC0), 10% (HC3) and 11% (bootstrap). `tests/python/test_setup.py` fails in this checkout
+  only because the local `.venv` is Python 3.11 and `pyproject.toml` now requires 3.12.
+- Real sample (`outputs/baseline/run02`, 104 fits, 0 undefined), share of the 13 windows where
+  the quadratic term is significant at 5%, AAPL / MSFT: HC0 92% / 46% (mean z -4.91 / -2.20),
+  HC3 46% / 23% (-2.12 / -0.85), bootstrap 46% / 15%. These match the independent
+  inference analysis (HC3 6/13 and 3/13). Trade imbalance stays significant next to OFI in
+  46% / 31% of windows under HC0 and 38% / 15% under HC3. One day, two stocks, 13 windows
+  per symbol; no inference beyond this sample is drawn.
+
 ## Final dataset publication — 2026-10-15
 
 - The owner explicitly authorized publication to this repository. Preserve all

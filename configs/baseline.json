@@ -7,5 +7,7 @@
     "trade_imbalance": ["trade_imbalance"],
     "ofi_and_ti": ["ofi_l1", "trade_imbalance"],
     "ofi_quadratic": ["ofi_l1", "ofi_l1_signed_square"]
-  }
+  },
+  "bootstrap_draws": 999,
+  "bootstrap_seed": 20120621
 }

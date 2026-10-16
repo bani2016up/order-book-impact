@@ -3,14 +3,25 @@
 The inputs are the ``metrics`` and ``coefficients`` frames produced by
 ``research.baseline.run.fit_models``: one OLS fit per symbol/session/half-hour window.
 Averages are taken over fitted windows only. A coefficient counts as significant when its
-two-sided z-test p-value (HC0 standard errors) is below the level; undefined p-values are
-ignored rather than counted either way. Skipped windows stay visible in the model summary.
+two-sided p-value is below the level; undefined p-values are ignored rather than counted
+either way. Skipped windows stay visible in the model summary.
+
+``inference`` chooses how significance is judged: ``hc0`` is the paper's z-test on White
+(HC0) errors; ``hc3`` uses HC3 errors, which are far less liberal with ~180 observations
+and heavy-tailed regressors; ``bootstrap`` uses the wild bootstrap-t p-value and reports
+the mean HC3 z-statistic. ``hc0`` stays the default so the paper's tables are reproduced.
 """
 
 import pandas as pd
 
 SIGNIFICANCE_LEVEL = 0.05
 AVERAGE_LABEL = "Average"
+# inference -> (z-statistic column, p-value column) in the coefficients frame
+INFERENCE_COLUMNS = {
+    "hc0": ("z_statistic", "p_value"),
+    "hc3": ("hc3_z_statistic", "hc3_p_value"),
+    "bootstrap": ("hc3_z_statistic", "bootstrap_p_value"),
+}
 
 OFI_COLUMN = "ofi_l1"
 QUADRATIC_COLUMN = "ofi_l1_signed_square"
@@ -76,8 +87,16 @@ def _pct_significant(p_values: pd.Series, level: float) -> float:
     return float(100.0 * (defined < level).mean()) if len(defined) else float("nan")
 
 
-def summarize_terms(coefficients: pd.DataFrame, level: float = SIGNIFICANCE_LEVEL) -> pd.DataFrame:
+def summarize_terms(
+    coefficients: pd.DataFrame, level: float = SIGNIFICANCE_LEVEL, inference: str = "hc0"
+) -> pd.DataFrame:
     """Per symbol/model/term: mean estimate, mean z-statistic and percent significant windows."""
+    if inference not in INFERENCE_COLUMNS:
+        raise ValueError(f"inference must be one of: {', '.join(INFERENCE_COLUMNS)}")
+    z_column, p_column = INFERENCE_COLUMNS[inference]
+    missing = {z_column, p_column}.difference(coefficients.columns)
+    if missing:
+        raise ValueError(f"coefficients lack columns for {inference}: {', '.join(sorted(missing))}")
     rows = []
     for (symbol, model, term), group in coefficients.groupby(["symbol", "model", "term"]):
         rows.append(
@@ -87,8 +106,8 @@ def summarize_terms(coefficients: pd.DataFrame, level: float = SIGNIFICANCE_LEVE
                 "term": term,
                 "windows": len(group),
                 "mean_estimate": float(group["estimate"].astype(float).mean()),
-                "mean_z_statistic": float(group["z_statistic"].astype(float).mean()),
-                "pct_significant": _pct_significant(group["p_value"], level),
+                "mean_z_statistic": float(group[z_column].astype(float).mean()),
+                "pct_significant": _pct_significant(group[p_column], level),
             }
         )
     return pd.DataFrame(rows, columns=TERM_COLUMNS)
@@ -138,16 +157,19 @@ def _with_average(table: pd.DataFrame) -> pd.DataFrame:
 
 
 def paper_table2(
-    metrics: pd.DataFrame, coefficients: pd.DataFrame, level: float = SIGNIFICANCE_LEVEL
+    metrics: pd.DataFrame,
+    coefficients: pd.DataFrame,
+    level: float = SIGNIFICANCE_LEVEL,
+    inference: str = "hc0",
 ) -> pd.DataFrame:
     """Table 2: price change on OFI, plus the quadratic OFI*|OFI| term.
 
     ``alpha``, ``beta`` and ``r2`` come from the linear ``ofi_l1`` model; ``gamma_q`` comes
     from the ``ofi_quadratic`` model. Columns prefixed ``t_`` are mean z-statistics and
-    ``pct_*_sig`` are percent of windows significant at ``level``.
+    ``pct_*_sig`` are percent of windows significant at ``level`` under ``inference``.
     """
     _require(metrics, "table2")
-    terms, models = summarize_terms(coefficients, level), summarize_models(metrics)
+    terms, models = summarize_terms(coefficients, level, inference), summarize_models(metrics)
     alpha = _term(terms, "ofi_l1", "const")
     beta = _term(terms, "ofi_l1", OFI_COLUMN)
     gamma = _term(terms, "ofi_quadratic", QUADRATIC_COLUMN)
@@ -171,7 +193,10 @@ def paper_table2(
 
 
 def paper_table4(
-    metrics: pd.DataFrame, coefficients: pd.DataFrame, level: float = SIGNIFICANCE_LEVEL
+    metrics: pd.DataFrame,
+    coefficients: pd.DataFrame,
+    level: float = SIGNIFICANCE_LEVEL,
+    inference: str = "hc0",
 ) -> pd.DataFrame:
     """Table 4, Panel A: OFI alone, trade imbalance alone and both in one regression.
 
@@ -180,7 +205,7 @@ def paper_table4(
     ``windows`` counts fitted windows of the joint model.
     """
     _require(metrics, "table4")
-    terms, models = summarize_terms(coefficients, level), summarize_models(metrics)
+    terms, models = summarize_terms(coefficients, level, inference), summarize_models(metrics)
     ofi = _term(terms, "ofi_l1", OFI_COLUMN)
     ti = _term(terms, "trade_imbalance", TI_COLUMN)
     theta_ofi = _term(terms, "ofi_and_ti", OFI_COLUMN)
@@ -210,13 +235,16 @@ def paper_table4(
 
 
 def paper_tables(
-    metrics: pd.DataFrame, coefficients: pd.DataFrame, level: float = SIGNIFICANCE_LEVEL
+    metrics: pd.DataFrame,
+    coefficients: pd.DataFrame,
+    level: float = SIGNIFICANCE_LEVEL,
+    inference: str = "hc0",
 ) -> dict[str, pd.DataFrame]:
     """Every paper-layout table whose required models were fitted; others are omitted."""
     builders = {"table2": paper_table2, "table4": paper_table4}
     available = set(metrics["model"].unique())
     return {
-        name: builders[name](metrics, coefficients, level)
+        name: builders[name](metrics, coefficients, level, inference)
         for name, required in TABLE_MODELS.items()
         if set(required) <= available
     }

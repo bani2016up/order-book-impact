@@ -57,6 +57,10 @@ def handmade_results():
                         "hc0_standard_error": 1.0,
                         "z_statistic": 10.0 * value + offset,
                         "p_value": 0.01 if (symbol == "BBB" or window == 0) else 0.5,
+                        "hc3_standard_error": 2.0,
+                        "hc3_z_statistic": 5.0 * value + offset,
+                        "hc3_p_value": 0.01 if (symbol == "AAA" and window == 0) else 0.2,
+                        "bootstrap_p_value": 0.03 if window == 0 else np.nan,
                     }
                 )
             for model, r2 in MODEL_R2.items():
@@ -113,6 +117,41 @@ def test_model_summary_separates_fitted_from_skipped_windows():
     assert (row["fitted_windows"], row["skipped_windows"]) == (2, 2)
     assert row["mean_in_sample_r2"] == pytest.approx(0.4)
     assert (row["mean_f_statistic"], row["mean_f_statistic_hc0"]) == (20.0, 21.0)
+
+
+def test_each_inference_reads_its_own_columns():
+    _, coefficients = handmade_results()
+    pct = {
+        kind: summarize_terms(coefficients, inference=kind)
+        .set_index(["symbol", "model", "term"])
+        .loc[("AAA", "ofi_l1", "ofi_l1")]
+        for kind in ("hc0", "hc3", "bootstrap")
+    }
+    assert [pct[kind]["pct_significant"] for kind in pct] == [50.0, 50.0, 100.0]
+    assert pct["hc0"]["mean_z_statistic"] == 20.0
+    assert pct["hc3"]["mean_z_statistic"] == pct["bootstrap"]["mean_z_statistic"] == 10.0
+    bbb = summarize_terms(coefficients, inference="hc3").set_index(["symbol", "model", "term"])
+    assert bbb.loc[("BBB", "ofi_l1", "ofi_l1"), "pct_significant"] == 0.0
+    with pytest.raises(ValueError, match="inference must be one of"):
+        summarize_terms(coefficients, inference="hc9")
+    with pytest.raises(ValueError, match="lack columns for hc3: hc3_p_value, hc3_z_statistic"):
+        summarize_terms(
+            coefficients.drop(columns=["hc3_z_statistic", "hc3_p_value"]), inference="hc3"
+        )
+
+
+def test_tables_follow_the_requested_inference_and_default_to_the_paper_test():
+    metrics, coefficients = handmade_results()
+    default = paper_table2(metrics, coefficients).set_index("symbol")
+    assert default.loc["AAA", "t_beta"] == 20.0 and default.loc["AAA", "pct_beta_sig"] == 50.0
+    robust = paper_table2(metrics, coefficients, inference="hc3").set_index("symbol")
+    assert robust.loc["AAA", "t_beta"] == 10.0 and robust.loc["AAA", "pct_beta_sig"] == 50.0
+    assert robust.loc["BBB", "pct_beta_sig"] == 0.0
+    # The estimate and R-squared do not depend on how significance is judged.
+    assert robust.loc["AAA", "beta"] == default.loc["AAA", "beta"]
+    boot = paper_table4(metrics, coefficients, inference="bootstrap").set_index("symbol")
+    assert boot.loc["AAA", "both_pct_theta_ti_sig"] == 100.0
+    assert set(paper_tables(metrics, coefficients, inference="hc3")) == {"table2", "table4"}
 
 
 def test_table2_maps_every_column_to_its_model_and_term():
@@ -230,7 +269,7 @@ def test_all_skipped_windows_give_well_formed_empty_tables():
     assert table2.drop(columns=["symbol", "windows"]).isna().all().all()
 
 
-def test_cli_writes_summaries_and_only_the_tables_its_models_allow(tmp_path):
+def test_cli_writes_every_inference_variant_and_only_the_tables_its_models_allow(tmp_path):
     source = tmp_path / "features.parquet"
     synthetic_features().to_parquet(source, index=False)
     default = tmp_path / "default"
@@ -239,17 +278,34 @@ def test_cli_writes_summaries_and_only_the_tables_its_models_allow(tmp_path):
     arguments = ["--features", str(source), "--config", str(configuration)]
     assert main([*arguments, "--output-dir", str(default)]) == 0
     report = json.loads((default / "run.json").read_text())
-    assert report["paper_tables"] == ["table2", "table4"]
-    assert report["significance"] == {
-        "level": 0.05,
-        "test": "two-sided z-test on HC0 standard errors",
-    }
+    assert report["paper_tables"] == ["table2", "table2_hc3", "table4", "table4_hc3"]
+    assert report["significance"]["level"] == 0.05
+    assert set(report["significance"]["tests"]) == {"hc0", "hc3"}
     assert report["fitted_windows"] == 24 and report["skipped_windows"] == 0
-    for name in ("table2", "table4", "summary_models", "summary_terms"):
-        assert (default / f"{name}.csv").is_file()
+    for stem in ("table2", "table2_hc3", "table4", "table4_hc3", "summary_models"):
+        assert (default / f"{stem}.csv").is_file()
+    assert not (default / "table2_bootstrap.csv").exists()
     written = pd.read_csv(default / "table2.csv")
     assert written["symbol"].tolist() == ["AAA", "BBB", AVERAGE_LABEL]
     assert list(written.columns) == ["symbol", *TABLE2_COLUMNS]
+    terms = pd.read_csv(default / "summary_terms.csv")
+    assert list(terms.columns) == ["inference", *TERM_COLUMNS]
+    assert set(terms["inference"]) == {"hc0", "hc3"}
+    coefficients = pd.read_csv(default / "coefficients.csv")
+    assert coefficients["bootstrap_p_value"].isna().all()
+    assert coefficients["hc3_p_value"].between(0, 1).all()
+
+    boosted = tmp_path / "boosted"
+    configuration.write_text(json.dumps({"bootstrap_draws": 49}))
+    assert main([*arguments, "--output-dir", str(boosted)]) == 0
+    report = json.loads((boosted / "run.json").read_text())
+    assert (
+        "table2_bootstrap" in report["paper_tables"]
+        and "bootstrap" in report["significance"]["tests"]
+    )
+    assert "49 draws" in report["significance"]["tests"]["bootstrap"]
+    assert pd.read_csv(boosted / "coefficients.csv")["bootstrap_p_value"].between(0, 1).all()
+    assert (boosted / "table4_bootstrap.csv").is_file()
 
     narrow = tmp_path / "narrow"
     configuration.write_text(json.dumps({"models": {"ofi_l1": ["ofi_l1"]}}))

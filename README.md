@@ -17,6 +17,7 @@ python/ofi_pipeline/            Installed Python API and CLI
 research/
   baseline/run.py              Fedya: runnable starter OLS comparison
   baseline/tables.py           Fedya: window summaries and paper Tables 2 and 4
+  baseline/inference.py        Fedya: HC3 leverage guard and wild bootstrap-t
   extensions/                  Timur: new model modules and entry points
   notebooks/                   Exploratory notebooks
 configs/baseline.json          Reproducible model settings
@@ -191,15 +192,24 @@ complete-case observations. Dropped rows and skipped windows (insufficient data,
 constant target or deficient rank) remain explicit.
 
 Outputs: `metrics.csv` (R² and two overall F statistics per window: classical
-`f_statistic` and HC0 Wald `f_statistic_hc0`), `coefficients.csv`, `summary_models.csv`
-and `summary_terms.csv` (means over fitted windows and the percent of windows significant
-at 5%), `table2.csv` and `table4.csv` in the paper's layout (written when the config holds
-the needed models), and `run.json` with the config and input hash. Significance is a
-two-sided z-test on HC0 standard errors; undefined p-values are ignored. Table F values
-are the classical F. Table rows are symbols plus a cross-symbol `Average` row.
-`in_sample_r2` describes contemporaneous explanatory fit, not OOS accuracy.
-This is a working starter, not a finished replication of every paper table: Table 3 and
-Figures 5-6 are not implemented yet, and one day of two stocks gives 13 windows per symbol.
+`f_statistic` and HC0 Wald `f_statistic_hc0`), `coefficients.csv` (per window and term:
+the paper's HC0 z-test, plus HC3 `hc3_*` and, when `bootstrap_draws` > 0, a wild
+bootstrap-t `bootstrap_p_value`), `summary_models.csv`, `summary_terms.csv` (means over
+fitted windows and the percent of windows significant at 5%, one block per inference),
+the paper-layout tables and `run.json` with the config and input hash.
+
+Significance can be judged three ways and every table exists for each: `table2.csv` and
+`table4.csv` use the paper's two-sided z-test on HC0 errors; `*_hc3.csv` use HC3 errors;
+`*_bootstrap.csv` use the wild bootstrap-t (null imposed, Rademacher weights, HC3 t,
+`bootstrap_draws` and `bootstrap_seed` in the config; 0 draws disables it). **Prefer HC3 or
+the bootstrap for any claim about significance.** With ~180 buckets per window and a
+heavy-tailed regressor such as OFI·|OFI|, HC0 rejected a true null in about a third of
+simulated windows, HC3 and the bootstrap in about a tenth (`tests/research/test_inference.py`).
+HC3 and the bootstrap are undefined (NaN) for a window with a point of leverage one.
+Undefined p-values are ignored; table F values are the classical F; table rows are symbols
+plus a cross-symbol `Average` row. `in_sample_r2` describes contemporaneous explanatory fit,
+not OOS accuracy. This is a working starter, not a finished replication of every paper
+table: Table 3 and Figures 5-6 are not implemented yet.
 
 ## Where to put models
 

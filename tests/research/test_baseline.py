@@ -117,6 +117,10 @@ def test_f_statistics_match_statsmodels_and_unfitted_windows_stay_empty():
         {"min_observations": False},
         {"models": {}},
         {"models": {"bad": ["mid_price_change_ticks"]}},
+        {"bootstrap_draws": -1},
+        {"bootstrap_draws": True},
+        {"bootstrap_draws": 2.5},
+        {"bootstrap_seed": -3},
     ],
 )
 def test_invalid_model_configuration(kwargs):
@@ -140,3 +144,37 @@ def test_model_cli_saves_results_and_does_not_overwrite(tmp_path):
     with pytest.raises(SystemExit) as error:
         main(args)
     assert error.value.code == 2
+
+
+def test_coefficients_carry_hc3_matching_statsmodels_and_bootstrap_only_on_request():
+    data = observations()
+    config = BaselineConfig(models={"both": ["ofi_l1", "trade_imbalance"]})
+    _, coefficients = fit_models(data, config)
+    design = sm.add_constant(data[["ofi_l1", "trade_imbalance"]])
+    expected = sm.OLS(data["mid_price_change_ticks"], design).fit(cov_type="HC3", use_t=False)
+    by_term = coefficients.set_index("term")
+    for term in expected.params.index:
+        assert by_term.loc[term, "hc3_standard_error"] == pytest.approx(expected.bse[term])
+        assert by_term.loc[term, "hc3_z_statistic"] == pytest.approx(expected.tvalues[term])
+        assert by_term.loc[term, "hc3_p_value"] == pytest.approx(expected.pvalues[term])
+    assert by_term["bootstrap_p_value"].isna().all()
+    # HC3 is the more conservative error, so its standard errors are not smaller.
+    assert (by_term["hc3_standard_error"] >= by_term["hc0_standard_error"]).all()
+
+    _, booted = fit_models(data, BaselineConfig(models=config.models, bootstrap_draws=99))
+    again = fit_models(data, BaselineConfig(models=config.models, bootstrap_draws=99))[1]
+    assert booted["bootstrap_p_value"].between(1 / 100, 1).all()
+    assert booted["bootstrap_p_value"].tolist() == again["bootstrap_p_value"].tolist()
+    assert booted.set_index("term").loc["ofi_l1", "bootstrap_p_value"] == pytest.approx(0.01)
+
+
+def test_hc3_and_bootstrap_are_undefined_not_garbage_with_a_leverage_one_point():
+    data = observations()
+    data["trade_imbalance"] = 0.0
+    data.loc[3, "trade_imbalance"] = 5.0  # this one bucket alone determines the coefficient
+    config = BaselineConfig(models={"ti": ["trade_imbalance"]}, bootstrap_draws=49)
+    metrics, coefficients = fit_models(data, config)
+    assert metrics["status"].eq("ok").all()
+    assert coefficients["p_value"].notna().all()
+    for column in ("hc3_standard_error", "hc3_z_statistic", "hc3_p_value", "bootstrap_p_value"):
+        assert coefficients[column].isna().all()
