@@ -1,0 +1,9 @@
+{
+  "target": "mid_price_change_ticks",
+  "window_minutes": 30,
+  "min_observations": 20,
+  "min_days": 3,
+  "min_slots": 8,
+  "weight_column": "quote_update_count",
+  "timezone": "America/New_York"
+}

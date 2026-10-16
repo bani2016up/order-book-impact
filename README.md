@@ -19,6 +19,7 @@ research/
   baseline/tables.py           Fedya: window summaries and paper Tables 2 and 4
   baseline/inference.py        Fedya: HC3 leverage guard and wild bootstrap-t
   baseline/depth_impact.py     Fedya: paper Table 3 (impact against depth, lambda and c)
+  baseline/seasonality.py      Fedya: paper Figures 5 and 6 (intraday patterns)
   extensions/                  Timur: new model modules and entry points
   notebooks/                   Exploratory notebooks
 configs/baseline.json          Reproducible model settings
@@ -230,6 +231,30 @@ tested, the average of `lambda_eq_1_not_rejected` is the share of stocks where i
 rejected), `window_betas.csv` and `run.json`. Windows with a non-positive `beta` have no
 logarithm and are dropped and counted. Where `lambda` is near 0 the regressor is nearly
 constant, so `c` is not identified and should not be read.
+
+### 7. Paper Figures 5 and 6: intraday seasonality
+
+```sh
+python -m research.baseline.seasonality \
+  --features data/order_book_final/features/10s \
+  --config configs/seasonality.json \
+  --output-dir outputs/baseline/seasonality --venue "NASDAQ BX"
+```
+
+Per stock and half-hour slot of the **New York** trading day (so winter and summer sessions
+line up) it averages over days the impact `beta`, the depth `AD`, `var[dP]` and `var[OFI]`,
+divides each by the stock's own average over all windows and plots the cross-stock mean.
+`fig5_impact_and_depth.png` shows `beta` and `AD` with an interquartile band across stocks;
+`fig6_variance.png` shows `var[dP]`, `beta^2 var[OFI]` (built from the average patterns of its
+factors and scaled like `var[dP]`), `beta` and `var[OFI]` on one log axis. The tables behind
+the figures are `pattern_average.csv` (with the stock count per slot), `patterns_by_stock.csv`
+and `window_statistics.csv`; `run.json` lists the stocks left out and why, and the numbers the
+paper quotes (`beta` and `AD` at the open against the average, `beta` open over close, peak
+slots, the correlation of `var[dP]` with `beta^2 var[OFI]`). A slot needs `min_days` windows per
+stock, a stock needs `min_slots` valid slots and a positive average `beta`. It needs several
+days: one day gives one window per slot and the command stops with an explanation. The
+patterns are descriptive; no test is attached to them. Colours follow the validated
+categorical palette, markers differ by series, and the CSVs are the table view of the plots.
 
 ## Where to put models
 

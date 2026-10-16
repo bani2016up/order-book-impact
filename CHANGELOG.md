@@ -1,5 +1,35 @@
 # Implementation work log
 
+## Baseline replication step 3 — paper Figures 5 and 6 (2026-10-16)
+
+- New `research/baseline/seasonality.py` and `configs/seasonality.json`. Windows are keyed by
+  the exchange-local half-hour slot (America/New_York), because the BX dates span winter and
+  summer time and a UTC key would split the open into two slots. Per stock the slot means over
+  days are divided by the stock's own mean over all windows; `beta^2 var[OFI]` is built from the
+  average patterns of its factors and divided by the `var[dP]` constant, so the two curves of
+  Figure 6 share a scale (the paper's footnote 4 builds it the same way). Stocks that cannot be
+  normalised or lack slots are listed with the reason in `run.json`.
+- Plots use `matplotlib.figure.Figure` directly (no global backend change), the validated
+  categorical palette (checked with the dataviz validator; for Figure 6 aqua and yellow are
+  below 3:1 on the light surface, so the relief is marker shapes plus the CSV table view),
+  2 px lines, a legend and one axis; Figure 6 uses a log axis because one slot is 5x the
+  average. A first title claimed the open has the highest impact and lowest depth, which the
+  data did not show; titles now only describe what is plotted.
+- Tests (`tests/research/test_seasonality.py`, 9): local-time slots across winter and summer
+  sessions, window variances, exact normalisation, exclusions with reasons, cross-stock
+  statistics, the quoted summary numbers, the plotted data/colours/markers/log axis and the CLI.
+- Checks: `ruff check python research tests benchmarks scripts` and `pytest tests/research`
+  (66 tests) passed.
+- Results (descriptive; `outputs/baseline/seasonality_bx`, `seasonality_bx_narrow`):
+  all 8 BX stocks with enough coverage (ADBE and GOOG excluded): beta 1.2x its average at the
+  open and 3.4x its 15:30 value, depth 0.94x at the open, var[dP] peak at 11:00, var[OFI] peak at
+  15:30 (5x average), correlation of var[dP] with beta^2 var[OFI] across slots 0.65. The four
+  narrow-spread stocks (AMD, CSCO, INTC, QCOM): depth 0.69x at the open (paper about 0.5x), beta
+  1.33x at the open and 3.4x its closing value (paper about 2x and 5x), var[dP] peak at the open,
+  var[OFI] peak at 15:30, correlation 0.90, mean beta^2 var[OFI] / var[dP] 1.29. The wide-spread
+  BX stocks do not show the paper's open-to-close pattern clearly, consistent with their weak
+  depth law in step 2. 10 dates, 4 to 8 stocks per slot: not a test of the paper's claims.
+
 ## Baseline replication step 2 — paper Table 3 and the final dataset (2026-10-16)
 
 - Downloaded the release asset `order_book_final_models.zip` (19,443,935 bytes) and
