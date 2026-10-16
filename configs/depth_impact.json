@@ -1,0 +1,9 @@
+{
+  "target": "mid_price_change_ticks",
+  "window_minutes": 30,
+  "min_observations": 20,
+  "min_windows": 8,
+  "hac_lags": null,
+  "level": 0.05,
+  "weight_column": "quote_update_count"
+}

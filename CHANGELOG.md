@@ -1,5 +1,36 @@
 # Implementation work log
 
+## Baseline replication step 2 — paper Table 3 and the final dataset (2026-10-16)
+
+- Downloaded the release asset `order_book_final_models.zip` (19,443,935 bytes) and
+  `SHA256SUMS-release.txt` from `bani2016up/order-book-impact` release `dataset-2026-10-15` with
+  `gh release download` into the ignored `data/`. The archive hash matched the release file and
+  all 29 internal checksums in `SHA256SUMS_models.txt` passed. The 791 MB full archive was not
+  downloaded. The set is 10 NASDAQ BX stocks, 100 sessions, 111,456 accepted 10-second rows;
+  coverage is uneven (7 stocks have 95-123 half-hour windows with at least 20 buckets, ADBE,
+  GOOG and QCOM 22-42) and 19,498 rows have unknown trade imbalance.
+- New `research/baseline/depth_impact.py` and `configs/depth_impact.json`: Table 3 (paper eqs. 5
+  and 6) per stock with Newey-West (Bartlett, automatic bandwidth floor(4 (T/100)^(2/9)))
+  standard errors and normal confidence intervals; `beta_i` comes from an OFI-only fit so unknown
+  trade signs do not shrink the sample; window depth is the quote-update-weighted mean of the
+  buckets' L1 depth. Non-positive betas and skipped windows are counted in `dropped_windows`.
+  The squared correlations follow the paper (fitted `c AD^-lambda`, and `1/AD`).
+- Tests (`tests/research/test_depth_impact.py`, 16): exact recovery on noise-free power laws,
+  recovery and the lambda = 1 test on noisy synthetic laws (lambda 1 and 0.5), no relation
+  to depth, dropped and short stocks, the bandwidth rule, config validation and the CLI. A
+  first draft asserted a bandwidth exactly on a rounding boundary (T = 273); it was replaced.
+- Checks: `ruff check python research tests benchmarks scripts` and `pytest tests/research`
+  (57 tests) passed.
+- Results (descriptive, in-sample; `outputs/baseline/table3_small`, `table3_bx`):
+  small LOBSTER sample (2 stocks, 13 windows each): lambda 0.89 (AAPL, 95% interval 0.62-1.16)
+  and 0.98 (MSFT, 0.82-1.14), R2 of eq. (5) 0.52 and 0.86; lambda = 1 is not rejected (paper:
+  0.98 on average, R2 74%). Final BX set (881 fitted windows): CSCO, INTC, AMD and QCOM
+  (mean spread 2.2-3.1 cents) give lambda 0.87, 0.71, 0.77 and 1.22 with R2 0.58, 0.31, 0.53 and
+  0.36; the six stocks with a mean spread of 10 cents or more (MSFT, ADBE, AAPL, NVDA, GOOG,
+  AMZN) have R2 of at most 0.09 and lambda mostly near 0 (Spearman of spread against R2 is -0.81,
+  n = 10). The paper also reports poor fits for its wide-spread, low-depth stocks. This is a
+  10-stock association on one venue (BX), not a tested mechanism.
+
 ## Baseline replication step 1C — HC3 and wild bootstrap-t (2026-10-16)
 
 Why: the quadratic-term investigation (five independent analyses under

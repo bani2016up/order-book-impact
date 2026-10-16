@@ -18,6 +18,7 @@ research/
   baseline/run.py              Fedya: runnable starter OLS comparison
   baseline/tables.py           Fedya: window summaries and paper Tables 2 and 4
   baseline/inference.py        Fedya: HC3 leverage guard and wild bootstrap-t
+  baseline/depth_impact.py     Fedya: paper Table 3 (impact against depth, lambda and c)
   extensions/                  Timur: new model modules and entry points
   notebooks/                   Exploratory notebooks
 configs/baseline.json          Reproducible model settings
@@ -210,6 +211,25 @@ Undefined p-values are ignored; table F values are the classical F; table rows a
 plus a cross-symbol `Average` row. `in_sample_r2` describes contemporaneous explanatory fit,
 not OOS accuracy. This is a working starter, not a finished replication of every paper
 table: Table 3 and Figures 5-6 are not implemented yet.
+
+### 6. Paper Table 3: impact against depth
+
+```sh
+python -m research.baseline.depth_impact \
+  --features data/order_book_final/features/10s \
+  --config configs/depth_impact.json \
+  --output-dir outputs/baseline/table3
+```
+
+Per stock it estimates the half-hour impact `beta_i` (price change on OFI, all buckets with a
+known price change, independent of trade imbalance), the window's average depth `AD_i`
+(L1 depth weighted by quote updates), then `log beta = a - lambda log AD` and
+`beta = m + c AD^(-lambda)` with Newey-West errors (automatic Bartlett bandwidth) and normal
+confidence intervals. Outputs: `table3.csv` (symbols plus an `Average` row; `lambda = 1`
+tested, the average of `lambda_eq_1_not_rejected` is the share of stocks where it is not
+rejected), `window_betas.csv` and `run.json`. Windows with a non-positive `beta` have no
+logarithm and are dropped and counted. Where `lambda` is near 0 the regressor is nearly
+constant, so `c` is not identified and should not be read.
 
 ## Where to put models
 
