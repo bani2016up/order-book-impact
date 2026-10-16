@@ -207,11 +207,12 @@ Significance can be judged three ways and every table exists for each: `table2.c
 the bootstrap for any claim about significance.** With ~180 buckets per window and a
 heavy-tailed regressor such as OFI·|OFI|, HC0 rejected a true null in about a third of
 simulated windows, HC3 and the bootstrap in about a tenth (`tests/research/test_inference.py`).
-HC3 and the bootstrap are undefined (NaN) for a window with a point of leverage one.
+HC3 and the bootstrap are undefined (NaN) for a window with a point of leverage one;
+`metrics.csv` reports each window's `max_leverage` so near-degenerate windows can be flagged.
 Undefined p-values are ignored; table F values are the classical F; table rows are symbols
 plus a cross-symbol `Average` row. `in_sample_r2` describes contemporaneous explanatory fit,
-not OOS accuracy. This is a working starter, not a finished replication of every paper
-table: Table 3 and Figures 5-6 are not implemented yet.
+not OOS accuracy. Table 3 and Figures 5-6 are in sections 6 and 7; the notebook
+`research/notebooks/baseline_replication.ipynb` walks through all of them.
 
 ### 6. Paper Table 3: impact against depth
 

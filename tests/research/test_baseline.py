@@ -175,6 +175,18 @@ def test_hc3_and_bootstrap_are_undefined_not_garbage_with_a_leverage_one_point()
     config = BaselineConfig(models={"ti": ["trade_imbalance"]}, bootstrap_draws=49)
     metrics, coefficients = fit_models(data, config)
     assert metrics["status"].eq("ok").all()
+    assert metrics["max_leverage"].iloc[0] == pytest.approx(1.0)
     assert coefficients["p_value"].notna().all()
     for column in ("hc3_standard_error", "hc3_z_statistic", "hc3_p_value", "bootstrap_p_value"):
         assert coefficients[column].isna().all()
+
+
+def test_max_leverage_reports_the_largest_hat_value_of_each_fitted_window():
+    data = observations()
+    metrics, _ = fit_models(data, BaselineConfig(models={"ofi_l1": ["ofi_l1"]}))
+    design = sm.add_constant(data[["ofi_l1"]].astype(float)).to_numpy()
+    hat = np.diag(design @ np.linalg.inv(design.T @ design) @ design.T)
+    assert metrics["max_leverage"].iloc[0] == pytest.approx(hat.max())
+    assert 0 < metrics["max_leverage"].iloc[0] < 1
+    skipped, _ = fit_models(data, BaselineConfig(min_observations=100))
+    assert skipped["max_leverage"].isna().all()

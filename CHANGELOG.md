@@ -1,5 +1,39 @@
 # Implementation work log
 
+## Baseline replication step 4 — replication notebook and a leverage diagnostic (2026-10-16)
+
+- New `research/notebooks/baseline_replication.ipynb` (48 cells, 26 code; outputs not stored):
+  data and how to run, formulas checked against the paper (e_n, OFI, eqs. 1-8c), Tables 2 and 4
+  under HC0 / HC3 / wild bootstrap on both datasets, the quadratic-term diagnostics, Table 3 with
+  narrow/wide-spread group rows and a Figure-4-style log beta vs log AD prototype, Figures 5-6 on
+  BX, a hypothesis table with verdicts computed from the fits, the extension hypothesis for
+  Timur (issue #1) and limitations. It calls the `research.baseline` modules; its own logic is
+  presentation plus a degenerate-fit flag, window-count tests and verdict rules, which are new and
+  untested and say so. Degenerate fits (HC3 undefined or R2 > 0.99) are dropped per model in
+  Table 2 and per window in Table 4 (BX: 18 of 1,758 and 48 of 2,519 fits; LOBSTER: none); the
+  rule is stated as a judgment call and no window-based verdict differs between raw and cleaned
+  fits. Window-count tests compare the share of significant windows with 11% (the simulated
+  bootstrap size, a heuristic) with a 5% sensitivity column; fewer than 30 windows is called
+  inconclusive (power about 0.42 at 13 windows and 0.65 at 30 for a true 25% share).
+- Written by one agent and reviewed by another in three rounds. The review executed every cell
+  in plain Python and in an IPython kernel, twice and from two working directories, compared all
+  tables with the CLI outputs (agreement within 3e-13), recomputed spot values by hand and checked
+  formulas and quoted paper numbers against the paper. Fixed after review: a missing 09:30 slot
+  counted as a failure (H5); near-degenerate windows (for example one CSCO window with HC0 z of
+  2,889) inflated mean z and F values; "not rejected" was labelled "supported"; the null share
+  disagreed with the cited bootstrap size; several sentences overstated what the code showed.
+- `fit_models` adds `max_leverage` (largest hat value of the fitted window) to the metrics.
+  `LEVERAGE_LIMIT` is kept: in the flagged windows HC3 is finite and conservative (a z near one
+  when a single bucket determines a coefficient), while one near-deterministic AMZN window has a
+  maximum leverage of only 0.51, so a stricter leverage cut would neither catch it nor be needed
+  for the others. The diagnostic lets analyses flag such windows explicitly.
+- README: the stale sentence that Table 3 and Figures 5-6 were not implemented now points to
+  sections 6-7 and the notebook.
+- Checks: `ruff check python research tests benchmarks scripts`, `ruff format --check
+  research/notebooks` and `pytest tests/research` (67 tests) passed. The notebook ran end to end in
+  about 14 s with no errors, left its inputs unchanged and wrote no files; a rerun after the
+  `max_leverage` change gave byte-identical tables and figures.
+
 ## Baseline replication step 3 — paper Figures 5 and 6 (2026-10-16)
 
 - New `research/baseline/seasonality.py` and `configs/seasonality.json`. Windows are keyed by

@@ -101,7 +101,9 @@ def fit_models(data: pd.DataFrame, config: BaselineConfig):
     Coefficients carry the paper's HC0 z-test (``z_statistic``, ``p_value``) and, as small-sample
     robust alternatives, HC3 (``hc3_*``) and, when ``bootstrap_draws`` > 0, a wild bootstrap-t
     p-value (``bootstrap_p_value``). HC3 and bootstrap are NaN for a window with a point of
-    leverage one, where they are undefined.
+    leverage one, where they are undefined. ``max_leverage`` (metrics) is the largest hat value
+    in the window: near one, a single bucket determines a coefficient, HC0 can be huge and HC3
+    tends to a z of about one, so such windows deserve a flag rather than a reading.
     """
     required = {config.target, *(c for columns in config.models.values() for c in columns)}
     frame = add_signed_squares(data, required)
@@ -133,6 +135,7 @@ def fit_models(data: pd.DataFrame, config: BaselineConfig):
                 "in_sample_r2": None,
                 "f_statistic": None,
                 "f_statistic_hc0": None,
+                "max_leverage": None,
             }
             if len(common) < max(config.min_observations, len(columns) + 2):
                 row["status"] = "insufficient_observations"
@@ -146,7 +149,8 @@ def fit_models(data: pd.DataFrame, config: BaselineConfig):
                     model = sm.OLS(common[config.target].astype(float), design, missing="raise")
                     result = model.fit(cov_type="HC0", use_t=False)
                     robust = model.fit(cov_type="HC3", use_t=False)
-                    hc3_defined = leverage_values(design.to_numpy()).max() < LEVERAGE_LIMIT
+                    max_leverage = float(leverage_values(design.to_numpy()).max())
+                    hc3_defined = max_leverage < LEVERAGE_LIMIT
                     boot = (
                         wild_bootstrap_p_values(
                             design.to_numpy(),
@@ -164,6 +168,7 @@ def fit_models(data: pd.DataFrame, config: BaselineConfig):
                         (r2 / len(columns)) / residual_share if residual_share > 0 else float("inf")
                     )
                     row["f_statistic_hc0"] = float(result.fvalue)
+                    row["max_leverage"] = max_leverage
                     for position, term in enumerate(result.params.index):
                         coefficients.append(
                             {
